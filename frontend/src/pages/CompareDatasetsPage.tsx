@@ -62,7 +62,16 @@ export default function CompareDatasetsPage({ selection }: { selection: Selectio
     queryFn: ({ signal }) => compareApi.compare(submitted!, signal),
     enabled: submitted !== null,
   });
-  const data: CompareResponse | undefined = query.data;
+  const currentDatasets = datasets.filter((d) => selected.includes(d.key)).map((d) => d.key);
+  const submittedIsCurrent = submitted !== null
+    && submitted.variable === variable
+    && submitted.datasets.join(",") === currentDatasets.join(",")
+    && submitted.latitude === Number(selection.latitude.toFixed(4))
+    && submitted.longitude === Number(selection.longitude.toFixed(4))
+    && submitted.startYear === selection.startYear
+    && submitted.endYear === selection.endYearInclusive + 1;
+  const currentRequestIsFetching = submittedIsCurrent && query.isFetching;
+  const data: CompareResponse | undefined = submittedIsCurrent ? query.data : undefined;
   const order = useMemo(() => (data ? data.datasets_requested : []), [data]);
   const succeeded = data ? order.filter((k) => data.results[k]?.analysis) : [];
   const resultsOk = data ? succeeded.map((k) => data.results[k]!) : [];
@@ -76,7 +85,7 @@ export default function CompareDatasetsPage({ selection }: { selection: Selectio
     setView("comparison");
     setSubmitted({
       variable,
-      datasets: datasets.filter((d) => selected.includes(d.key)).map((d) => d.key),
+      datasets: currentDatasets,
       latitude: Number(selection.latitude.toFixed(4)),
       longitude: Number(selection.longitude.toFixed(4)),
       startYear: selection.startYear,
@@ -146,14 +155,14 @@ export default function CompareDatasetsPage({ selection }: { selection: Selectio
           )}
           {warnings.map((w) => <p key={w} className="warn-text">{w}</p>)}
           {problem && <p className="error-text" role="alert">{problem}</p>}
-          <button type="button" className="btn btn-primary cmp-run" onClick={run} disabled={!!problem || query.isFetching}>
-            {query.isFetching ? "Analysing each dataset…" : "Compare datasets"}
+          <button type="button" className="btn btn-primary cmp-run" onClick={run} disabled={!!problem || currentRequestIsFetching}>
+            {currentRequestIsFetching ? "Analysing each dataset…" : "Compare datasets"}
           </button>
         </section>
       )}
 
-      {query.isFetching && <Loading label="Retrieving and analysing each dataset independently…" />}
-      {query.isError && <ErrorBox error={query.error} onRetry={() => query.refetch()} />}
+      {submittedIsCurrent && query.isFetching && <Loading label="Retrieving and analysing each dataset independently…" />}
+      {submittedIsCurrent && query.isError && <ErrorBox error={query.error} onRetry={() => query.refetch()} />}
 
       {data && !query.isFetching && (
         <>

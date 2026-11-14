@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -148,6 +148,53 @@ describe("Compare datasets page", () => {
     await userEvent.click(screen.getByRole("checkbox", { name: /^C/ }));
     expect(screen.getByText("Select at least two datasets.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Compare datasets" })).toBeDisabled();
+  });
+
+  it("does not present submitted comparison results as current after dataset controls change", async () => {
+    renderPage(compareResponse());
+    await userEvent.click(await screen.findByRole("button", { name: "Compare datasets" }));
+    expect(await screen.findByText(/Agreement: Conflicting trend direction/)).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("checkbox", { name: /^C/ }));
+
+    expect(screen.queryByText(/Agreement: Conflicting trend direction/)).not.toBeInTheDocument();
+  });
+
+  it("allows a replacement comparison while the obsolete request is still fetching", async () => {
+    let resolveFirst!: (value: Response) => void;
+    let firstSignal: AbortSignal | undefined;
+    let compareCalls = 0;
+    fetchMock.mockImplementation((url: string, init?: RequestInit) => {
+      if (url.includes("/api/v2/datasets")) return Promise.resolve(new Response(JSON.stringify(CATALOG), { status: 200 }));
+      if (url.includes("/api/v2/compare")) {
+        compareCalls += 1;
+        if (compareCalls === 1) {
+          firstSignal = init?.signal ?? undefined;
+          return new Promise<Response>((resolve) => { resolveFirst = resolve; });
+        }
+        const current = compareResponse({ datasets_requested: ["a", "b"] });
+        current.comparison!.agreement.explanation = "Current replacement response.";
+        return Promise.resolve(new Response(JSON.stringify(current), { status: 200 }));
+      }
+      return Promise.resolve(new Response("{}", { status: 404 }));
+    });
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(<QueryClientProvider client={client}><CompareDatasetsPage selection={DEFAULT_SELECTION} /></QueryClientProvider>);
+
+    await userEvent.click(await screen.findByRole("button", { name: "Compare datasets" }));
+    await userEvent.click(screen.getByRole("checkbox", { name: /^C/ }));
+
+    const replacement = screen.getByRole("button", { name: "Compare datasets" });
+    expect(replacement).toBeEnabled();
+    await userEvent.click(replacement);
+    expect(firstSignal?.aborted).toBe(true);
+    expect(await screen.findByText("Current replacement response.")).toBeInTheDocument();
+
+    const obsolete = compareResponse();
+    obsolete.comparison!.agreement.explanation = "Obsolete response.";
+    resolveFirst(new Response(JSON.stringify(obsolete), { status: 200 }));
+    await waitFor(() => expect(screen.queryByText("Obsolete response.")).not.toBeInTheDocument());
+    expect(screen.getByText("Current replacement response.")).toBeInTheDocument();
   });
 
   it("explains when no comparison is possible and shows separate charts for different quantities", async () => {
