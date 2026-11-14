@@ -178,6 +178,12 @@ class EarthEngineSoilMoistureProvider:
 
     # --- public -----------------------------------------------------------------
 
+    def cached_availability(self, descriptor: DatasetDescriptor) -> CatalogAvailability | None:
+        """Return a fresh verified catalog entry without initiating provider work."""
+        with self._lock:
+            hit = self._availability.get(descriptor.collection_ids[0])
+            return hit[1] if hit and self._clock() - hit[0] <= self._availability_ttl else None
+
     def availability(self, descriptor: DatasetDescriptor) -> CatalogAvailability:
         collection = descriptor.collection_ids[0]
         with self._lock:

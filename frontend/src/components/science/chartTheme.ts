@@ -1,9 +1,4 @@
-/**
- * Chart colours come from theme tokens (see styles/tokens.css), so charts follow
- * Orbit / Mission Briefing automatically. The obs/trend pairs were checked with the
- * dataviz palette validator against each theme's chart surface (lightness band,
- * chroma, CVD separation, normal-vision floor and 3:1 contrast all pass).
- */
+/** Scientific charts use the shared midnight palette; shapes and labels carry meaning. */
 export const CHART = {
   surface: "var(--chart-surface)",
   obs: "var(--chart-obs)", // observations / eligible annual values / variable A

@@ -11,7 +11,6 @@
 .map-loading, .map-failed { display: flex; gap: var(--s3); align-items: center; justify-content: center; color: var(--text-secondary); font-size: var(--fs-sm); }
 .map-failed > div { max-width: 420px; padding: var(--s5); margin-left: auto; margin-right: clamp(var(--s4), 8vw, 140px); border: 1px dashed var(--border-strong); border-radius: var(--r-md); background: var(--surface-glass); }
 .map-failed strong { display: block; font-family: var(--font-display); font-weight: 400; font-size: var(--fs-xl); color: var(--text-primary); margin-bottom: var(--s2); }
-.stage-map::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 2; background: linear-gradient(90deg, color-mix(in srgb, var(--map-space) 70%, transparent) 0%, transparent 36%), linear-gradient(0deg, color-mix(in srgb, var(--map-space) 60%, transparent) 0%, transparent 16%); }
 
 .stage-caption { position: absolute; top: clamp(var(--s5), 5vh, var(--s7)); right: clamp(var(--s5), 3vw, var(--s7)); z-index: 3; text-align: right; pointer-events: none; display: grid; gap: var(--s2); animation: fade-up 900ms var(--ease-out-expo) 200ms both; }
 .stage-title { font-family: var(--font-display); font-size: clamp(1.6rem, 1rem + 1.6vw, 2.6rem); line-height: 1.05; color: var(--text-primary); text-shadow: 0 2px 24px var(--map-space); }
@@ -34,6 +33,18 @@
 .atlas-marker { position: relative; width: 22px; height: 22px; pointer-events: none; }
 .atlas-marker-core { position: absolute; inset: 5px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px var(--accent-hover), 0 0 18px var(--accent); }
 .atlas-marker-pulse { position: absolute; inset: 0; border-radius: 50%; border: 1.5px solid var(--accent-hover); animation: ring 2.2s var(--ease) infinite; }
+
+/* Geographic marker handles: transparent 44px targets, crisp 14px visible anchors. */
+.region-handle { width: 44px; height: 44px; padding: 0; background: transparent; border: 0; border-radius: 50%; cursor: grab; touch-action: none; }
+.region-handle::after { content: ""; position: absolute; inset: 15px; border-radius: 50%; background: var(--starlight); border: 2px solid var(--ocean-core); box-shadow: 0 0 0 1px var(--frost); transition: box-shadow 160ms ease; }
+.region-handle:hover::after, .region-handle:focus-visible::after, .region-handle.is-dragging::after { box-shadow: 0 0 0 3px var(--signal-blue); }
+.region-handle.is-dragging { cursor: grabbing; }
+.region-center::after { inset: 12px; background: var(--ocean-core); border: 3px solid var(--starlight); }
+.region-tools { position: absolute; right: 64px; bottom: 110px; z-index: 3; display: grid; justify-items: end; gap: 5px; max-width: min(340px, calc(100% - 80px)); font-size: var(--fs-xs); }
+.region-tools > span, .region-tools > button { background: var(--map-control-bg); padding: 6px 10px; border-radius: var(--r-sm); }
+.region-status { color: var(--frost); }
+.region-bounds { display: grid; gap: var(--s2); }
+@media (max-width: 640px) { .region-tools { bottom: 88px; right: 52px; font-size: 10px; } }
 
 /* Dossier: floating mission module */
 .dossier {
@@ -113,20 +124,6 @@
 @keyframes liftoff { to { transform: translate(14px, -26px) rotate(-8deg); opacity: 0; } }
 .launch-hint { font-size: 0.7rem; color: var(--text-muted); text-align: center; margin-top: var(--s2); }
 
-.launch-stage { position: absolute; left: 0; bottom: 30px; width: 360px; height: 300px; pointer-events: none; z-index: 5; }
-.launch-trail { position: absolute; inset: 0; overflow: visible; }
-.launch-trail path { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; filter: drop-shadow(0 0 6px var(--accent)); animation: trail 1.1s var(--ease-out-expo) forwards, trail-fade 1.1s ease-in forwards; }
-@keyframes trail { to { stroke-dashoffset: 0; } }
-@keyframes trail-fade { 0%, 60% { opacity: 1; } 100% { opacity: 0; } }
-.launch-craft { position: absolute; left: 0; top: 0; offset-rotate: auto; offset-distance: 0%; animation: fly 1.1s var(--ease-out-expo) forwards; filter: drop-shadow(0 0 8px var(--accent)); }
-.launch-craft svg { display: block; transform: translate(-17px, -8px); }
-@keyframes fly { 0% { offset-distance: 0%; opacity: 0; transform: scale(0.7); } 12% { opacity: 1; transform: scale(1); } 85% { opacity: 1; } 100% { offset-distance: 100%; opacity: 0; transform: scale(0.6); } }
-.craft-body { fill: var(--text-primary); }
-.craft-window { fill: var(--data-primary); }
-.craft-fin { fill: var(--accent); }
-.craft-flame { fill: var(--accent-hover); animation: flicker 0.12s linear infinite alternate; transform-origin: 11px 10px; }
-@keyframes flicker { from { transform: scaleX(0.8); opacity: 0.8; } to { transform: scaleX(1.15); opacity: 1; } }
-
 .dossier-status { padding: 0 0 var(--s2); }
 .ds-line { display: flex; align-items: center; gap: var(--s2); font-size: var(--fs-sm); color: var(--text-secondary); }
 .ds-result { display: grid; grid-template-columns: 1fr auto; gap: 2px var(--s3); padding: var(--s3) var(--s4); border-radius: var(--r-md); background: var(--accent-soft); border: 1px solid var(--accent-line); color: var(--text-primary); text-decoration: none; animation: fade-up var(--dur-slow) var(--ease-out-expo); }
@@ -137,7 +134,31 @@
 .ds-error { display: block; background: var(--warning-soft); border-color: var(--warning); font-size: var(--fs-sm); }
 
 /* ───────────────────────── Findings · discoveries arriving from orbit ───────────────────────── */
-.findings { position: relative; background: var(--bg); color: var(--text-primary); scroll-margin-top: var(--topbar-h); border-top: 1px solid var(--border); }
+.findings { position: relative; isolation: isolate; overflow: clip; background: var(--void); color: var(--text-primary); scroll-margin-top: var(--topbar-h); border-top: 1px solid var(--border); min-height: 70vh; }
+.findings-inner { position: relative; z-index: 2; }
+.discovery-chamber { position: absolute; z-index: 0; inset: 0 0 auto; height: min(100vh, 920px); min-height: 640px; overflow: hidden; pointer-events: none; opacity: .48; background: radial-gradient(ellipse at 72% 32%, rgba(8,42,70,.62), transparent 46%), linear-gradient(180deg, rgba(1,1,2,.08), var(--void) 96%); }
+.discovery-chamber::after { content: ""; position: absolute; inset: 35% 0 0; background: linear-gradient(180deg, transparent 0, rgba(1,1,2,.36) 42%, var(--void) 100%); }
+.chamber-stars { position: absolute; inset: 0; opacity: .74; }
+.chamber-nebula { position: absolute; width: 70vw; height: 45vw; max-height: 560px; top: -18%; right: -14%; border-radius: 50%; background: radial-gradient(ellipse, rgba(88,120,167,.12), rgba(44,61,89,.08) 35%, transparent 72%); filter: blur(18px); animation: nebula-drift 36s ease-in-out infinite alternate; }
+.chamber-orbits { position: absolute; inset: 0; width: 100%; height: 76%; opacity: .44; }
+.chamber-orbits ellipse,.chamber-orbits path { fill: none; stroke: var(--steel-blue); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.chamber-orbits ellipse:nth-child(2) { stroke-dasharray: 2 8; opacity: .7; }
+.chamber-planet { position: absolute; width: clamp(320px, 49vw, 700px); aspect-ratio: 1; border-radius: 50%; right: clamp(-250px, -9vw, -70px); top: 9%; overflow: hidden; transform: rotate(-18deg); box-shadow: inset 42px 0 80px rgba(1,1,2,.74), 0 0 70px rgba(88,120,167,.13); background: radial-gradient(ellipse at 33% 35%, rgba(65,87,122,.24), transparent 48%), linear-gradient(145deg,#121826,#082A46 48%,#010102 74%); }
+.planet-atmosphere { position: absolute; inset: -2%; border-radius: 50%; border-left: 3px solid rgba(205,213,225,.5); box-shadow: -8px 0 25px rgba(88,120,167,.4), inset 10px 0 24px rgba(144,161,186,.12); }
+.planet-surface { position: absolute; inset: 8%; border-radius: 50%; opacity: .35; background: repeating-linear-gradient(163deg, transparent 0 35px, rgba(144,161,186,.06) 36px 37px, transparent 38px 82px); }
+.chamber-explorer { position: absolute; z-index: 1; width: clamp(62px,8vw,108px); height: auto; right: clamp(180px,31vw,450px); top: clamp(220px,38vh,390px); opacity: .55; filter: drop-shadow(0 0 18px rgba(88,120,167,.35)); animation: explorer-float 8s ease-in-out infinite; }
+.chamber-explorer ellipse { fill: rgba(88,120,167,.2); }
+.chamber-explorer .suit,.chamber-explorer .pack { fill: #202A3D; stroke: #90A1BA; stroke-width: 2; }
+.chamber-explorer .helmet { fill: #CDD5E1; stroke: #90A1BA; stroke-width: 2; }
+.chamber-explorer .visor { fill: #082A46; stroke: #EFF2F7; stroke-width: 1.5; }
+.chamber-explorer .suit-detail { fill: none; stroke: #90A1BA; stroke-width: 2; }
+.chamber-beacon { position: absolute; z-index: 1; right: clamp(130px,22vw,315px); top: clamp(225px,39vh,400px); width: 18px; height: 18px; border: 1px solid var(--frost); border-radius: 50%; box-shadow: 0 0 18px rgba(144,161,186,.55); }
+.chamber-beacon i { position: absolute; inset: -8px; border: 1px solid var(--signal-blue); border-radius: 50%; animation: chamber-pulse 3.4s ease-out infinite; }
+.chamber-beacon i:nth-child(2) { animation-delay: 1.1s; }.chamber-beacon i:nth-child(3) { animation-delay: 2.2s; }
+.chamber-caption { position: absolute; right: 24px; top: 28px; z-index: 1; color: var(--haze); font: 10px var(--font-mono); letter-spacing: .18em; }
+.has-arrived .discovery-chamber { animation: chamber-arrive 1.2s ease-out both; }
+.has-arrived .discovery { animation: reveal-rise 850ms var(--ease-out-expo) both; animation-delay: 150ms; }
+
 .findings::before { content: ""; position: absolute; left: 0; right: 0; top: -1px; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); }
 .findings-inner { max-width: var(--page-max); margin: 0 auto; padding: clamp(var(--s6), 5vw, var(--s8)) clamp(var(--s4), 3vw, var(--s6)); display: grid; gap: var(--s6); }
 
@@ -152,6 +173,7 @@
 
 .results { display: grid; gap: var(--s7); }
 .results.arrive > * { animation: arrive 800ms var(--ease-out-expo) both; }
+.layer-data { grid-column: 1 / -1; }
 .results.arrive > *:nth-child(2) { animation-delay: 80ms; }
 .results.arrive > *:nth-child(3) { animation-delay: 160ms; }
 .results.arrive > *:nth-child(4) { animation-delay: 240ms; }
@@ -268,7 +290,6 @@
 @media (max-width: 960px) {
   .stage { min-height: 0; display: block; overflow: visible; }
   .stage-map { position: relative; top: auto; height: 58svh; min-height: 340px; }
-  .stage-map::after { background: linear-gradient(0deg, color-mix(in srgb, var(--map-space) 85%, transparent) 0%, transparent 30%); }
   .dossier { width: auto; margin: -28px 0 0; border-radius: var(--r-lg) var(--r-lg) 0 0; border-left: 0; border-right: 0; border-bottom: 0; background: var(--surface-solid); backdrop-filter: none; }
   .dossier::before { content: ""; display: block; width: 40px; height: 4px; border-radius: 2px; background: var(--border-strong); margin: 10px auto 0; }
   .dossier > * { max-width: 640px; margin-left: auto; margin-right: auto; }
@@ -278,7 +299,6 @@
   .dossier-foot { grid-template-columns: 1fr; }
   .intro-steps { grid-template-columns: 1fr 1fr; }
   .intro-steps li:nth-child(3) { padding-left: 0; border-left: 0; }
-  .launch-stage { left: 10%; }
 }
 @media (max-width: 560px) {
   .variable-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -288,10 +308,395 @@
   .step, .dossier-head { padding-left: var(--s4); padding-right: var(--s4); }
   .year-strip { max-width: none; }
   .cautions { padding: var(--s5); }
-  .launch-stage { left: -8px; }
 }
 .btn-investigate.is-launching:disabled { opacity: 1; }
 .btn-investigate:disabled:not(.is-launching) { opacity: 0.7; }
 /* Detected sudden step in the yearly record (likely a data break). */
 .step-warning { margin-top: var(--s3); padding: var(--s3) var(--s4); border-left: 2px solid var(--warning); background: var(--warning-soft); border-radius: 0 var(--r-sm) var(--r-sm) 0; font-size: var(--fs-sm); color: var(--text-secondary); max-width: 74ch; }
 .step-warning strong { color: var(--text-primary); }
+
+/* Observatory composition: Earth remains the primary canvas. */
+.stage { background: radial-gradient(ellipse at 68% 46%, var(--ocean-core), var(--void) 65%); }
+.stage-map { height: max(780px, calc(100svh - var(--topbar-h))); }
+.stage-orbits { opacity: .14; }
+.stage-caption { top: 38px; right: 48px; text-align: right; max-width: 450px; }
+.stage-title { font-size: clamp(2rem, 3.5vw, 4.2rem); font-weight: 400; letter-spacing: -.055em; line-height: 1.04; }
+.stage-caption .kicker { color: var(--haze); letter-spacing: .2em; }
+.dossier { width: 350px; margin: 32px 0 40px 32px; border-radius: 16px; border: 1px solid var(--border); background: var(--surface-glass); box-shadow: var(--shadow-float); }
+.dossier-title { font-size: 1.4rem; letter-spacing: -.04em; }
+.dossier .step { padding: 15px 20px; }
+.dossier-head { padding: 22px 20px 16px; }
+.place-name { font-size: 1.3rem; letter-spacing: -.025em; }
+.variable-chip { background: transparent; }
+.variable-chip.active { background: var(--night-slate); border-color: var(--steel-blue); box-shadow: inset 0 0 0 1px var(--steel-blue); }
+.btn-investigate { background: var(--frost); color: var(--void); box-shadow: 0 8px 32px rgba(88,120,167,.18); }
+.atlas-marker-core { background: var(--starlight); box-shadow: 0 0 20px var(--signal-blue); }
+.atlas-marker-pulse { border-color: var(--haze); }
+.maplibregl-ctrl-group button { width: 44px !important; height: 44px !important; }
+.map-hint { max-width: calc(100% - 440px); }
+.imagery-error { position: absolute; right: 60px; bottom: 60px; z-index: 4; display: flex; gap: 8px; align-items: center; padding: 6px 10px; background: var(--map-control-bg); border: 1px solid var(--border-strong); border-radius: 999px; color: var(--text-secondary); font-size: .7rem; }
+.imagery-error button { border: 0; padding: 2px 4px; background: transparent; color: var(--text-primary); text-decoration: underline; cursor: pointer; }
+@media (max-width: 960px) {
+ .stage-map { height: 62svh; min-height: 390px; }
+ .dossier { width: auto; margin: 0; border-radius: 0; border-width: 1px 0 0; }
+ .map-hint { max-width: calc(100% - 80px); left: 16px; right: 60px; font-size: .65rem; }
+ .stage-caption { display: none; }
+ .imagery-error { top: auto; left: auto; right: 60px; bottom: 64px; }
+}
+
+/* Original mission spacecraft: decorative route, never a scientific ground track. */
+.explore { position: relative; }
+.mission-flight { position: absolute; inset: 0; width: 100%; height: 100%; overflow: hidden; z-index: 8; pointer-events: none; }
+.mission-route { stroke: var(--frost); stroke-width: 1.5; opacity: .65; filter: drop-shadow(0 0 5px var(--signal-blue)); }
+.mission-orbit { stroke: #80e3ef; stroke-width: 1.25; opacity: 0; stroke-dasharray: 3 8; filter: drop-shadow(0 0 5px rgba(72,184,232,.7)); transition: opacity 500ms ease; }
+.flight-holding .mission-route { opacity: .16; }
+.flight-holding .mission-orbit { opacity: .62; }
+.mission-vessel { transform-box: view-box; }
+.rocket-exhaust { transform-origin: 0 74px; animation: exhaust-breathe 1200ms ease-in-out infinite alternate; }
+.flight-ignition .rocket-hull { animation: pad-vibration 320ms ease-in-out 2; }
+.flight-ignition .rocket-exhaust { animation: engine-start 650ms cubic-bezier(.2,.8,.2,1) both; }
+.flight-holding .rocket-exhaust { opacity: .25; animation: none; transform: scaleY(.35); }
+.flight-docking .rocket-exhaust { animation: engine-stop 900ms cubic-bezier(.4,0,.2,1) forwards; }
+.flight-docking .mission-route { transition: opacity 900ms ease; opacity: .15; }
+.smoke-puff { fill: var(--haze); opacity: 0; animation: smoke-disperse 2400ms cubic-bezier(.16,1,.3,1) both; }
+.smoke-puff:nth-child(3n) { fill: var(--steel-blue); }
+.smoke-puff:nth-child(3n+1) { fill: var(--frost); }
+.ignition-flash { fill: var(--starlight); opacity: 0; animation: ignition-bloom 750ms ease-out both; }
+.results-beacon { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; font-family: var(--font-display); color: var(--frost); }
+.results-beacon small { flex-basis: 100%; font-family: var(--font-body); color: var(--haze); font-size: .7rem; }
+.beacon-ring { position: relative; display: inline-block; width: 44px; height: 44px; border: 1px solid var(--steel-blue); border-radius: 50%; }
+.beacon-ring::before { content: ""; position: absolute; inset: 15px; border-radius: 50%; background: var(--frost); }
+.beacon-docking .beacon-ring::after { content: ""; position: absolute; inset: 0; border: 1px solid var(--frost); border-radius: 50%; animation: dock-pulse 1200ms ease-out both; }
+.beacon-completed .beacon-ring { border-color: var(--frost); }
+.beacon-failed, .beacon-cancelled { color: var(--haze); }
+@keyframes pad-vibration { 0%,100% { transform: translateX(0); } 35% { transform: translateX(-1px); } 65% { transform: translateX(1px); } }
+@keyframes engine-start { from { opacity: 0; transform: scaleY(.15); } to { opacity: 1; transform: scaleY(1); } }
+@keyframes exhaust-breathe { from { transform: scaleX(.95) scaleY(.94); } to { transform: scaleX(1.03) scaleY(1.08); } }
+@keyframes engine-stop { to { opacity: 0; transform: scaleY(.05); } }
+@keyframes smoke-disperse { 0% { opacity: 0; transform: translate(0,0) scale(.3); } 18% { opacity: .38; } 65% { opacity: .2; } 100% { opacity: 0; transform: translate(var(--puff-x),var(--puff-y)) scale(2.8); } }
+@keyframes ignition-bloom { 0%,100% { opacity: 0; } 25% { opacity: .25; } 100% { transform: scale(2.2); } }
+@keyframes dock-pulse { from { opacity: .7; transform: scale(.7); } to { opacity: 0; transform: scale(2.3); } }
+.atlas-marker { width: 76px; height: 76px; pointer-events: none; }
+.atlas-target-halo { position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle, rgba(8,42,70,.5), rgba(88,120,167,.2) 45%, transparent 70%); }
+.atlas-target-ring { position: absolute; inset: 16px; border: 2px solid var(--frost); border-radius: 50%; box-shadow: 0 0 0 2px var(--ocean-core), 0 0 12px var(--signal-blue); }
+.atlas-marker .atlas-marker-core { inset: 32px; background: var(--starlight); box-shadow: 0 0 0 2px var(--ocean-core); }
+.atlas-marker .atlas-marker-pulse { inset: 6px; border: 1px dashed var(--signal-blue); animation: target-breathe 3s ease-in-out infinite; }
+.atlas-target-crosshair { position: absolute; inset: 0; background: linear-gradient(var(--haze),var(--haze)) center top / 1px 12px no-repeat, linear-gradient(var(--haze),var(--haze)) center bottom / 1px 12px no-repeat, linear-gradient(var(--haze),var(--haze)) left center / 12px 1px no-repeat, linear-gradient(var(--haze),var(--haze)) right center / 12px 1px no-repeat; }
+@keyframes target-breathe { 0%,100% { opacity: .5; transform: scale(.93); } 50% { opacity: 1; transform: scale(1); } }
+@media (max-width: 640px) { .smoke-puff:nth-child(n+6) { display: none; } .mission-route { stroke-width: 1; } }
+@media (prefers-reduced-motion: reduce) { .mission-flight { display: none; } .atlas-marker .atlas-marker-pulse { animation: none; } .beacon-ring::after { animation: none; } }
+
+.mission-flight.is-paused * { animation-play-state: paused !important; }
+
+@keyframes nebula-drift { to { transform: translate3d(-3%, 4%, 0) scale(1.08); } }
+@keyframes explorer-float { 0%,100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-13px) rotate(2deg); } }
+@keyframes chamber-pulse { 0% { transform: scale(.55); opacity: .65; } 100% { transform: scale(3.4); opacity: 0; } }
+@keyframes chamber-arrive { from { opacity: .12; filter: brightness(.55); } to { opacity: .48; filter: brightness(1); } }
+@keyframes reveal-rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+@media (max-width: 760px) { .discovery-chamber { height: 720px; min-height: 620px; } .chamber-planet { width: min(94vw,460px); right: -220px; top: 6%; } .chamber-explorer { right: 24vw; top: 250px; width: 64px; } .chamber-beacon { right: 22vw; top: 252px; } .chamber-caption { top: 18px; right: 16px; font-size: 8px; } .layer-data { grid-column: auto; } }
+@media (prefers-reduced-motion: reduce) { .chamber-nebula,.chamber-explorer,.chamber-beacon i,.has-arrived .discovery-chamber,.has-arrived .discovery { animation: none !important; } }
+
+/* Mission findings: an original space-exhibit composition around the unchanged data. */
+.findings { background: #030711; }
+.discovery-chamber { height: 900px; min-height: 760px; opacity: 1; background: radial-gradient(ellipse at 26% 32%, rgba(72,184,232,.12), transparent 30%), linear-gradient(115deg, rgba(4,8,24,.12), rgba(3,7,17,.22) 60%, #030711 100%); }
+.discovery-chamber::after { inset: 0; background: linear-gradient(180deg, transparent 35%, rgba(3,7,17,.52) 69%, #030711 100%); }
+.chamber-stars { opacity: .95; }
+.chamber-nebula { z-index: 0; filter: blur(54px); opacity: .72; animation: nebula-drift 44s ease-in-out infinite alternate; }
+.chamber-nebula-one { width: 66vw; height: 42vw; max-height: 650px; left: -14%; top: -8%; background: radial-gradient(ellipse, rgba(86,118,232,.34), rgba(143,100,232,.22) 35%, transparent 73%); }
+.chamber-nebula-two { width: 58vw; height: 38vw; max-height: 540px; left: 16%; top: 16%; background: radial-gradient(ellipse, rgba(193,132,236,.24), rgba(72,184,232,.16) 41%, transparent 74%); animation-duration: 58s; }
+.chamber-nebula-three { width: 48vw; height: 35vw; max-height: 480px; left: 0; top: 42%; background: radial-gradient(ellipse, rgba(72,184,232,.18), rgba(86,118,232,.12) 38%, transparent 74%); animation-duration: 64s; }
+.chamber-orbits { height: 92%; opacity: .32; }
+.chamber-orbits ellipse, .chamber-orbits path { stroke: #8c9fef; }
+.chamber-orbits ellipse:first-child { stroke-dasharray: 1 7; }
+.chamber-earth-art { position: absolute; z-index: 1; width: min(68vw, 940px); height: auto; left: -5%; top: -5%; opacity: .9; filter: brightness(.96) saturate(.9) drop-shadow(0 0 30px rgba(72,184,232,.16)); -webkit-mask-image: radial-gradient(ellipse 82% 78% at 48% 50%, #000 56%, rgba(0,0,0,.88) 70%, transparent 100%); mask-image: radial-gradient(ellipse 82% 78% at 48% 50%, #000 56%, rgba(0,0,0,.88) 70%, transparent 100%); animation: earth-arrive 1.2s ease-out both; }
+.discovery-chamber.is-active .chamber-earth-art { opacity: 0; visibility: hidden; }
+.chamber-beacon { z-index: 2; right: auto; left: 44%; top: 31%; border-color: #80e3ef; box-shadow: 0 0 20px rgba(72,184,232,.7); }
+.chamber-beacon i { border-color: #c184ec; }
+.chamber-caption { z-index: 2; left: 28px; right: auto; color: rgba(210,221,255,.72); }
+.results-beacon { width: min(47%, 650px); margin-left: auto; padding: 8px 12px; border: 1px solid rgba(157,174,221,.2); border-radius: 14px; background: rgba(3,7,17,.76); backdrop-filter: blur(12px); }
+.findings-intro { position: relative; z-index: 2; width: min(47%, 650px); margin-left: auto; min-height: 570px; align-content: center; padding: 56px 0 42px clamp(28px, 3vw, 52px); }
+.findings-intro::before { content: ""; position: absolute; z-index: -1; inset: -4% -18% -8% -12%; pointer-events: none; background: linear-gradient(90deg, transparent 0%, rgba(3,7,17,.52) 17%, rgba(3,7,17,.91) 70%, #030711 100%); }
+.findings-intro .kicker { color: #b7b4ff; letter-spacing: .18em; }
+.intro-title { max-width: 12ch; font-size: clamp(2.3rem, 3.45vw, 4.1rem); line-height: .99; letter-spacing: -.045em; text-wrap: balance; text-shadow: 0 2px 24px rgba(3,7,17,.85); }
+.intro-body { max-width: 52ch; color: #c1cce1; }
+.intro-steps { border-color: rgba(157,174,221,.28); }
+.intro-steps li + li { border-color: rgba(157,174,221,.2); }
+.has-arrived .discovery-chamber { animation: chamber-arrive 1.2s ease-out both; }
+.has-arrived .discovery-chamber.is-active .chamber-earth-art { animation: none; }
+.results.arrive > * { animation-duration: 700ms; }
+.discovery { gap: clamp(32px, 5vw, 72px); }
+.discovery-head { min-height: 520px; display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(300px, .92fr); gap: clamp(18px, 4vw, 60px); align-items: center; padding: 18px 0 44px; border-bottom-color: rgba(157,174,221,.28); }
+.finding-hero-visual { position: relative; min-width: 0; min-height: 0; overflow: hidden; align-self: stretch; display: grid; align-items: center; isolation: isolate; }
+.finding-image-glow { position: absolute; z-index: -1; inset: 12% 5%; border-radius: 50%; background: radial-gradient(ellipse, rgba(86,118,232,.24), rgba(143,100,232,.18) 44%, transparent 74%); filter: blur(35px); }
+.finding-earth-art { display: block; width: 100%; max-width: 100%; height: auto; margin: 0; object-fit: contain; filter: brightness(.94) saturate(.9) drop-shadow(0 0 30px rgba(72,184,232,.16)); -webkit-mask-image: radial-gradient(ellipse 82% 78% at 50% 49%, #000 57%, rgba(0,0,0,.9) 70%, transparent 100%); mask-image: radial-gradient(ellipse 82% 78% at 50% 49%, #000 57%, rgba(0,0,0,.9) 70%, transparent 100%); animation: earth-arrive 1.15s cubic-bezier(.2,.7,.2,1) both; }
+.finding-visual-caption { position: absolute; left: 10%; bottom: 10%; padding: 8px 12px; border: 1px solid rgba(193,132,236,.3); border-radius: 99px; color: #d2dcf5; background: rgba(6,12,30,.74); backdrop-filter: blur(12px); font: 10px var(--font-mono); letter-spacing: .09em; text-transform: uppercase; }
+.finding-hero-copy { display: grid; gap: var(--s4); align-content: center; min-width: 0; }
+.finding-hero-copy .finding-meta { justify-content: flex-start; }
+.finding-hero-copy .finding-context { color: #c5cfe2; }
+.discovery-headline { max-width: 13ch; font-size: clamp(2.5rem, 3.9vw, 4.65rem); line-height: .98; letter-spacing: -.045em; text-shadow: 0 3px 24px rgba(3,7,17,.88); }
+.finding-note { color: #d0d7e9; }
+.support-note { color: #b7c2d9; }
+.verdict-pill { background: rgba(9,17,39,.82); }
+.layers { grid-template-columns: minmax(0, .86fr) minmax(0, 1.35fr); gap: clamp(22px, 4vw, 56px); }
+.layer-change { padding: clamp(20px, 3vw, 38px); border: 1px solid rgba(122,151,227,.38); border-radius: 3px 26px 3px 26px; background: linear-gradient(145deg, rgba(21,34,70,.84), rgba(6,12,29,.91)); box-shadow: 0 22px 70px rgba(0,0,0,.2), inset 0 1px rgba(225,233,255,.06); }
+.layer-change .layer-title { color: #e8ebff; }
+.change-grid { grid-template-columns: 1fr; gap: 16px; padding: 8px 0 0; border: 0; border-radius: 0; background: transparent; }
+.change-side { grid-template-columns: 1fr auto; align-items: baseline; gap: 6px 18px; padding-top: 14px; border-color: rgba(157,174,221,.24); }
+.change-side .figure-label { grid-column: 1 / -1; }
+.change-side .figure-unit { text-align: right; }
+.figure-value { color: #f2f5ff; font-size: clamp(3rem, 4vw, 4.8rem); }
+.figure-unit, .layer-note { color: #bac7e0; }
+.layer-evidence .layer-title { color: #e8ebff; }
+.evidence { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 0 20px; }
+.ev { padding: 19px 4px; border: 0; border-bottom: 1px solid rgba(157,174,221,.23); border-radius: 0; background: transparent; }
+.ev dt { color: #aeb9d0; letter-spacing: .08em; text-transform: uppercase; }
+.ev-unit { color: #bbc6dc; }
+.ev-value { color: #f0f2fb; }
+.summary-lines { color: #d7deef; }
+.layer-data { border-top: 1px solid rgba(157,174,221,.27); padding-top: clamp(24px, 4vw, 46px); }
+.layer-data > .layer-title { font-size: clamp(1.45rem, 2vw, 2rem); color: #e5e9f7; }
+.charts { grid-template-columns: repeat(2,minmax(0,1fr)); align-items: start; gap: 30px 24px; }
+.chart:first-child { grid-column: 1 / -1; padding: 22px 24px 16px; border: 1px solid rgba(122,151,227,.32); border-radius: 3px 22px 3px 22px; background: linear-gradient(130deg,rgba(20,30,64,.78),rgba(5,11,27,.9)); box-shadow: 0 20px 60px rgba(0,0,0,.18); }
+.chart:not(:first-child) { padding: 18px; border-left: 1px solid rgba(157,174,221,.24); }
+.chart-title { color: #eef1fb; }
+.chart-sub, .chart-caption { color: #b6c2da; }
+.chart-plot { background: rgba(5,11,27,.64); border-color: rgba(157,174,221,.24); border-radius: 2px 14px 2px 14px; }
+.chart-tooltip { background: #0b1328; }
+.cautions { background: rgba(47,34,74,.35); border-color: rgba(193,132,236,.34); }
+.caution-list { color: #c4cce0; }
+.caution-list strong { color: #f0efff; }
+.sheet, .stack { color: #d2d9e9; }
+.provenance, .stack > .disclosure, .stack > .limitations { background: rgba(9,16,37,.72); border-color: rgba(157,174,221,.22); }
+.badge { background-color: rgba(8,16,39,.85); }
+@keyframes earth-arrive { from { opacity: 0; transform: translateY(14px) scale(.98); } to { opacity: 1; transform: none; } }
+@media (max-width: 760px) {
+  .discovery-chamber { height: 830px; min-height: 760px; }
+  .chamber-earth-art { width: 128vw; left: -35vw; top: 2%; }
+  .discovery-chamber.is-active .chamber-earth-art { display: none; }
+  .findings-intro { width: 100%; min-height: 690px; margin: 0; padding: 350px 0 34px; }
+  .findings-intro::before { inset: 280px -16px -12px; background: linear-gradient(180deg, transparent, rgba(3,7,17,.85) 12%, #030711 48%); }
+  .results-beacon { width: 100%; margin: 0; }
+  .intro-title { max-width: 12ch; font-size: clamp(2.4rem, 10vw, 3.5rem); }
+  .intro-steps { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .intro-steps li:nth-child(3) { padding-left: 0; border-left: 0; }
+  .discovery-head { min-height: 0; grid-template-columns: 1fr; gap: 0; padding-top: 0; }
+  .finding-hero-visual { height: min(78vw, 360px); min-height: 0; order: 0; }
+  .finding-earth-art { width: 100%; height: 100%; margin: 0; object-fit: contain; }
+  .finding-visual-caption { left: 2%; bottom: 4%; font-size: 8px; }
+  .finding-hero-copy { order: 1; padding: 8px 0 28px; }
+  .discovery-headline { max-width: 14ch; font-size: clamp(2.55rem, 11vw, 4rem); }
+  .layers { grid-template-columns: 1fr; }
+  .layer-change { padding: 23px; }
+  .evidence { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .charts { grid-template-columns: 1fr; }
+  .chart:first-child { grid-column: auto; padding: 16px 10px 10px; }
+  .chart:not(:first-child) { padding: 15px 5px; }
+}
+@media (max-width: 430px) {
+  .chamber-earth-art { width: 150vw; left: -48vw; top: 5%; }
+  .findings-intro { padding-top: 300px; }
+  .evidence { grid-template-columns: 1fr; }
+  .change-side { grid-template-columns: 1fr; }
+  .change-side .figure-unit { text-align: left; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chamber-nebula, .chamber-earth-art, .finding-earth-art, .chamber-beacon i { animation: none !important; }
+}
+
+/* Findings as an exploratory exhibit: brighter indigo instruments, layered readouts. */
+.findings {
+  --chart-obs: #80e3ef;
+  --chart-trend: #c184ec;
+  --chart-excluded: #9cadd0;
+  --chart-grid: rgba(184,198,239,.16);
+  --chart-axis: #91a6d2;
+  --chart-tick: #c8d4f0;
+  --chart-band: rgba(143,100,232,.2);
+}
+.layer-change {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(37,57,101,.94), rgba(24,34,76,.94) 58%, rgba(28,35,82,.92));
+  border-color: rgba(146,161,239,.48);
+  box-shadow: 0 26px 76px rgba(2,6,18,.25), inset 0 1px rgba(230,236,255,.12);
+}
+.layer-change::after {
+  content: "";
+  position: absolute;
+  width: 250px;
+  aspect-ratio: 1;
+  top: -118px;
+  right: -94px;
+  border: 1px solid rgba(193,132,236,.28);
+  border-radius: 50%;
+  box-shadow: 0 0 0 22px rgba(193,132,236,.045), 0 0 0 48px rgba(72,184,232,.035);
+  pointer-events: none;
+}
+.layer-change > * { position: relative; z-index: 1; }
+.layer-change .figure-label { color: #c4c9f3; }
+.layer-change .figure-value { text-shadow: 0 0 28px rgba(128,227,239,.18); }
+.layer-change .change-side { border-color: rgba(193,205,244,.27); }
+.layer-evidence { padding: 6px 0 0 clamp(8px, 2vw, 28px); border-left: 1px solid rgba(193,132,236,.34); }
+.layer-evidence .layer-title { color: #eef1ff; }
+.layer-evidence .layer-num { color: #c184ec; }
+.ev { transition: transform 260ms ease, border-color 260ms ease, background-color 260ms ease; }
+.ev:hover { transform: translateX(5px); border-bottom-color: rgba(128,227,239,.52); }
+.findings .level-increasing, .findings .level-decreasing { color: #80e3ef; }
+.findings .level-not_detected { color: #c4b3ff; }
+.findings .level-descriptive { color: #d1c4fa; }
+.findings .level-unavailable { color: #aebbd6; }
+.layer-data { position: relative; }
+.layer-data::before { content: "FIELD RECORD / ANNUAL + MONTHLY SERIES"; display: block; width: fit-content; margin-bottom: 10px; color: #98a8d1; font: 10px var(--font-mono); letter-spacing: .16em; }
+.layer-data > .layer-title { max-width: 20ch; font-size: clamp(1.8rem, 3vw, 2.7rem); letter-spacing: -.035em; }
+.findings .chart:first-child {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(133,163,231,.48);
+  border-radius: 4px 30px 4px 30px;
+  background: linear-gradient(122deg, rgba(39,57,104,.96), rgba(26,39,83,.95) 52%, rgba(22,39,66,.96));
+  box-shadow: 0 28px 84px rgba(1,4,16,.28), inset 0 1px rgba(232,238,255,.1);
+}
+.findings .chart:first-child::after { content: "01"; position: absolute; right: 22px; top: 8px; color: rgba(193,132,236,.2); font: clamp(3.5rem, 9vw, 8rem)/1 var(--font-display); letter-spacing: -.08em; pointer-events: none; }
+.findings .chart:not(:first-child) { position: relative; padding: 24px 20px 20px; border-left: 1px solid rgba(128,227,239,.38); background: linear-gradient(145deg, rgba(23,40,72,.62), rgba(10,20,43,.32)); }
+.findings .chart:nth-child(3) { transform: translateY(28px); border-left-color: rgba(193,132,236,.4); }
+.chart-head, .chart-plot, .chart-caption, .chart-table { position: relative; z-index: 1; }
+.findings .chart-plot { background: linear-gradient(135deg, rgba(35,53,94,.94), rgba(25,39,75,.94)); border-color: rgba(161,181,233,.35); box-shadow: inset 0 1px rgba(232,238,255,.055); }
+.findings .chart:first-child .chart-plot { background: linear-gradient(145deg, rgba(12,25,55,.58), rgba(17,32,65,.68)); }
+.findings .chart-tooltip { background: #172746; border-color: rgba(161,181,233,.45); }
+.findings .legend { color: #d4def3; }
+.findings .chart-table .disclosure { border-color: rgba(161,181,233,.3); }
+.cautions {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(24px, 4vw, 48px);
+  border-radius: 28px 4px 28px 4px;
+  background: linear-gradient(112deg, rgba(45,50,105,.72), rgba(29,39,76,.9) 54%, rgba(22,44,69,.8));
+  border: 1px solid rgba(166,151,239,.38);
+}
+.cautions::after { content: "?"; position: absolute; right: 4%; top: -38%; color: rgba(193,132,236,.1); font: 22rem/1 var(--font-display); pointer-events: none; }
+.cautions > * { position: relative; z-index: 1; }
+.cautions .layer-title { max-width: 22ch; font-size: clamp(1.65rem, 2.8vw, 2.5rem); color: #f0efff; }
+.cautions .layer-num { color: #c184ec; }
+.caution-list { counter-reset: caution; gap: 0 36px; }
+.caution-list li { counter-increment: caution; padding: 20px 10px 20px 42px; border-top: 1px solid rgba(193,205,244,.2); }
+.caution-list li::before { content: counter(caution, decimal-leading-zero); top: 22px; width: auto; height: auto; border: 0; transform: none; color: #80e3ef; font: 11px var(--font-mono); }
+.caution-list li:first-child { grid-column: 1 / -1; border-top-color: rgba(193,132,236,.5); }
+.caution-list strong { color: #f0efff; }
+.dossier-foot { border-top-color: rgba(128,227,239,.3); gap: clamp(24px, 5vw, 72px); }
+.provenance {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(20px, 3vw, 34px);
+  border: 1px solid rgba(128,227,239,.35);
+  border-radius: 4px 26px 4px 26px;
+  background: linear-gradient(145deg, rgba(25,48,79,.92), rgba(19,33,67,.95) 64%, rgba(33,38,82,.9));
+}
+.provenance::before { content: "SOURCE TRACE / NASA"; display: block; margin-bottom: 12px; color: #80e3ef; font: 10px var(--font-mono); letter-spacing: .15em; }
+.provenance .sheet-title { color: #eff4ff; font-size: clamp(1.8rem, 2.5vw, 2.5rem); }
+.provenance .kv { gap: 0 18px; }
+.provenance .kv dt, .provenance .kv dd { padding: 11px 0; border-bottom: 1px solid rgba(193,205,244,.16); }
+.provenance .kv dt { color: #b7c7e3; font-family: var(--font-mono); font-size: .72rem; }
+.provenance .kv dd { color: #eef2fc; }
+.stack > .disclosure, .stack > .limitations { border-radius: 2px 16px 2px 16px; background: linear-gradient(145deg, rgba(27,42,77,.86), rgba(17,28,56,.92)); }
+.stack > .limitations { padding: 20px 24px; }
+
+/* Progressive enhancement: subtle 2D depth as exhibit pieces enter view. */
+@supports (animation-timeline: view()) {
+  #findings .results .layer-change,
+  #findings .results .layer-evidence,
+  #findings .results .layer-data,
+  #findings .results .cautions,
+  #findings .results .dossier-foot {
+    animation: exhibit-scroll linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 60%;
+  }
+  #findings .results .layer-evidence { animation-name: exhibit-scroll-reverse; }
+  #findings .results .chart:nth-child(2) { animation: exhibit-scroll linear both; animation-timeline: view(); animation-range: entry 0% entry 65%; }
+  #findings .results .chart:nth-child(3) { animation: exhibit-scroll-reverse linear both; animation-timeline: view(); animation-range: entry 0% entry 65%; }
+}
+@keyframes exhibit-scroll { from { opacity: .58; transform: translate3d(-20px, 42px, 0) rotateX(1.5deg) scale(.985); } to { opacity: 1; transform: translate3d(0,0,0) rotateX(0) scale(1); } }
+@keyframes exhibit-scroll-reverse { from { opacity: .58; transform: translate3d(20px, 42px, 0) rotateY(-1.2deg) scale(.985); } to { opacity: 1; transform: translate3d(0,0,0) rotateY(0) scale(1); } }
+
+/* Source journey: three connected exhibit stations instead of a metadata table. */
+.findings .dossier-foot { grid-template-columns: minmax(0,1fr); gap: 30px; }
+.source-journey.provenance { padding: 16px 0 0; border: 0; border-radius: 0; background: transparent; overflow: visible; }
+.source-journey.provenance::before { display: none; }
+.trace-heading { display: flex; align-items: end; justify-content: space-between; gap: 28px; margin-bottom: 42px; }
+.trace-heading .kicker { color: #80e3ef; letter-spacing: .16em; margin-bottom: 12px; }
+.trace-heading h3 { font: 400 clamp(2rem, 4vw, 3.4rem)/1.06 var(--font-display); letter-spacing: -.05em; }
+.trace-heading > p { max-width: 36ch; color: #adbed7; font-size: .9rem; line-height: 1.6; }
+.trace-stations { display: grid; grid-template-columns: 1.1fr 1fr .9fr; position: relative; gap: 34px; }
+.trace-stations::before { content: ""; position: absolute; top: 17px; left: 24px; right: 24px; height: 1px; background: linear-gradient(90deg, #80e3ef66, #5878A766 55%, #c184ec66); }
+.trace-station { position: relative; min-width: 0; padding: 0 0 26px; }
+.trace-stop { position: relative; display: flex; align-items: center; gap: 12px; margin-bottom: 26px; font: .72rem var(--font-mono); color: #bac8df; }
+.trace-stop > span { display: grid; place-items: center; width: 35px; height: 35px; border: 1px solid #5878A7; border-radius: 50%; background: #121826; color: #80e3ef; box-shadow: 0 0 24px #48b8e81a; }
+.trace-station h4 { font: 400 clamp(1.25rem, 1.8vw, 1.6rem)/1.2 var(--font-display); color: #eff2f7; letter-spacing: -.025em; overflow-wrap: anywhere; margin: 14px 0; }
+.trace-station > p { color: #b6c6dc; line-height: 1.6; font-size: .86rem; }
+.trace-source { padding-right: 20px; }
+.trace-satellite { display: block; width: 100%; height: 140px; color: #80e3ef; margin: 0 0 20px; filter: drop-shadow(0 0 16px #48b8e81f); }
+.trace-source .trace-provider { color: #80e3ef; font: .78rem var(--font-mono); letter-spacing: .08em; }
+.trace-type { display: inline-block; padding: 7px 12px; border-left: 2px solid #80e3ef88; background: linear-gradient(90deg, #48b8e812, transparent); }
+.trace-secondary { margin-top: 12px; }
+.trace-art-note { display: block; color: #8c9db7 !important; font: .62rem var(--font-mono) !important; margin-top: 10px; }
+.trace-location { padding: 0 0 26px 24px; border-left: 1px solid #90a1ba26; }
+.trace-footprint { position: relative; display: grid; grid-template-columns: repeat(2,1fr); width: 120px; height: 120px; margin: 10px auto 16px; transform: rotate(-12deg); }
+.trace-footprint i { border: 1px solid #5878a766; background: #5878a70a; }
+.trace-footprint i:first-child { border-color: #80e3ef; background: #48b8e81f; box-shadow: 0 0 25px #48b8e81a; }
+.trace-footprint span { position: absolute; top: 25%; left: 25%; width: 9px; height: 9px; margin: -4px; border-radius: 50%; background: #eff2f7; box-shadow: 0 0 0 6px #80e3ef22, 0 0 18px #48b8e877; }
+.trace-measure { padding: 0 0 26px 24px; border-left: 1px solid #90a1ba26; }
+.trace-measure > .glyph { display: block; height: 130px; margin: 0 auto 24px; color: #c184ec; filter: drop-shadow(0 0 18px #c184ec33); }
+.trace-facts { margin: 22px 0 0; display: grid; gap: 18px; }
+.trace-facts dt, .trace-label { display: block; color: #8c9db7; font: .65rem var(--font-mono); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 5px; }
+.trace-facts dd { margin: 0; color: #d4def0; font-size: .82rem; line-height: 1.6; overflow-wrap: anywhere; }
+.trace-alert { margin-top: 12px; border-left: 2px solid #c184ec; padding-left: 10px; }
+.trace-receipt { display: flex; justify-content: space-between; gap: 26px; padding: 22px 0; border-top: 1px dashed #90a1ba40; color: #b6c6dc; font-size: .78rem; }
+.trace-receipt > div { max-width: 66ch; }
+.trace-receipt p { margin-top: 10px; line-height: 1.6; }
+.findings .dossier-foot > .stack { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; align-items: start; }
+.findings .dossier-foot > .stack > .disclosure { border: 1px solid #90a1ba33; border-radius: 12px; background: linear-gradient(115deg,#202a3d99,#12182688); }
+.findings .dossier-foot > .stack .disclosure > summary { padding: 22px; gap: 14px; }
+.findings .dossier-foot > .stack .text-link { grid-column: 1/-1; justify-self: end; margin-top: 10px; font-size: .85rem; }
+.findings .dossier-foot > .stack > .disclosure { min-width: 0; overflow: hidden; }
+.findings .dossier-foot > .stack .disclosure > summary { min-width: 0; color: #e7edfb; }
+.findings .dossier-foot > .stack .disclosure-body { min-width: 0; max-width: 100%; padding: 0 20px 22px; overflow-wrap: anywhere; }
+.findings .method-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,220px),1fr)); gap: 10px; margin: 0; min-width: 0; }
+.findings .method-item { min-width: 0; padding: 12px 14px; border-left: 1px solid rgba(128,227,239,.45); background: linear-gradient(110deg,rgba(65,87,122,.22),rgba(32,42,61,.08)); }
+.findings .method-item dt { margin-bottom: 6px; color: #91a6c7; font: .65rem var(--font-mono); text-transform: uppercase; letter-spacing: .07em; }
+.findings .method-item dd { margin: 0; min-width: 0; color: #d2dced; font-size: .82rem; line-height: 1.55; overflow-wrap: anywhere; }
+.findings .method-caveats { margin-top: 16px; padding: 14px 16px; border-top: 1px solid rgba(193,132,236,.35); color: #c2cee1; font-size: .82rem; line-height: 1.6; }
+.findings .method-caveats p { margin: 0 0 8px; }
+.findings .method-caveats p:last-child { margin-bottom: 0; }
+.findings .limitations { padding: 0 0 0 18px; gap: 12px; color: #c7d3e5; font-size: .85rem; line-height: 1.6; }
+.findings .limitations li::marker { color: #80e3ef; }
+@media (max-width: 760px) {
+  .trace-heading { display: block; margin-bottom: 28px; }
+  .trace-heading > p { margin-top: 18px; }
+  .trace-stations { grid-template-columns: 1fr; gap: 12px; padding-left: 20px; border-left: 1px solid #5878a755; }
+  .trace-stations::before { display: none; }
+  .trace-station { border-left: 0; padding: 0 0 30px; }
+  .trace-stop { margin-left: -38px; }
+  .trace-satellite { max-width: 280px; }
+  .trace-footprint { margin-left: 24px; }
+  .trace-measure > .glyph { margin-left: 24px; }
+  .trace-receipt { flex-direction: column; }
+  .findings .dossier-foot > .stack { grid-template-columns: 1fr; }
+  .findings .dossier-foot > .stack .text-link { justify-self: start; }
+}
+@media (max-width: 760px) {
+  .layer-evidence { padding: 22px 0 0; border-left: 0; border-top: 1px solid rgba(193,132,236,.34); }
+  .findings .chart:nth-child(3) { transform: none; }
+  .cautions::after { top: -16%; right: -4%; font-size: 15rem; }
+  .caution-list li:first-child { grid-column: auto; }
+  .provenance .kv { grid-template-columns: minmax(100px, 36%) minmax(0,1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #findings .results .layer-change,
+  #findings .results .layer-evidence,
+  #findings .results .layer-data,
+  #findings .results .cautions,
+  #findings .results .dossier-foot,
+  #findings .results .chart:nth-child(2),
+  #findings .results .chart:nth-child(3) { animation: none !important; animation-timeline: auto !important; }
+  .ev:hover { transform: none; }
+}

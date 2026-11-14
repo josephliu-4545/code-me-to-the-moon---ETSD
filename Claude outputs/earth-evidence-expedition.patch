@@ -1,0 +1,2590 @@
+diff --git a/frontend/src/components/ResultPanels.tsx b/frontend/src/components/ResultPanels.tsx
+index cc52a3d..896f565 100644
+--- a/frontend/src/components/ResultPanels.tsx
++++ b/frontend/src/components/ResultPanels.tsx
+@@ -2,9 +2,13 @@ import { useEffect, useState } from "react";
+ import AccessKeyForm from "./AccessKeyForm";
+ import type { Analysis } from "../api/types";
+ import { ApiError, isUnreachable } from "../api/types";
+-import { dataStatusLabel, decadeUnits, fmt, fmtCoord, perDecade, pText, signed } from "../lib/format";
++import { dataStatusLabel, decadeUnits, fmt, fmtCoord, perDecade, signed } from "../lib/format";
+ import { stepWarning, summarize } from "../lib/summary";
+-import { discoveryHeadline, inSentence, fittedChange, intervalReading, isSeasonal, monthCompleteness, monthsUsed, periodLabel, slopeName, testName, trendVerdict } from "../lib/verdict";
++import { discoveryHeadline, inSentence, fittedChange, intervalReading, isSeasonal, monthCompleteness, monthsUsed, periodLabel, slopeName, trendVerdict } from "../lib/verdict";
++import { headlineParts, plainReason, type StageId } from "../lib/evidence";
++import MethodExplorer from "./expedition/MethodExplorer";
++import ScientificGuardrails from "./expedition/ScientificGuardrails";
++import { buildRows } from "./TrendChart";
+ import CiRuler from "./science/CiRuler";
+ import YearStrip from "./science/YearStrip";
+ import Disclosure from "./ui/Disclosure";
+@@ -20,21 +24,35 @@ export function DataStatusBadge({ analysis }: { analysis: Analysis }) {
+   );
+ }
+ 
+-const pretty = (k: string) => k.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
+ 
+-function Layer({ n, title, children, className = "" }: { n: number; title: string; children: React.ReactNode; className?: string }) {
++/** A compact sparkline of the real annual values and the backend's fitted line. Decorative twin of the full chart. */
++function DiscoverySpark({ analysis }: { analysis: Analysis }) {
++  const rows = buildRows(analysis);
++  const vals = rows.flatMap((r) => [r.eligible, r.excluded, r.trend]).filter((v): v is number => v !== null);
++  if (rows.length < 2 || !vals.length) return null;
++  const lo = Math.min(...vals), hi = Math.max(...vals), span = hi - lo || 1;
++  const y0 = rows[0]!.year, y1 = rows[rows.length - 1]!.year;
++  const x = (yr: number) => 8 + ((yr - y0) / Math.max(1, y1 - y0)) * 224;
++  const y = (v: number) => 62 - ((v - lo) / span) * 52;
++  const fitted = rows.filter((r) => r.trend !== null);
+   return (
+-    <section className={`layer ${className}`} aria-labelledby={`layer-${n}`}>
+-      <h3 id={`layer-${n}`} className="layer-title"><span className="layer-num" aria-hidden>{String(n).padStart(2, "0")}</span>{title}</h3>
+-      {children}
+-    </section>
++    <svg className="discovery-spark" viewBox="0 0 240 70" aria-hidden="true" focusable="false">
++      <path d="M0 66h240" className="spark-ground" />
++      {fitted.length > 1 && <path className="spark-trend" d={`M${x(fitted[0]!.year)} ${y(fitted[0]!.trend!)}L${x(fitted[fitted.length - 1]!.year)} ${y(fitted[fitted.length - 1]!.trend!)}`} />}
++      {rows.map((r) => r.eligible !== null ? <circle key={r.year} cx={x(r.year)} cy={y(r.eligible)} r="3" className="spark-dot" /> : r.excluded !== null ? <circle key={r.year} cx={x(r.year)} cy={y(r.excluded)} r="3" className="spark-ring" /> : <path key={r.year} d={`M${x(r.year)} 60v6`} className="spark-gap" />)}
++    </svg>
+   );
+ }
+ 
+-/** Layers 1–3 of the discovery reveal: what we found, how much it changed, how strong the evidence is. */
++/**
++ * Experience A: a discovery you can understand in seconds.
++ * Level 1 shows the short headline, its qualification and three instrument readouts.
++ * Level 3 (the full scientific statement) stays one click away.
++ */
+ export function ResultSummary({ analysis, place }: { analysis: Analysis; place?: string }) {
+   const t = analysis.trend;
+   const verdict = trendVerdict(analysis);
++  const head = headlineParts(analysis);
+   const lines = summarize(analysis);
+   const months = monthCompleteness(analysis);
+   const change = fittedChange(analysis);
+@@ -54,7 +72,7 @@ export function ResultSummary({ analysis, place }: { analysis: Analysis; place?:
+         </div>
+         <div className="finding-hero-copy">
+           <div className="finding-meta">
+-            <p className="kicker">Mission findings</p>
++            <p className="kicker">Mission findings · what did we discover?</p>
+             <DataStatusBadge analysis={analysis} />
+           </div>
+           <p className="finding-context">
+@@ -65,138 +83,75 @@ export function ResultSummary({ analysis, place }: { analysis: Analysis; place?:
+             <span className="sep" aria-hidden>·</span>
+             <span className="mono">{periodLabel(analysis)}</span>
+           </p>
+-          <h2 id="finding-title" className="discovery-headline">{discoveryHeadline(analysis)}</h2>
++          <h2 id="finding-title" className="discovery-headline">{head.headline}</h2>
++          <p className={`discovery-qualifier qualifier-${head.kind}`}>{head.qualifier}</p>
+           <div className="verdict-row">
+             <span className={`verdict-pill verdict-${verdict.kind}`}><span className="verdict-mark" aria-hidden />{verdict.label}</span>
+-            <p className="finding-note">{verdict.note}</p>
+           </div>
+           {step && <p className="step-warning" role="note"><strong>Sudden step in the record.</strong> {step}</p>}
+-          <p className="support-note">
+-            Values describe a {inSentence(s.description)} ({s.resolution}), not the exact point. Source: {analysis.dataset.source} · {analysis.dataset.title ?? analysis.dataset.id}.
+-          </p>
+         </div>
+       </header>
+ 
+-      <div className="layers">
+-        <Layer n={2} title="How much did it change?" className="layer-change">
+-          <div className="change-grid">
+-            <div className="change-main">
+-              <span className="figure-label">{slopeName(analysis)}</span>
+-              <span className="figure-value mono">{t?.slope != null ? signed(t.slope, 4) : "—"}</span>
+-              <span className="figure-unit">{t?.slope != null ? slopeUnits : "No slope estimated"}</span>
+-            </div>
+-            {t?.slope != null && (
+-              <div className="change-side">
+-                <span className="figure-label">Per decade</span>
+-                <span className="change-value mono">{signed(perDecade(t.slope), 3)}</span>
+-                <span className="figure-unit">{decadeUnits(t.slope_units ?? null)}</span>
+-              </div>
+-            )}
+-            {change && (
+-              <div className="change-side">
+-                <span className="figure-label">Along the fitted line</span>
+-                <span className="change-value mono">{signed(change.value, 3)}</span>
+-                <span className="figure-unit">{analysis.units.annual_value} from {change.from} to {change.to}</span>
+-              </div>
+-            )}
++      <div className="readout-deck" aria-label="Key results">
++        <div className="readout readout-rate">
++          <span className="readout-q">How much did it change?</span>
++          <span className="figure-label">{slopeName(analysis)}</span>
++          <span className="figure-value mono">{t?.slope != null ? signed(t.slope, 4) : "—"}</span>
++          <span className="figure-unit">{t?.slope != null ? slopeUnits : plainReason(t?.slope_unavailable_reason) ?? "No slope estimated"}</span>
++          {t?.slope != null && <span className="readout-sub mono">{signed(perDecade(t.slope), 3)} {decadeUnits(t.slope_units ?? null)}</span>}
++          <DiscoverySpark analysis={analysis} />
++        </div>
++        <div className={`readout readout-evidence level-${verdict.kind}`}>
++          <span className="readout-q">How reliable is the evidence?</span>
++          <span className="figure-label">Significance</span>
++          <span className={`ev-value level-${verdict.kind}`}>{head.significance}</span>
++          <span className="ev-unit">{head.significanceDetail}</span>
++          {t?.slope != null && t.confidence_interval
++            ? <CiRuler slope={t.slope} ci={t.confidence_interval} units={slopeUnits} compact />
++            : <span className="ev-unit readout-na">95% interval: {t?.confidence_interval_unavailable_reason ? "not reported" : "only reported with a supported test"}</span>}
++        </div>
++        {seasonal ? (
++          <div className="readout readout-years">
++            <span className="readout-q">How much data?</span>
++            <span className="figure-label">Monthly values used</span>
++            <span className="ev-value mono">{t?.sample_count ?? 0}</span>
++            <span className="ev-unit">{monthsUsed(analysis) || "no calendar month qualified"}</span>
+           </div>
+-          {change && <p className="layer-note">The fitted-line change is slope × years between the first and last eligible years. It is not the observed difference between those two years’ values.</p>}
+-        </Layer>
+-
+-        <Layer n={3} title="How strong is the evidence?" className="layer-evidence">
+-          <dl className="evidence">
+-            <div className="ev">
+-              <dt>Inference</dt>
+-              <dd>
+-                <span className={`ev-value level-${verdict.kind}`}>{verdict.inference}</span>
+-                <span className="ev-unit">{t?.mann_kendall ? `${testName(analysis)} ${pText(t.mann_kendall.p_value)} (α = ${t.mann_kendall.alpha})` : t?.result_level_label ?? ""}</span>
+-              </dd>
+-            </div>
+-            <div className="ev">
+-              <dt>95% slope interval</dt>
+-              <dd>
+-                {t?.confidence_interval ? (
+-                  <span className="ev-value mono ev-range">{signed(t.confidence_interval[0], 3)} … {signed(t.confidence_interval[1], 3)}</span>
+-                ) : (
+-                  <span className="ev-value ev-na">Not reported</span>
+-                )}
+-                <span className="ev-unit">{t?.confidence_interval ? slopeUnits : t?.confidence_interval_unavailable_reason ?? "Only reported with statistical inference"}</span>
+-                {t?.slope != null && t.confidence_interval && <CiRuler slope={t.slope} ci={t.confidence_interval} units={slopeUnits} compact />}
+-              </dd>
+-            </div>
+-            {seasonal ? (
+-              <div className="ev">
+-                <dt>Monthly values used</dt>
+-                <dd>
+-                  <span className="ev-value mono">{t?.sample_count ?? 0}</span>
+-                  <span className="ev-unit">{monthsUsed(analysis) || "no calendar month qualified"}</span>
+-                </dd>
+-              </div>
+-            ) : (
+-              <div className="ev">
+-                <dt>Eligible years</dt>
+-                <dd>
+-                  <span className="ev-value mono">{analysis.coverage.eligible_years}/{analysis.coverage.years_requested}</span>
+-                  <span className="ev-unit">complete-data years</span>
+-                  <YearStrip annual={analysis.annual} units={analysis.units.annual_value} />
+-                </dd>
+-              </div>
+-            )}
+-            {months.expected > 0 ? (
+-              <div className="ev">
+-                <dt>Monthly completeness</dt>
+-                <dd>
+-                  <span className="ev-value mono">{Math.round((months.valid / months.expected) * 100)}%</span>
+-                  <span className="ev-unit">{months.valid} of {months.expected} months valid</span>
+-                  <span className="ev-meter" aria-hidden><span style={{ width: `${(months.valid / months.expected) * 100}%` }} /></span>
+-                </dd>
+-              </div>
+-            ) : sd ? (
+-              <div className="ev">
+-                <dt>Year-to-year dependence</dt>
+-                <dd>
+-                  <span className="ev-value mono">{sd.lag1_spearman_rho === null ? "—" : fmt(sd.lag1_spearman_rho, 2)}</span>
+-                  <span className="ev-unit">lag-1 residual ρ · {sd.status.replace(/_/g, " ")}</span>
+-                </dd>
+-              </div>
+-            ) : null}
+-          </dl>
+-          {reading && <p className="layer-note">{reading}</p>}
+-          <ul className="summary-lines">
+-            {lines.map((l) => <li key={l}>{l}</li>)}
+-          </ul>
+-        </Layer>
++        ) : (
++          <div className="readout readout-years">
++            <span className="readout-q">How much data?</span>
++            <span className="figure-label">Eligible years</span>
++            <span className="ev-value mono">{analysis.coverage.eligible_years}/{analysis.coverage.years_requested}</span>
++            <span className="ev-unit">complete-data years</span>
++            <YearStrip annual={analysis.annual} units={analysis.units.annual_value} />
++          </div>
++        )}
+       </div>
++
++      <Disclosure summary="Full scientific statement" meta="Technical" className="statement">
++        <p className="statement-lead">{discoveryHeadline(analysis)} <span className="statement-note">{verdict.note}</span></p>
++        <ul className="summary-lines">
++          {lines.map((l) => <li key={l}>{l}</li>)}
++        </ul>
++        <dl className="statement-facts">
++          {t?.slope != null && <div><dt>Per decade</dt><dd className="mono">{signed(perDecade(t.slope), 3)} {decadeUnits(t.slope_units ?? null)}</dd></div>}
++          {change && <div><dt>Along the fitted line</dt><dd><span className="mono">{signed(change.value, 3)}</span> {analysis.units.annual_value} from {change.from} to {change.to}</dd></div>}
++          <div><dt>Inference</dt><dd>{verdict.inference} · {t?.result_level_label ?? "No trend computed"}</dd></div>
++          {t?.confidence_interval && <div><dt>95% slope interval</dt><dd className="mono">{signed(t.confidence_interval[0], 3)} … {signed(t.confidence_interval[1], 3)} {slopeUnits}</dd></div>}
++          {months.expected > 0 && <div><dt>Monthly completeness</dt><dd>{months.valid} of {months.expected} months valid ({Math.round((months.valid / months.expected) * 100)}%)</dd></div>}
++          {sd && <div><dt>Year-to-year dependence</dt><dd>lag-1 residual ρ {sd.lag1_spearman_rho === null ? "—" : fmt(sd.lag1_spearman_rho, 2)} · {sd.status.replace(/_/g, " ")}</dd></div>}
++        </dl>
++        {change && <p className="layer-note">The fitted-line change is slope × years between the first and last eligible years. It is not the observed difference between those two years’ values.</p>}
++        {reading && <p className="layer-note">{reading}</p>}
++        <p className="support-note">Values describe a {inSentence(s.description)} ({s.resolution}), not the exact point. Source: {analysis.dataset.source} · {analysis.dataset.title ?? analysis.dataset.id}.</p>
++      </Disclosure>
+     </section>
+   );
+ }
+ 
+-/** Layer 5: what the result does not support. Built from the result and the backend's own caveats. */
+-export function Cautions({ analysis }: { analysis: Analysis }) {
+-  const v = trendVerdict(analysis);
+-  const s = analysis.spatial_support;
+-  const excluded = analysis.coverage.years_requested - analysis.coverage.eligible_years;
+-  const items: { title: string; body: string }[] = [
+-    { title: "A trend is not a cause.", body: analysis.caveats[1] ?? "The slope describes change over the eligible years only. It is not a forecast and does not identify a cause." },
+-  ];
+-  if (v.kind === "not_detected") items.push({ title: "“No trend detected” is not “no change”.", body: "The test could not distinguish a monotonic trend from year-to-year variability. The data are consistent with no trend, and also with a modest trend this record is too short or noisy to detect." });
+-  if (v.kind === "increasing" || v.kind === "decreasing") items.push({ title: "Significant is indicative, not certain.", body: analysis.caveats[0] ?? "Autocorrelated years can inflate false positives." });
+-  if (v.kind === "descriptive") items.push({ title: "No significance test was reported.", body: analysis.trend?.significance_unavailable_reason ?? "The slope is a description of the eligible years, not a tested trend." });
+-  if (v.kind === "unavailable") items.push({ title: "Absence of a result is not absence of change.", body: "Too few years met the completeness rules to estimate a slope. Annual values remain visible as description." });
+-  items.push({ title: "This is an area, not an address.", body: `Values represent a ${inSentence(s.description)} (${s.resolution}). Local conditions at a specific site can differ.` });
+-  items.push({ title: "Know what kind of data this is.", body: `${analysis.dataset.source}: ${analysis.dataset.provenance.replace(/_/g, " ")}. Model estimates and satellite retrievals are not ground-station measurements.` });
+-  const step = stepWarning(analysis);
+-  if (step) items.push({ title: "A sudden step is not a gradual trend.", body: step });
+-  if (isSeasonal(analysis) && analysis.trend?.slope != null) items.push({ title: "Only some months are used.", body: `The trend compares ${monthsUsed(analysis)} with the same months in other years. The other months had too little usable data, so the result says nothing about them.` });
+-  if (excluded > 0 && !isSeasonal(analysis)) items.push({ title: "Not every year counted.", body: `${excluded} of ${analysis.coverage.years_requested} requested years were excluded by the completeness rules and are shown only as context.` });
+-  return (
+-    <section className="cautions" aria-labelledby="layer-5">
+-      <h3 id="layer-5" className="layer-title"><span className="layer-num" aria-hidden>05</span>What should you not conclude?</h3>
+-      <ul className="caution-list">
+-        {items.map((i) => <li key={i.title}><strong>{i.title}</strong> {i.body}</li>)}
+-      </ul>
+-    </section>
+-  );
++/** Experience C (kept under its original name for existing callers). */
++export function Cautions({ analysis, onShowEvidence }: { analysis: Analysis; onShowEvidence?: (stage: StageId) => void }) {
++  return <ScientificGuardrails analysis={analysis} onShowEvidence={onShowEvidence} />;
+ }
+ 
+ export function ProvenanceCard({ analysis }: { analysis: Analysis }) {
+@@ -261,19 +216,9 @@ export function ProvenanceCard({ analysis }: { analysis: Analysis }) {
+   );
+ }
+ 
++/** Methodology explorer (kept under its original name for existing callers). */
+ export function MethodNotes({ analysis }: { analysis: Analysis }) {
+-  const tm = analysis.methodology.trend_method ?? {};
+-  const src = analysis.methodology.source;
+-  const srcEntries = src && typeof src === "object" ? Object.entries(src as Record<string, unknown>).filter(([, v]) => typeof v === "string") : [];
+-  return (
+-    <Disclosure summary="Methods and caveats" meta={`${Object.keys(tm).length + srcEntries.length} notes`}>
+-      <dl className="method-grid">
+-        {srcEntries.map(([k, v]) => (<div className="method-item" key={`s-${k}`}><dt>{pretty(k)}</dt><dd>{String(v)}</dd></div>))}
+-        {Object.entries(tm).map(([k, v]) => (<div className="method-item" key={k}><dt>{pretty(k)}</dt><dd>{v}</dd></div>))}
+-      </dl>
+-      {analysis.caveats.length > 1 && <div className="method-caveats"><p className="trace-label">Additional scientific notes</p>{analysis.caveats.slice(1).map((c) => <p key={c}>{c}</p>)}</div>}
+-    </Disclosure>
+-  );
++  return <MethodExplorer analysis={analysis} />;
+ }
+ 
+ export function Loading({ label }: { label: string }) {
+diff --git a/frontend/src/components/TrendChart.tsx b/frontend/src/components/TrendChart.tsx
+index d5f41fe..ce6d0ac 100644
+--- a/frontend/src/components/TrendChart.tsx
++++ b/frontend/src/components/TrendChart.tsx
+@@ -64,7 +64,7 @@ const ExcludedDot = (p: unknown) => {
+   return <circle cx={cx} cy={cy} r={5} fill={CHART.surface} stroke={CHART.excluded} strokeWidth={2} />;
+ };
+ 
+-export default function TrendChart({ analysis }: { analysis: Analysis }) {
++export default function TrendChart({ analysis, focusYear = null, onSelectYear }: { analysis: Analysis; focusYear?: number | null; onSelectYear?: (year: number) => void }) {
+   const rows = buildRows(analysis);
+   const units = analysis.units.annual_value;
+   const hasTrend = rows.some((r) => r.trend !== null);
+@@ -85,16 +85,23 @@ export default function TrendChart({ analysis }: { analysis: Analysis }) {
+           {hasExcluded && <li><span className="key key-ring" style={{ borderColor: CHART.excluded }} />Excluded year (descriptive)</li>}
+           {hasTrend && <li><span className="key key-line" style={{ background: CHART.trend }} />{trendName}</li>}
+           {stepAt !== null && <li><span className="key key-line key-step" style={{ borderColor: CHART.step }} />Sudden step {cp?.last_year_before}–{cp?.first_year_after}</li>}
++          {focusYear !== null && <li><span className="key key-focus" />Inspecting {focusYear}</li>}
+         </ul>
+       </div>
+       <div className="chart-plot" aria-hidden>
+         <ResponsiveContainer width="100%" height={300}>
+-          <ComposedChart data={rows} margin={{ top: 12, right: 12, bottom: 4, left: 0 }}>
++          <ComposedChart
++            data={rows}
++            margin={{ top: 12, right: 12, bottom: 4, left: 0 }}
++            onClick={onSelectYear ? (state: { activeLabel?: string | number } | null) => { const y = Number(state?.activeLabel); if (Number.isFinite(y)) onSelectYear(y); } : undefined}
++            style={onSelectYear ? { cursor: "pointer" } : undefined}
++          >
+             <CartesianGrid stroke={CHART.grid} vertical={false} />
+             <XAxis dataKey="year" type="number" domain={["dataMin", "dataMax"]} padding={{ left: 16, right: 16 }} allowDecimals={false} ticks={yearTicks(rows)} tick={tickStyle} stroke={CHART.axis} tickLine={false} />
+             <YAxis domain={["auto", "auto"]} tick={tickStyle} stroke={CHART.axis} axisLine={false} tickLine={false} width={58} tickFormatter={(v: number) => fmt(v, 2)} />
+             <Tooltip content={<TooltipBody units={units} />} cursor={{ stroke: CHART.axis, strokeDasharray: "2 3" }} />
+             {stepAt !== null && <ReferenceLine x={stepAt} stroke={CHART.step} strokeDasharray="5 4" strokeWidth={1.5} ifOverflow="extendDomain" />}
++            {focusYear !== null && <ReferenceLine x={focusYear} stroke={CHART.focus} strokeWidth={14} strokeOpacity={0.18} ifOverflow="hidden" />}
+             <Line name={trendName} dataKey="trend" stroke={CHART.trend} strokeWidth={2.5} dot={false} activeDot={false} connectNulls isAnimationActive={false} />
+             <Scatter name="Eligible annual value" dataKey="eligible" shape={EligibleDot} isAnimationActive={false} />
+             <Scatter name="Excluded year (descriptive)" dataKey="excluded" shape={ExcludedDot} isAnimationActive={false} />
+@@ -105,6 +112,7 @@ export default function TrendChart({ analysis }: { analysis: Analysis }) {
+         {seasonal
+           ? "The trend comes from monthly values compared month by month, so it does not depend on complete years. Annual means are shown for context only; hollow rings are years missing months."
+           : "The trend line spans eligible years only. Hollow rings are years shown for context but excluded by the completeness rules."}
++        {onSelectYear && " Select a point to inspect that year in the evidence explorer below."}
+         {stepAt !== null && " The dashed line marks a sudden step: values jump once and stay at the new level, which often means a change in the data rather than gradual change."}
+       </figcaption>
+       <Disclosure summary="Annual data table" meta={`${rows.length} years`} className="chart-table">
+diff --git a/frontend/src/components/expedition/CompletenessTimeline.tsx b/frontend/src/components/expedition/CompletenessTimeline.tsx
+new file mode 100644
+index 0000000..6f01801
+--- /dev/null
++++ b/frontend/src/components/expedition/CompletenessTimeline.tsx
+@@ -0,0 +1,89 @@
++import type { Analysis } from "../../api/types";
++import { fmt, reasonLabel } from "../../lib/format";
++import { MONTH_ABBR, MONTH_NAMES, plainYearReason, yearRecords, type MonthCell } from "../../lib/evidence";
++
++const CELL_WORD: Record<MonthCell, string> = { valid: "data", missing: "missing", unknown: "not reported" };
++
++/**
++ * B2: every requested year as a selectable capsule of twelve months.
++ * Missing months are shown as missing; months the backend did not describe are "not reported", never zero.
++ */
++export default function CompletenessTimeline({ analysis, focusYear, onSelectYear }: { analysis: Analysis; focusYear: number | null; onSelectYear: (year: number) => void }) {
++  const records = yearRecords(analysis);
++  const selected = records.find((r) => r.year === focusYear) ?? null;
++  const anyMonths = records.some((r) => r.monthSource !== "none");
++  return (
++    <div className="xp-timeline">
++      <ul className="xp-timeline-legend" aria-label="Legend">
++        <li><span className="tl-key tl-eligible" />Used in the trend</li>
++        <li><span className="tl-key tl-excluded" />Set aside</li>
++        {anyMonths && <><li><span className="tl-pip pip-valid" />Month with data</li><li><span className="tl-pip pip-missing" />Missing month</li><li><span className="tl-pip pip-unknown" />Not reported</li></>}
++      </ul>
++      <ol className="xp-timeline-track" aria-label="Years in this investigation">
++        {records.map((r) => {
++          const valid = r.months.filter((m) => m === "valid").length;
++          const label = `${r.year}: ${r.status === "eligible" ? "used in the trend" : r.status === "empty" ? "no annual value" : "set aside"}${r.monthSource !== "none" ? `, ${valid} of 12 months with data` : ""}`;
++          return (
++            <li key={r.year}>
++              <button type="button" className={`tl-year tl-${r.status} ${r.year === focusYear ? "is-selected" : ""}`} aria-pressed={r.year === focusYear} aria-label={label} onClick={() => onSelectYear(r.year)}>
++                {r.monthSource !== "none" ? <span className="tl-pips" aria-hidden="true">{r.months.map((m, i) => <i key={i} className={`tl-pip pip-${m}`} />)}</span> : <span className={`tl-orb orb-${r.status}`} aria-hidden="true" />}
++                <span className="tl-label" aria-hidden="true">{r.year}</span>
++              </button>
++            </li>
++          );
++        })}
++      </ol>
++      <div className="xp-timeline-detail" aria-live="polite">
++        {!selected ? (
++          <p className="xp-timeline-hint">Select a year to see which months it contains and why it was used or set aside.</p>
++        ) : (
++          <article className={`year-card year-${selected.status}`} aria-label={`Year ${selected.year} details`}>
++            <header className="year-card-head">
++              <span className="year-card-year mono">{selected.year}</span>
++              <span className={`year-chip chip-${selected.status}`}>{selected.status === "eligible" ? "Used in the trend" : selected.status === "empty" ? "No annual value" : "Set aside"}</span>
++              <span className="year-card-value">
++                {selected.value === null ? "No annual value returned" : <><span className="mono">{fmt(selected.value, 3)}</span> {analysis.units.annual_value}</>}
++              </span>
++            </header>
++            {selected.monthSource === "none" ? (
++              <p className="year-note">This product reports annual values only; no month-by-month detail was returned{selected.coverage !== null ? `. Reported temporal coverage: ${fmt(selected.coverage, 1)}%` : ""}.</p>
++            ) : (
++              <>
++                <ol className="month-row" aria-label={`Months in ${selected.year}`}>
++                  {selected.months.map((m, i) => (
++                    <li key={i} className={`month month-${m}`}>
++                      <span aria-hidden="true">{MONTH_ABBR[i]}</span>
++                      <span className="sr-only">{MONTH_NAMES[i]}: {CELL_WORD[m]}</span>
++                      {selected.monthValues[i] !== null && <small className="mono" aria-hidden="true">{fmt(selected.monthValues[i], 2)}</small>}
++                    </li>
++                  ))}
++                </ol>
++                <dl className="year-facts">
++                  <div><dt>Months with data</dt><dd>{selected.months.filter((m) => m === "valid").length} of 12</dd></div>
++                  <div><dt>Missing</dt><dd>{selected.months.map((m, i) => (m === "missing" ? MONTH_ABBR[i] : null)).filter(Boolean).join(", ") || "none"}</dd></div>
++                  {selected.months.includes("unknown") && <div><dt>Not reported</dt><dd>{selected.months.map((m, i) => (m === "unknown" ? MONTH_ABBR[i] : null)).filter(Boolean).join(", ")}</dd></div>}
++                  {selected.coverage !== null && <div><dt>Temporal coverage</dt><dd>{fmt(selected.coverage, 1)}%</dd></div>}
++                </dl>
++              </>
++            )}
++            {selected.reasons.length > 0 ? (
++              <div className="year-reasons">
++                <span className="trace-label">Why it was set aside</span>
++                <ul>{selected.reasons.map((code) => <li key={code}>{plainYearReason(code)} <code className="reason-code" title={reasonLabel(code)}>{code}</code></li>)}</ul>
++              </div>
++            ) : selected.status === "eligible" ? (
++              <p className="year-note">Passed every completeness rule for this product.</p>
++            ) : (
++              <p className="year-note">The backend did not report a reason for this year.</p>
++            )}
++            {selected.facts.length > 0 && (
++              <dl className="year-facts year-extra">
++                {selected.facts.map(([k, v]) => <div key={k}><dt>{k}</dt><dd className="mono">{v}</dd></div>)}
++              </dl>
++            )}
++          </article>
++        )}
++      </div>
++    </div>
++  );
++}
+diff --git a/frontend/src/components/expedition/EvidenceExpedition.tsx b/frontend/src/components/expedition/EvidenceExpedition.tsx
+new file mode 100644
+index 0000000..517e4eb
+--- /dev/null
++++ b/frontend/src/components/expedition/EvidenceExpedition.tsx
+@@ -0,0 +1,71 @@
++import { forwardRef, useId } from "react";
++import type { Analysis } from "../../api/types";
++import type { StageId } from "../../lib/evidence";
++import EvidenceJourney, { type LabId } from "./EvidenceJourney";
++import MemoryLab from "./MemoryLab";
++import MethodExplorer from "./MethodExplorer";
++import TrendLab from "./TrendLab";
++
++interface Props {
++  analysis: Analysis;
++  stage: StageId;
++  onStage: (s: StageId) => void;
++  focusYear: number | null;
++  onFocusYear: (y: number) => void;
++  lab: LabId;
++  onLab: (l: LabId) => void;
++  labRef?: React.Ref<HTMLDivElement>;
++}
++
++/** Experience B: the interactive evidence explorer (journey, method labs, methodology). */
++const EvidenceExpedition = forwardRef<HTMLElement, Props>(function EvidenceExpedition({ analysis, stage, onStage, focusYear, onFocusYear, lab, onLab, labRef }, ref) {
++  const base = useId();
++  return (
++    <section className="expedition" ref={ref} tabIndex={-1} aria-labelledby={`${base}-title`}>
++      <div className="expedition-sky" aria-hidden="true">
++        <svg className="expedition-limb" viewBox="0 0 1200 260" preserveAspectRatio="xMidYMax slice">
++          <defs>
++            <radialGradient id={`${base}-atm`} cx="50%" cy="100%" r="75%">
++              <stop offset="62%" stopColor="#48B8E8" stopOpacity="0" />
++              <stop offset="70%" stopColor="#80E3EF" stopOpacity=".35" />
++              <stop offset="78%" stopColor="#5676E8" stopOpacity=".12" />
++              <stop offset="100%" stopColor="#5676E8" stopOpacity="0" />
++            </radialGradient>
++            <linearGradient id={`${base}-land`} x1="0" x2="0" y1="0" y2="1">
++              <stop offset="0" stopColor="#0d3a5c" />
++              <stop offset="1" stopColor="#030711" />
++            </linearGradient>
++          </defs>
++          <ellipse cx="600" cy="1130" rx="1560" ry="940" fill={`url(#${base}-atm)`} />
++          <ellipse cx="600" cy="1150" rx="1420" ry="930" fill={`url(#${base}-land)`} className="limb-planet" />
++          <path d="M-820 1150a1420 930 0 0 1 2840 0" className="limb-grid" />
++          <g className="limb-satellite">
++            <rect x="1012" y="60" width="16" height="12" rx="2" />
++            <rect x="990" y="63" width="18" height="6" className="sat-panel" />
++            <rect x="1032" y="63" width="18" height="6" className="sat-panel" />
++            <path d="M1020 74l-40 120" className="sat-beam" />
++          </g>
++        </svg>
++      </div>
++      <header className="expedition-head">
++        <p className="kicker">Evidence explorer</p>
++        <h3 id={`${base}-title`} className="expedition-title">How do we know?</h3>
++        <p className="expedition-sub">Follow the evidence from orbit to conclusion. Select any stage.</p>
++      </header>
++      <EvidenceJourney analysis={analysis} stage={stage} onStage={onStage} focusYear={focusYear} onFocusYear={onFocusYear} onOpenLab={onLab} />
++      <div className="labs" ref={labRef} tabIndex={-1}>
++        <div className="labs-switch" role="tablist" aria-label="Method labs">
++          {([["trend", "Robust trend lab"], ["memory", "Year-to-year memory lab"]] as const).map(([id, label]) => (
++            <button key={id} type="button" role="tab" id={`${base}-lab-${id}`} aria-selected={lab === id} aria-controls={`${base}-lab-panel`} tabIndex={lab === id ? 0 : -1} className={`labs-tab ${lab === id ? "is-active" : ""}`} onClick={() => onLab(id)}>{label}</button>
++          ))}
++        </div>
++        <div role="tabpanel" id={`${base}-lab-panel`} aria-labelledby={`${base}-lab-${lab}`}>
++          {lab === "trend" ? <TrendLab analysis={analysis} /> : <MemoryLab analysis={analysis} />}
++        </div>
++      </div>
++      <MethodExplorer analysis={analysis} />
++    </section>
++  );
++});
++
++export default EvidenceExpedition;
+diff --git a/frontend/src/components/expedition/EvidenceJourney.tsx b/frontend/src/components/expedition/EvidenceJourney.tsx
+new file mode 100644
+index 0000000..9a8fb3e
+--- /dev/null
++++ b/frontend/src/components/expedition/EvidenceJourney.tsx
+@@ -0,0 +1,228 @@
++import { useId } from "react";
++import type { Analysis } from "../../api/types";
++import { decadeUnits, fmtCoord, perDecade, pText, signed } from "../../lib/format";
++import { methodTopics, observationCounts, plainDependence, plainReason, plainYearReason, provenanceKind, reasonTally, stages, type StageId } from "../../lib/evidence";
++import { calendarSeries } from "../../lib/series";
++import { fittedChange, intervalReading, isSeasonal, monthsUsed, slopeName, testName, trendVerdict } from "../../lib/verdict";
++import CiRuler from "../science/CiRuler";
++import CompletenessTimeline from "./CompletenessTimeline";
++import EvidencePlot from "./EvidencePlot";
++import { StageGlyph } from "./Glyphs";
++
++export type LabId = "trend" | "memory";
++
++interface Props {
++  analysis: Analysis;
++  stage: StageId;
++  onStage: (s: StageId) => void;
++  focusYear: number | null;
++  onFocusYear: (y: number) => void;
++  onOpenLab: (lab: LabId) => void;
++}
++
++function DatasetPanel({ analysis: a }: { analysis: Analysis }) {
++  const kind = provenanceKind(a);
++  const s = a.spatial_support;
++  return (
++    <div className="sp-grid">
++      <div className="sp-visual sp-visual-dataset"><StageGlyph id="dataset" kind={kind} /></div>
++      <div>
++        <p className="sp-lead">{kind === "model" ? "A computer model of Earth’s land and atmosphere, constrained by observations." : kind === "satellite" ? "Measured from orbit by a satellite instrument, then processed into a gridded product." : "A NASA data product."}</p>
++        <dl className="sp-facts">
++          <div><dt>Source</dt><dd>{a.dataset.source}</dd></div>
++          <div><dt>Product</dt><dd>{a.dataset.title ?? a.dataset.id}</dd></div>
++          <div><dt>Version</dt><dd>{a.dataset.version}</dd></div>
++          <div><dt>Kind of data</dt><dd>{a.dataset.provenance.replace(/_/g, " ")}</dd></div>
++          <div><dt>Footprint</dt><dd>{s.resolution}</dd></div>
++          <div><dt>Requested point</dt><dd className="mono">{fmtCoord(s.requested.latitude, s.requested.longitude)}</dd></div>
++        </dl>
++      </div>
++    </div>
++  );
++}
++
++function ObservationsPanel({ analysis: a }: { analysis: Analysis }) {
++  const counts = observationCounts(a);
++  if (!counts) {
++    const n = a.annual.filter((y) => y.value !== null).length;
++    return (
++      <div className="sp-stack">
++        <p className="sp-lead">This product returns one value per year. The daily records behind them are summarised by the backend, so no monthly series is shown.</p>
++        <p className="sp-big"><span className="mono">{n}</span> annual values returned for {a.annual.length} requested years</p>
++      </div>
++    );
++  }
++  const rows = calendarSeries(a.series, a.period.start, a.period.end_exclusive);
++  return (
++    <div className="sp-stack">
++      <p className="sp-lead">{a.series_definition ? `Each mark is one ${a.series_definition.replace(/\.$/, "")}.` : "Each mark is one month in the returned series."} Gaps stay gaps; nothing is filled in.</p>
++      <div className="obs-strip" role="img" aria-label={`${counts.valid} months with values, ${counts.withheld} months withheld by quality rules, ${counts.notReturned} months not returned, out of ${counts.total}`}>
++        {rows.map((r) => <i key={r.month} className={`obs obs-${r.state}`} title={`${r.month}: ${r.state.replace("_", " ")}`} />)}
++      </div>
++      <ul className="obs-legend">
++        <li><i className="obs obs-valid" /> <span className="mono">{counts.valid}</span> with values</li>
++        <li><i className="obs obs-withheld" /> <span className="mono">{counts.withheld}</span> withheld by quality rules</li>
++        <li><i className="obs obs-not_returned" /> <span className="mono">{counts.notReturned}</span> not returned</li>
++      </ul>
++    </div>
++  );
++}
++
++function ScreeningPanel({ analysis: a }: { analysis: Analysis }) {
++  const tally = reasonTally(a);
++  const total = a.annual.length;
++  const passed = a.annual.filter((y) => y.eligible).length;
++  const rules = methodTopics(a).find((t) => t.id === "selected");
++  return (
++    <div className="sp-stack">
++      <div className="funnel" role="img" aria-label={`${total} years requested, ${passed} passed the completeness rules`}>
++        <span className="funnel-bar" style={{ width: "100%" }}><b className="mono">{total}</b> requested</span>
++        <span className="funnel-bar funnel-pass" style={{ width: `${Math.max(passed / Math.max(total, 1), 0.08) * 100}%` }}><b className="mono">{passed}</b> passed</span>
++      </div>
++      {isSeasonal(a) && <p className="sp-lead">For this product the trend uses monthly values instead: calendar months with enough data across years ({monthsUsed(a) || "none qualified"}).</p>}
++      {tally.length > 0 ? (
++        <ul className="reason-tally">
++          {tally.map((r) => <li key={r.code}><span className="rt-count mono">{r.years}</span><span>{plainYearReason(r.code)}</span></li>)}
++        </ul>
++      ) : <p className="sp-lead">No year was set aside.</p>}
++      {rules && rules.facts.length > 0 ? (
++        <ul className="methods-facts">{rules.facts.map((f) => <li key={f} className="mono">{f}</li>)}</ul>
++      ) : <p className="sp-muted">The backend did not expose numeric screening thresholds for this product.</p>}
++    </div>
++  );
++}
++
++function TrendPanel({ analysis: a, focusYear, onFocusYear, onOpenLab }: Pick<Props, "analysis" | "focusYear" | "onFocusYear" | "onOpenLab">) {
++  const t = a.trend;
++  const change = fittedChange(a);
++  if (t?.slope == null) {
++    return (
++      <div className="sp-stack">
++        <p className="sp-lead">No trend line was estimated. {plainReason(t?.slope_unavailable_reason) ?? "Too little data passed the completeness rules."}</p>
++        <EvidencePlot analysis={a} focusYear={focusYear} onSelectYear={onFocusYear} />
++      </div>
++    );
++  }
++  return (
++    <div className="sp-grid sp-grid-wide">
++      <EvidencePlot analysis={a} focusYear={focusYear} onSelectYear={onFocusYear} emphasis="trend" />
++      <div className="sp-stack">
++        <dl className="sp-facts">
++          <div><dt>{slopeName(a)}</dt><dd><span className="mono">{signed(t.slope, 4)}</span> {t.slope_units ?? a.units.slope}</dd></div>
++          <div><dt>Per decade</dt><dd><span className="mono">{signed(perDecade(t.slope), 3)}</span> {decadeUnits(t.slope_units ?? null)}</dd></div>
++          {change && <div><dt>Along the fitted line</dt><dd><span className="mono">{signed(change.value, 3)}</span> {a.units.annual_value}, {change.from}–{change.to}</dd></div>}
++        </dl>
++        <p className="sp-muted">Filled dots shaped the line; hollow rings were shown but not used.</p>
++        <button type="button" className="btn btn-ghost" onClick={() => onOpenLab("trend")}>How is this line found? →</button>
++      </div>
++    </div>
++  );
++}
++
++function FindingPanel({ analysis: a, onOpenLab }: Pick<Props, "analysis" | "onOpenLab">) {
++  const t = a.trend;
++  const v = trendVerdict(a);
++  const mk = t?.mann_kendall;
++  const dep = plainDependence(t?.serial_dependence);
++  const reading = intervalReading(a);
++  const checks: { k: string; state: "pass" | "warn" | "off"; v: string; d: string }[] = [
++    {
++      k: "Direction",
++      state: t?.slope == null ? "off" : "pass",
++      v: t?.slope == null ? "No slope" : t.slope > 0 ? "Upward slope" : t.slope < 0 ? "Downward slope" : "Flat",
++      d: t?.slope == null ? plainReason(t?.slope_unavailable_reason) ?? "Not enough eligible data." : "From the robust trend line.",
++    },
++    {
++      k: "Year-to-year memory",
++      state: dep.tone === "caution" ? "warn" : dep.tone === "ok" ? "pass" : "off",
++      v: dep.tone === "caution" ? "Related years" : dep.tone === "ok" ? "Not detected" : "Not checked",
++      d: dep.headline,
++    },
++    {
++      k: "Significance",
++      state: mk ? (mk.is_statistically_significant ? "pass" : "warn") : "off",
++      v: mk ? (mk.is_statistically_significant ? "Significant (indicative)" : "Not significant") : "Not evaluated / reported",
++      d: mk
++        ? `${testName(a)} ${pText(mk.p_value)} at α = ${mk.alpha}.`
++        : t?.significance_unavailable_reason && t.significance_unavailable_reason === t.serial_dependence?.unavailable_reason
++          ? "The test was not run: the year-to-year memory screen blocked it."
++          : plainReason(t?.significance_unavailable_reason) ?? "No test was run.",
++    },
++    {
++      k: "Uncertainty range",
++      state: t?.confidence_interval ? (reading?.includes("includes zero") ? "warn" : "pass") : "off",
++      v: t?.confidence_interval ? (reading?.includes("includes zero") ? "Includes zero" : "Excludes zero") : "Not reported",
++      d: t?.confidence_interval ? reading ?? "" : plainReason(t?.confidence_interval_unavailable_reason) ?? "Only reported alongside a supported test.",
++    },
++  ];
++  return (
++    <div className="sp-stack">
++      <ol className="finding-chain">
++        {checks.map((c) => (
++          <li key={c.k} className={`fc fc-${c.state}`}>
++            <span className="fc-mark" aria-hidden="true" />
++            <span className="fc-k">{c.k}</span>
++            <span className="fc-v">{c.v}</span>
++            <span className="fc-d">{c.d}</span>
++          </li>
++        ))}
++        <li className={`fc fc-verdict verdict-${v.kind}`}>
++          <span className="fc-mark" aria-hidden="true" />
++          <span className="fc-k">Therefore</span>
++          <span className="fc-v">{v.label}</span>
++          <span className="fc-d">{v.note}</span>
++        </li>
++      </ol>
++      {t?.slope != null && t.confidence_interval && <CiRuler slope={t.slope} ci={t.confidence_interval} units={t.slope_units ?? a.units.slope} />}
++      <button type="button" className="btn btn-ghost" onClick={() => onOpenLab("memory")}>Why does year-to-year memory matter? →</button>
++    </div>
++  );
++}
++
++/** B1: NASA Dataset → Observations → Quality Screening → Eligible Years → Trend → Scientific Finding. */
++export default function EvidenceJourney({ analysis, stage, onStage, focusYear, onFocusYear, onOpenLab }: Props) {
++  const list = stages(analysis);
++  const base = useId();
++  const kind = provenanceKind(analysis);
++  const current = list.find((s) => s.id === stage)!;
++  const index = list.indexOf(current);
++  return (
++    <div className="journey">
++      <svg className="journey-orbit" viewBox="0 0 1200 120" preserveAspectRatio="none" aria-hidden="true">
++        <path d="M20 96C300 10 900 10 1180 96" className="jo-path" />
++        <path d="M20 96C300 10 900 10 1180 96" className="jo-progress" style={{ strokeDashoffset: `${100 - (index / (list.length - 1)) * 100}` }} pathLength={100} />
++      </svg>
++      <ol className="journey-stages" aria-label="Evidence journey">
++        {list.map((s, i) => (
++          <li key={s.id} className={`js js-${s.status} ${s.id === stage ? "is-active" : ""} ${i <= index ? "is-reached" : ""}`}>
++            <button type="button" className="js-btn" aria-pressed={s.id === stage} aria-controls={`${base}-panel`} onClick={() => onStage(s.id)}>
++              <span className="js-node"><StageGlyph id={s.id} kind={kind} /></span>
++              <span className="js-num mono" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
++              <span className="js-label">{s.label}</span>
++              <span className="js-readout">{s.readout}</span>
++              <span className="sr-only">, status: {s.status === "ok" ? "complete" : s.status === "limited" ? "limited" : "unavailable"}</span>
++            </button>
++          </li>
++        ))}
++      </ol>
++      <section id={`${base}-panel`} className={`stage-panel sp-${stage}`} aria-live="polite" aria-labelledby={`${base}-panel-title`}>
++        <header className="sp-head">
++          <span className="sp-num mono" aria-hidden="true">{String(index + 1).padStart(2, "0")} / {String(list.length).padStart(2, "0")}</span>
++          <h4 id={`${base}-panel-title`} className="sp-title">{current.label}</h4>
++          <p className="sp-question">{current.question}</p>
++        </header>
++        {stage === "dataset" && <DatasetPanel analysis={analysis} />}
++        {stage === "observations" && <ObservationsPanel analysis={analysis} />}
++        {stage === "screening" && <ScreeningPanel analysis={analysis} />}
++        {stage === "eligible" && <CompletenessTimeline analysis={analysis} focusYear={focusYear} onSelectYear={onFocusYear} />}
++        {stage === "trend" && <TrendPanel analysis={analysis} focusYear={focusYear} onFocusYear={onFocusYear} onOpenLab={onOpenLab} />}
++        {stage === "finding" && <FindingPanel analysis={analysis} onOpenLab={onOpenLab} />}
++        <nav className="sp-nav" aria-label="Move along the evidence journey">
++          <button type="button" className="sp-step" disabled={index === 0} onClick={() => onStage(list[index - 1]!.id)}>← {index > 0 ? list[index - 1]!.label : "Start"}</button>
++          <button type="button" className="sp-step" disabled={index === list.length - 1} onClick={() => onStage(list[index + 1]!.id)}>{index < list.length - 1 ? list[index + 1]!.label : "End"} →</button>
++        </nav>
++      </section>
++    </div>
++  );
++}
++
+diff --git a/frontend/src/components/expedition/EvidencePlot.tsx b/frontend/src/components/expedition/EvidencePlot.tsx
+new file mode 100644
+index 0000000..0a6c82d
+--- /dev/null
++++ b/frontend/src/components/expedition/EvidencePlot.tsx
+@@ -0,0 +1,61 @@
++import type { Analysis } from "../../api/types";
++import { fmt } from "../../lib/format";
++import { buildRows } from "../TrendChart";
++
++/**
++ * Real annual values and the backend's fitted line, with a focus year.
++ * Rows come from the same builder as the main trend chart, so no statistic is recomputed here.
++ */
++export default function EvidencePlot({ analysis, focusYear, onSelectYear, emphasis = "all" }: {
++  analysis: Analysis;
++  focusYear: number | null;
++  onSelectYear?: (year: number) => void;
++  emphasis?: "all" | "trend";
++}) {
++  const rows = buildRows(analysis);
++  const vals = rows.flatMap((r) => [r.eligible, r.excluded, r.trend]).filter((v): v is number => v !== null);
++  if (rows.length < 1 || !vals.length) return <p className="evidence-empty">No annual values were returned, so there is nothing to plot.</p>;
++  const lo = Math.min(...vals), hi = Math.max(...vals), pad = (hi - lo || Math.abs(hi) || 1) * 0.12;
++  const y0 = rows[0]!.year, y1 = rows[rows.length - 1]!.year;
++  const W = 560, H = 190, L = 46, R = 14, T = 14, B = 26;
++  const x = (yr: number) => L + ((yr - y0) / Math.max(1, y1 - y0)) * (W - L - R);
++  const y = (v: number) => T + (1 - (v - (lo - pad)) / (hi - lo + 2 * pad || 1)) * (H - T - B);
++  const fitted = rows.filter((r) => r.trend !== null);
++  const ticks = [lo, (lo + hi) / 2, hi];
++  return (
++    <svg className={`evidence-plot emphasis-${emphasis}`} viewBox={`0 0 ${W} ${H}`} role="group" aria-label="Annual values; select a year to inspect it">
++      {ticks.map((t) => (
++        <g key={t} aria-hidden="true">
++          <path d={`M${L} ${y(t)}H${W - R}`} className="ep-grid" />
++          <text x={L - 6} y={y(t) + 4} textAnchor="end" className="ep-tick">{fmt(t, 2)}</text>
++        </g>
++      ))}
++      {focusYear !== null && rows.some((r) => r.year === focusYear) && (
++        <g aria-hidden="true">
++          <rect x={x(focusYear) - 11} y={T - 4} width="22" height={H - T - B + 8} rx="11" className="ep-focus" />
++        </g>
++      )}
++      {fitted.length > 1 && <path aria-hidden="true" className="ep-trend" d={`M${x(fitted[0]!.year)} ${y(fitted[0]!.trend!)}L${x(fitted[fitted.length - 1]!.year)} ${y(fitted[fitted.length - 1]!.trend!)}`} />}
++      {rows.map((r) => {
++        const v = r.eligible ?? r.excluded;
++        const label = `${r.year}: ${v === null ? "no annual value" : `${fmt(v, 3)} ${analysis.units.annual_value}`}, ${r.eligible !== null ? "eligible" : "not used in the trend"}`;
++        return (
++          <g key={r.year}>
++            {v !== null
++              ? <circle cx={x(r.year)} cy={y(v)} r={r.year === focusYear ? 7 : 5} className={r.eligible !== null ? "ep-dot" : "ep-ring"} aria-hidden="true" />
++              : <path d={`M${x(r.year)} ${H - B - 8}v8`} className="ep-gap" aria-hidden="true" />}
++            {onSelectYear && (
++              <rect
++                x={x(r.year) - 12} y={T} width="24" height={H - T - B} className="ep-hit" tabIndex={-1}
++                onClick={() => onSelectYear(r.year)} aria-label={label}
++              />
++            )}
++            {(rows.length <= 16 || r.year % 5 === 0 || r.year === y0 || r.year === y1) && (
++              <text x={x(r.year)} y={H - 8} textAnchor="middle" className={`ep-year ${r.year === focusYear ? "is-focus" : ""}`} aria-hidden="true">{String(r.year).slice(rows.length > 12 ? 2 : 0)}</text>
++            )}
++          </g>
++        );
++      })}
++    </svg>
++  );
++}
+diff --git a/frontend/src/components/expedition/Glyphs.tsx b/frontend/src/components/expedition/Glyphs.tsx
+new file mode 100644
+index 0000000..0065deb
+--- /dev/null
++++ b/frontend/src/components/expedition/Glyphs.tsx
+@@ -0,0 +1,186 @@
++import type { GuardVisual, ProvenanceKind, StageId } from "../../lib/evidence";
++
++/** Decorative line art for the evidence expedition. Always aria-hidden: meaning is carried by text. */
++
++export function StageGlyph({ id, kind = "other" }: { id: StageId; kind?: ProvenanceKind }) {
++  const common = { viewBox: "0 0 48 48", className: `stage-glyph glyph-${id}`, "aria-hidden": true, focusable: false } as const;
++  switch (id) {
++    case "dataset":
++      return kind === "model" ? (
++        <svg {...common}>
++          <circle cx="24" cy="24" r="15" className="g-fill" />
++          <path d="M9 24h30M24 9v30M12 16h24M12 32h24M17 10.5c-3 8-3 19 0 27M31 10.5c3 8 3 19 0 27" className="g-line" />
++          <circle cx="24" cy="24" r="15" className="g-stroke" />
++        </svg>
++      ) : (
++        <svg {...common}>
++          <path d="M6 40a26 26 0 0 1 36 0" className="g-limb" />
++          <g transform="rotate(-24 24 18)">
++            <rect x="19" y="13" width="10" height="10" rx="1.5" className="g-fill g-stroke" />
++            <rect x="4" y="15" width="13" height="6" className="g-panel" />
++            <rect x="31" y="15" width="13" height="6" className="g-panel" />
++          </g>
++          <path d="M24 26l-6 10M24 26l6 10" className="g-beam" />
++        </svg>
++      );
++    case "observations":
++      return (
++        <svg {...common}>
++          <path d="M5 34h38" className="g-line" />
++          {[8, 13, 18, 23, 28, 33, 38].map((x, i) => (
++            <circle key={x} cx={x + 1} cy={[28, 22, 25, 17, 20, 13, 16][i]} r="2.3" className={i === 3 ? "g-hollow" : "g-dot"} />
++          ))}
++          <path d="M8 40h4M14 40h4M20 40h4M32 40h4" className="g-tick" />
++        </svg>
++      );
++    case "screening":
++      return (
++        <svg {...common}>
++          <path d="M7 10h34l-12 14v12l-10 5V24z" className="g-fill g-stroke" />
++          <circle cx="15" cy="6" r="2" className="g-dot" />
++          <circle cx="24" cy="5" r="2" className="g-hollow" />
++          <circle cx="33" cy="6" r="2" className="g-dot" />
++          <path d="M24 42v4" className="g-beam" />
++        </svg>
++      );
++    case "eligible":
++      return (
++        <svg {...common}>
++          {[0, 1, 2, 3].map((r) => [0, 1, 2, 3].map((c) => (
++            <rect key={`${r}-${c}`} x={8 + c * 9} y={8 + r * 9} width="6.5" height="6.5" rx="1.3" className={(r * 4 + c) % 5 === 3 ? "g-cell-off" : "g-cell-on"} />
++          )))}
++        </svg>
++      );
++    case "trend":
++      return (
++        <svg {...common}>
++          <path d="M6 40V8M6 40h36" className="g-line" />
++          {[[12, 31], [18, 27], [23, 30], [29, 21], [35, 22], [40, 15]].map(([x, y]) => <circle key={x} cx={x} cy={y} r="2.2" className="g-dot" />)}
++          <path d="M9 34L43 13" className="g-trend" />
++        </svg>
++      );
++    case "finding":
++      return (
++        <svg {...common}>
++          <circle cx="24" cy="24" r="16" className="g-stroke" />
++          <circle cx="24" cy="24" r="9" className="g-fill g-stroke" />
++          <path d="M24 3v8M24 37v8M3 24h8M37 24h8" className="g-line" />
++          <circle cx="24" cy="24" r="2.5" className="g-core" />
++        </svg>
++      );
++  }
++}
++
++/** Concept illustrations for the scientific guardrails. */
++export function GuardGlyph({ visual }: { visual: GuardVisual }) {
++  const common = { viewBox: "0 0 160 96", className: `guard-art art-${visual}`, "aria-hidden": true, focusable: false } as const;
++  switch (visual) {
++    case "cause":
++      return (
++        <svg {...common}>
++          <path d="M10 78h70" className="a-axis" />
++          {[[16, 66], [26, 60], [36, 63], [46, 52], [56, 54], [66, 44]].map(([x, y]) => <circle key={x} cx={x} cy={y} r="3" className="a-dot" />)}
++          <path d="M12 70L74 40" className="a-trend" />
++          <path d="M88 52h18" className="a-link-broken" />
++          <circle cx="126" cy="52" r="17" className="a-question" />
++          <text x="126" y="59" textAnchor="middle" className="a-q-text">?</text>
++          <path d="M116 42l20 20" className="a-strike" />
++        </svg>
++      );
++    case "area":
++      return (
++        <svg {...common}>
++          {[0, 1, 2, 3, 4].map((c) => [0, 1, 2].map((r) => <rect key={`${c}-${r}`} x={12 + c * 28} y={8 + r * 28} width="28" height="28" className={c === 2 && r === 1 ? "a-cell-on" : "a-cell"} />))}
++          <circle cx="82" cy="56" r="3.4" className="a-pin" />
++          <path d="M82 56l12-14" className="a-leader" />
++          <text x="97" y="40" className="a-label">your point</text>
++        </svg>
++      );
++    case "inference":
++      return (
++        <svg {...common}>
++          <path d="M30 70a50 50 0 0 1 100 0" className="a-gauge" />
++          <path d="M80 70l-26-30" className="a-needle-off" />
++          <circle cx="80" cy="70" r="5" className="a-hub" />
++          <rect x="40" y="78" width="80" height="14" rx="7" className="a-chip" />
++          <text x="80" y="88.5" textAnchor="middle" className="a-chip-text">not evaluated</text>
++        </svg>
++      );
++    case "inconclusive":
++      return (
++        <svg {...common}>
++          <path d="M30 70a50 50 0 0 1 100 0" className="a-gauge" />
++          <path d="M62 24a50 50 0 0 1 36 0" className="a-gauge-band" />
++          <path d="M80 70V26" className="a-needle" />
++          <circle cx="80" cy="70" r="5" className="a-hub" />
++          <text x="80" y="90" textAnchor="middle" className="a-label">test run · inconclusive</text>
++        </svg>
++      );
++    case "indicative":
++      return (
++        <svg {...common}>
++          <path d="M30 70a50 50 0 0 1 100 0" className="a-gauge" />
++          <path d="M30 70a50 50 0 0 1 85-35" className="a-gauge-on" />
++          <path d="M80 70l28-28" className="a-needle" />
++          <circle cx="80" cy="70" r="5" className="a-hub" />
++          <text x="132" y="34" className="a-label">*</text>
++        </svg>
++      );
++    case "nochange":
++      return (
++        <svg {...common}>
++          {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => <rect key={i} x={12 + i * 14} y="40" width="10" height="16" rx="2" className={[1, 4, 5, 8].includes(i) ? "a-cell-on" : "a-cell-gap"} />)}
++          <text x="80" y="80" textAnchor="middle" className="a-label">gaps ≠ zero</text>
++        </svg>
++      );
++    case "station":
++    case "satellite":
++      return (
++        <svg {...common}>
++          <path d="M4 82h152" className="a-axis" />
++          <g className={visual === "station" ? "a-dim" : ""}>
++            <rect x="18" y="20" width="44" height="44" className="a-cell" />
++            <path d="M18 34h44M18 50h44M32 20v44M48 20v44" className="a-grid" />
++            <text x="40" y="76" textAnchor="middle" className="a-label">{visual === "satellite" ? "retrieval" : "model grid"}</text>
++          </g>
++          <path d="M78 46h10" className="a-link-broken" />
++          <g>
++            <path d="M118 82V44M108 82l10-38 10 38" className="a-station" />
++            <circle cx="118" cy="38" r="5" className="a-pin" />
++            <path d="M110 30a12 12 0 0 1 16 0M106 25a18 18 0 0 1 24 0" className="a-wave" />
++            <text x="118" y="16" textAnchor="middle" className="a-label">ground station</text>
++          </g>
++        </svg>
++      );
++    case "step":
++      return (
++        <svg {...common}>
++          <path d="M10 78h140" className="a-axis" />
++          <path d="M14 62h62v-28h70" className="a-trend" />
++          <path d="M14 66L146 30" className="a-dash" />
++          <path d="M76 20v62" className="a-mark" />
++        </svg>
++      );
++    case "months":
++      return (
++        <svg {...common}>
++          {Array.from({ length: 12 }, (_, i) => <rect key={i} x={12 + i * 11.5} y="36" width="9" height="24" rx="2" className={[0, 1, 2, 3, 10, 11].includes(i) ? "a-cell-on" : "a-cell-gap"} />)}
++        </svg>
++      );
++    case "years":
++      return (
++        <svg {...common}>
++          {Array.from({ length: 10 }, (_, i) => <circle key={i} cx={18 + i * 14} cy="48" r="5" className={[2, 6].includes(i) ? "a-ring" : "a-dot"} />)}
++        </svg>
++      );
++    case "dataset":
++      return (
++        <svg {...common}>
++          <rect x="44" y="14" width="72" height="68" rx="6" className="a-cell" />
++          <path d="M56 32h48M56 46h48M56 60h30" className="a-grid" />
++          <circle cx="116" cy="16" r="10" className="a-chip" />
++          <text x="116" y="20" textAnchor="middle" className="a-chip-text">!</text>
++        </svg>
++      );
++  }
++}
+diff --git a/frontend/src/components/expedition/MemoryLab.tsx b/frontend/src/components/expedition/MemoryLab.tsx
+new file mode 100644
+index 0000000..3eaf6d7
+--- /dev/null
++++ b/frontend/src/components/expedition/MemoryLab.tsx
+@@ -0,0 +1,85 @@
++import { useState } from "react";
++import type { Analysis } from "../../api/types";
++import { fmt } from "../../lib/format";
++import { plainDependence } from "../../lib/evidence";
++import { testName } from "../../lib/verdict";
++
++/** Fixed, deterministic schematic noise (no randomness, so the illustration never changes). */
++const NOISE = [0.6, -1.1, 0.9, -0.4, -1.3, 1.2, 0.2, -0.8, 1.4, -0.2, -1.0, 0.7, 0.3, -1.4, 1.1, -0.6, 0.5, -0.3, 1.0, -0.9];
++
++export function schematicSeries(memory: number): number[] {
++  const out: number[] = [];
++  let prev = 0;
++  for (const e of NOISE) {
++    prev = memory * prev + e;
++    out.push(prev);
++  }
++  return out;
++}
++
++function Spark({ values, label }: { values: number[]; label: string }) {
++  const W = 220, H = 80;
++  const lo = Math.min(...values), hi = Math.max(...values);
++  const x = (i: number) => 8 + (i / (values.length - 1)) * (W - 16);
++  const y = (v: number) => 8 + (1 - (v - lo) / (hi - lo || 1)) * (H - 16);
++  const runs = values.map((v, i) => (i > 0 && Math.sign(v) === Math.sign(values[i - 1]!) ? i : -1)).filter((i) => i > 0);
++  return (
++    <figure className="memory-spark">
++      <svg viewBox={`0 0 ${W} ${H}`} aria-hidden="true" focusable="false">
++        <path d={`M8 ${y(0)}H${W - 8}`} className="ms-zero" />
++        {runs.map((i) => <path key={i} d={`M${x(i - 1)} ${y(values[i - 1]!)}L${x(i)} ${y(values[i]!)}`} className="ms-run" />)}
++        <path d={values.map((v, i) => `${i ? "L" : "M"}${x(i)} ${y(v)}`).join("")} className="ms-line" />
++        {values.map((v, i) => <circle key={i} cx={x(i)} cy={y(v)} r="2.4" className="ms-dot" />)}
++      </svg>
++      <figcaption>{label}</figcaption>
++    </figure>
++  );
++}
++
++/** B4: why related neighbouring years make a significance test over-confident. */
++export default function MemoryLab({ analysis }: { analysis: Analysis }) {
++  const [memory, setMemory] = useState(0.75);
++  const t = analysis.trend;
++  const sd = t?.serial_dependence ?? null;
++  const plain = plainDependence(sd);
++  const rho = sd?.lag1_spearman_rho ?? null;
++  const policy = (analysis.methodology.source as { trend_policy?: { material_lag1_rho?: number } } | null)?.trend_policy?.material_lag1_rho;
++  const tested = !!t?.mann_kendall;
++  return (
++    <div className="xp-lab lab-memory">
++      <div className="lab-stage">
++        <p className="lab-badge">Educational example · invented series, not NASA data</p>
++        <div className="memory-pair">
++          <Spark values={schematicSeries(0)} label="Independent years: each year starts fresh." />
++          <Spark values={schematicSeries(memory)} label="Years with memory: highs follow highs." />
++        </div>
++        <label className="memory-slider">
++          <span>Year-to-year memory</span>
++          <input type="range" min={0} max={0.95} step={0.05} value={memory} onChange={(e) => setMemory(Number(e.target.value))} aria-valuetext={`${Math.round(memory * 100)}% carried over`} />
++          <span className="mono">{Math.round(memory * 100)}%</span>
++        </label>
++        <p className="lab-insight">Long runs above or below zero can look like a trend even when none exists. That is why a significance test needs care when years are related.</p>
++      </div>
++      <div className="lab-controls">
++        <p className="lab-title">Why significance needs care</p>
++        <div className={`memory-verdict tone-${plain.tone}`}>
++          <span className="trace-label">In your result</span>
++          <p className="memory-headline">{plain.headline}</p>
++          <p className="memory-detail">{plain.detail}</p>
++        </div>
++        <div className="memory-scale" role="img" aria-label={rho === null ? "Lag-1 correlation not reported" : `Lag-1 residual correlation ${fmt(rho, 2)} on a scale from −1 to +1${policy !== undefined ? `; the screen flags values above ${policy}` : ""}`}>
++          <span className="msc-track" />
++          {policy !== undefined && <span className="msc-threshold" style={{ left: `${((policy + 1) / 2) * 100}%` }}><small>screen {policy}</small></span>}
++          {rho !== null && <span className="msc-dot" style={{ left: `${((rho + 1) / 2) * 100}%` }}><small className="mono">ρ {fmt(rho, 2)}</small></span>}
++          <span className="msc-ticks" aria-hidden="true"><i>−1</i><i>0</i><i>+1</i></span>
++        </div>
++        <dl className="lab-readout">
++          <div><dt>Significance test</dt><dd>{tested ? `${testName(analysis)} reported` : "Not evaluated / reported"}</dd></div>
++          {!tested && t?.significance_unavailable_reason && <div><dt>Reason (technical)</dt><dd>{t.significance_unavailable_reason}</dd></div>}
++        </dl>
++        {!tested && <p className="lab-real">Not evaluated is different from “not significant”: it means the test was not run, so it says nothing either way.</p>}
++        {sd?.caveat && <p className="lab-footnote">{sd.caveat}</p>}
++      </div>
++    </div>
++  );
++}
+diff --git a/frontend/src/components/expedition/MethodExplorer.tsx b/frontend/src/components/expedition/MethodExplorer.tsx
+new file mode 100644
+index 0000000..383b2fe
+--- /dev/null
++++ b/frontend/src/components/expedition/MethodExplorer.tsx
+@@ -0,0 +1,72 @@
++import { useId, useState } from "react";
++import type { Analysis } from "../../api/types";
++import { methodTopics, type TopicId } from "../../lib/evidence";
++import Disclosure from "../ui/Disclosure";
++
++const TOPIC_ICON: Record<TopicId, string> = {
++  derived: "M4 20h16M6 20V9l6-5 6 5v11M10 20v-6h4v6",
++  selected: "M3 5h18l-7 8v6l-4 2v-8z",
++  trend: "M3 20V4M3 20h18M6 16l5-5 3 3 6-7",
++  uncertainty: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7v6M12 16v.5",
++  caveats: "M12 3l9 17H3zM12 10v4M12 17v.5",
++};
++
++/**
++ * B5: the backend's methodology notes grouped into five approachable topics.
++ * Level 2 shows a plain sentence and key facts; Level 3 shows every note verbatim.
++ */
++export default function MethodExplorer({ analysis }: { analysis: Analysis }) {
++  const topics = methodTopics(analysis);
++  const [active, setActive] = useState<TopicId>(topics[0]?.id ?? "trend");
++  const base = useId();
++  const topic = topics.find((t) => t.id === active) ?? topics[0];
++  const total = topics.reduce((n, t) => n + t.notes.length, 0);
++  if (!topic) return null;
++  return (
++    <div className="methods">
++      <div className="methods-head">
++        <p className="lab-title">Methodology explorer</p>
++        <p className="methods-count mono">{total} backend notes · {topics.length} topics</p>
++      </div>
++      <div className="methods-tabs" role="tablist" aria-label="Methodology topics">
++        {topics.map((t) => (
++          <button
++            key={t.id} type="button" role="tab" id={`${base}-tab-${t.id}`}
++            aria-selected={t.id === topic.id} aria-controls={`${base}-panel`} tabIndex={t.id === topic.id ? 0 : -1}
++            className={`methods-tab ${t.id === topic.id ? "is-active" : ""}`}
++            onClick={() => setActive(t.id)}
++            onKeyDown={(e) => {
++              if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
++              const i = topics.findIndex((x) => x.id === t.id);
++              const next = topics[(i + (e.key === "ArrowRight" ? 1 : topics.length - 1)) % topics.length]!;
++              setActive(next.id);
++              document.getElementById(`${base}-tab-${next.id}`)?.focus();
++            }}
++          >
++            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d={TOPIC_ICON[t.id]} /></svg>
++            <span>{t.title}</span>
++            <small className="mono">{t.notes.length}</small>
++          </button>
++        ))}
++      </div>
++      <div className="methods-panel" role="tabpanel" id={`${base}-panel`} aria-labelledby={`${base}-tab-${topic.id}`}>
++        <p className="methods-plain">{topic.plain}</p>
++        {topic.facts.length > 0 && <ul className="methods-facts">{topic.facts.map((f) => <li key={f} className="mono">{f}</li>)}</ul>}
++        {topic.notes.length > 0 ? (
++          <Disclosure summary="Technical details" meta={`${topic.notes.length} note${topic.notes.length === 1 ? "" : "s"}`} className="methods-technical">
++            <dl className="method-grid">
++              {topic.notes.map((n) => (
++                <div className="method-item" key={n.key}>
++                  <dt>{n.origin === "caveat" ? "Scientific note" : n.label}</dt>
++                  <dd>{n.value}</dd>
++                </div>
++              ))}
++            </dl>
++          </Disclosure>
++        ) : (
++          <p className="methods-none">The backend did not report technical notes for this topic.</p>
++        )}
++      </div>
++    </div>
++  );
++}
+diff --git a/frontend/src/components/expedition/MissionFindings.tsx b/frontend/src/components/expedition/MissionFindings.tsx
+new file mode 100644
+index 0000000..b22650f
+--- /dev/null
++++ b/frontend/src/components/expedition/MissionFindings.tsx
+@@ -0,0 +1,66 @@
++import { useRef, useState } from "react";
++import type { Analysis } from "../../api/types";
++import type { StageId } from "../../lib/evidence";
++import { ProvenanceCard, ResultSummary } from "../ResultPanels";
++import SeriesChart from "../SeriesChart";
++import TrendChart from "../TrendChart";
++import SeasonalChart from "../science/SeasonalChart";
++import EvidenceExpedition from "./EvidenceExpedition";
++import type { LabId } from "./EvidenceJourney";
++import ScientificGuardrails from "./ScientificGuardrails";
++
++function reveal(el: HTMLElement | null) {
++  if (!el) return;
++  const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
++  el.scrollIntoView?.({ behavior: reduce ? "auto" : "smooth", block: "start" });
++  el.focus?.({ preventScroll: true });
++}
++
++/**
++ * The Earth Evidence Expedition: discovery → evidence → guardrails, sharing one
++ * selected stage and one focus year so charts, timeline and limitations stay connected.
++ * Mounted per result (keyed by the caller), so selections reset for a new investigation.
++ */
++export default function MissionFindings({ analysis, place }: { analysis: Analysis; place?: string }) {
++  const [stage, setStage] = useState<StageId>("dataset");
++  const [focusYear, setFocusYear] = useState<number | null>(null);
++  const [lab, setLab] = useState<LabId>("trend");
++  const expeditionRef = useRef<HTMLElement>(null);
++  const labRef = useRef<HTMLDivElement>(null);
++
++  const selectYear = (year: number) => setFocusYear((y) => (y === year ? null : year));
++  const inspectYearFromChart = (year: number) => {
++    setFocusYear(year);
++    setStage("eligible");
++  };
++
++  return (
++    <>
++      <ResultSummary analysis={analysis} place={place} />
++      <section className="layer layer-data" aria-labelledby="layer-4">
++        <h3 id="layer-4" className="layer-title"><span className="layer-num" aria-hidden>04</span>What does the data look like?</h3>
++        <div className="charts">
++          <TrendChart analysis={analysis} focusYear={focusYear} onSelectYear={inspectYearFromChart} />
++          <SeriesChart analysis={analysis} />
++          <SeasonalChart analysis={analysis} />
++        </div>
++      </section>
++      <EvidenceExpedition
++        ref={expeditionRef}
++        analysis={analysis}
++        stage={stage}
++        onStage={setStage}
++        focusYear={focusYear}
++        onFocusYear={selectYear}
++        lab={lab}
++        onLab={(l) => { setLab(l); reveal(labRef.current); }}
++        labRef={labRef}
++      />
++      <ScientificGuardrails analysis={analysis} onShowEvidence={(s) => { setStage(s); reveal(expeditionRef.current); }} />
++      <div className="dossier-foot dossier-foot-single">
++        <ProvenanceCard analysis={analysis} />
++        <a className="text-link" href="#evaluation">Open Mission Control for the full evidence review →</a>
++      </div>
++    </>
++  );
++}
+diff --git a/frontend/src/components/expedition/ScientificGuardrails.tsx b/frontend/src/components/expedition/ScientificGuardrails.tsx
+new file mode 100644
+index 0000000..a7df165
+--- /dev/null
++++ b/frontend/src/components/expedition/ScientificGuardrails.tsx
+@@ -0,0 +1,76 @@
++import { useId, useState } from "react";
++import type { Analysis } from "../../api/types";
++import { guardrails, type StageId } from "../../lib/evidence";
++import { GuardGlyph } from "./Glyphs";
++
++/**
++ * Experience C: scientific boundaries as visual, selectable explanations.
++ * Only limitations relevant to this dataset and result are rendered, and each backend
++ * limitation or caveat is attached to exactly one boundary.
++ */
++export default function ScientificGuardrails({ analysis, onShowEvidence }: { analysis: Analysis; onShowEvidence?: (stage: StageId) => void }) {
++  const items = guardrails(analysis);
++  const [open, setOpen] = useState<string | null>(null);
++  const base = useId();
++  const current = items.find((i) => i.id === open) ?? null;
++  return (
++    <section className="guardrails" aria-labelledby={`${base}-title`}>
++      <div className="guard-horizon" aria-hidden="true">
++        <svg viewBox="0 0 1200 140" preserveAspectRatio="none"><path d="M0 140C260 40 940 40 1200 140" /><path d="M0 140C260 60 940 60 1200 140" className="guard-horizon-glow" /></svg>
++      </div>
++      <header className="guard-head">
++        <p className="kicker">Scientific guardrails</p>
++        <h3 id={`${base}-title`} className="guard-title">What can we <em>not</em> conclude?</h3>
++        <p className="guard-sub">{items.length} boundaries apply to this result. Select one to see why it matters here.</p>
++      </header>
++      <ul className="guard-grid">
++        {items.map((g) => {
++          const selected = open === g.id;
++          return (
++            <li key={g.id} className={`guard ${selected ? "is-open" : ""}`}>
++              <button
++                type="button"
++                className="guard-card"
++                aria-expanded={selected}
++                aria-controls={`${base}-detail`}
++                onClick={() => {
++                  setOpen(selected ? null : g.id);
++                  if (!selected && window.innerWidth <= 900) {
++                    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
++                    requestAnimationFrame(() => document.getElementById(`${base}-detail`)?.scrollIntoView?.({ behavior: reduce ? "auto" : "smooth", block: "nearest" }));
++                  }
++                }}
++              >
++                <GuardGlyph visual={g.visual} />
++                <strong className="guard-name">{g.title}</strong>
++                <span className="guard-line">{g.line}</span>
++                <span className="guard-more" aria-hidden="true">{selected ? "Close" : "Explore"}</span>
++              </button>
++            </li>
++          );
++        })}
++      </ul>
++      <div id={`${base}-detail`} className="guard-detail-slot" aria-live="polite">
++        {current && (
++          <article className={`guard-detail visual-${current.visual}`} aria-label={current.title}>
++            <div className="guard-detail-art"><GuardGlyph visual={current.visual} /></div>
++            <div className="guard-detail-copy">
++              <p className="guard-detail-title">{current.title}</p>
++              <p>{current.detail}</p>
++              <p className="guard-relevance"><span className="trace-label">In this investigation</span>{current.relevance}</p>
++              {current.notes.length > 0 && (
++                <div className="guard-notes">
++                  <span className="trace-label">From the backend, verbatim</span>
++                  <ul>{current.notes.map((n) => <li key={n}>{n}</li>)}</ul>
++                </div>
++              )}
++              {current.stage && onShowEvidence && (
++                <button type="button" className="btn btn-ghost guard-evidence" onClick={() => onShowEvidence(current.stage!)}>See the supporting evidence →</button>
++              )}
++            </div>
++          </article>
++        )}
++      </div>
++    </section>
++  );
++}
+diff --git a/frontend/src/components/expedition/TrendLab.tsx b/frontend/src/components/expedition/TrendLab.tsx
+new file mode 100644
+index 0000000..75b5705
+--- /dev/null
++++ b/frontend/src/components/expedition/TrendLab.tsx
+@@ -0,0 +1,97 @@
++import { useMemo, useState } from "react";
++import type { Analysis } from "../../api/types";
++import { signed } from "../../lib/format";
++import { slopeName } from "../../lib/verdict";
++
++/**
++ * B3: an educational Theil–Sen demonstration on a small, invented dataset.
++ * The arithmetic here runs only on these schematic points; the real result always comes from the backend.
++ */
++export const SCHEMATIC = [2.0, 2.6, 2.3, 3.1, 2.9, 3.6, 3.3, 4.0];
++const OUTLIER_INDEX = 6;
++const OUTLIER_VALUE = 9.2;
++
++const median = (xs: number[]) => {
++  const s = [...xs].sort((a, b) => a - b);
++  const m = s.length >> 1;
++  return s.length % 2 ? s[m]! : (s[m - 1]! + s[m]!) / 2;
++};
++
++export function schematicFits(ys: number[]) {
++  const pairs: { i: number; j: number; slope: number }[] = [];
++  for (let i = 0; i < ys.length; i++) for (let j = i + 1; j < ys.length; j++) pairs.push({ i, j, slope: (ys[j]! - ys[i]!) / (j - i) });
++  const robust = median(pairs.map((p) => p.slope));
++  const robustIntercept = median(ys.map((y, x) => y - robust * x));
++  const n = ys.length, mx = (n - 1) / 2, my = ys.reduce((a, b) => a + b, 0) / n;
++  const ols = ys.reduce((acc, y, x) => acc + (x - mx) * (y - my), 0) / ys.reduce((acc, _, x) => acc + (x - mx) ** 2, 0);
++  return { pairs, robust, robustIntercept, ols, olsIntercept: my - ols * mx };
++}
++
++export default function TrendLab({ analysis }: { analysis: Analysis }) {
++  const [outlier, setOutlier] = useState(false);
++  const [showPairs, setShowPairs] = useState(true);
++  const [focus, setFocus] = useState<number | null>(null);
++  const ys = useMemo(() => SCHEMATIC.map((v, i) => (outlier && i === OUTLIER_INDEX ? OUTLIER_VALUE : v)), [outlier]);
++  const fit = useMemo(() => schematicFits(ys), [ys]);
++  const W = 420, H = 230, L = 26, R = 12, T = 14, B = 24;
++  const yMax = 10, yMin = 0;
++  const x = (i: number) => L + (i / (ys.length - 1)) * (W - L - R);
++  const y = (v: number) => T + (1 - (v - yMin) / (yMax - yMin)) * (H - T - B);
++  const lineAt = (m: number, b: number) => `M${x(0)} ${y(b)}L${x(ys.length - 1)} ${y(b + m * (ys.length - 1))}`;
++  const slopes = fit.pairs.map((p) => p.slope);
++  const sMin = Math.min(-0.5, ...slopes), sMax = Math.max(1.5, ...slopes);
++  const sx = (s: number) => 12 + ((s - sMin) / (sMax - sMin)) * (W - 24);
++  const t = analysis.trend;
++  return (
++    <div className="xp-lab lab-trend">
++      <div className="lab-stage">
++        <p className="lab-badge">Educational example · invented points, not NASA data</p>
++        <svg viewBox={`0 0 ${W} ${H}`} className="lab-plot" role="img" aria-label={`Schematic: ${fit.pairs.length} pairwise slopes. Robust median slope ${signed(fit.robust, 2)} per step; ordinary straight-line fit ${signed(fit.ols, 2)} per step${outlier ? ", with one outlier added" : ""}.`}>
++          <path d={`M${L} ${H - B}H${W - R}`} className="lab-axis" />
++          {showPairs && fit.pairs.map((p) => (
++            <path key={`${p.i}-${p.j}`} d={`M${x(p.i)} ${y(ys[p.i]!)}L${x(p.j)} ${y(ys[p.j]!)}`} className={`lab-pair ${focus !== null && (p.i === focus || p.j === focus) ? "is-focus" : ""}`} />
++          ))}
++          <path d={lineAt(fit.ols, fit.olsIntercept)} className="lab-ols" />
++          <path d={lineAt(fit.robust, fit.robustIntercept)} className="lab-robust" />
++          {ys.map((v, i) => (
++            <circle
++              key={i} cx={x(i)} cy={y(v)} r={focus === i ? 7 : 5.5}
++              className={`lab-point ${outlier && i === OUTLIER_INDEX ? "is-outlier" : ""}`}
++              onMouseEnter={() => setFocus(i)} onMouseLeave={() => setFocus(null)}
++            />
++          ))}
++        </svg>
++        <div className="lab-strip" aria-hidden="true">
++          <svg viewBox={`0 0 ${W} 46`}>
++            <path d={`M12 26H${W - 12}`} className="lab-axis" />
++            {slopes.map((s, k) => <circle key={k} cx={sx(s)} cy={26 + ((k % 3) - 1) * 6} r="3" className="lab-slope-dot" />)}
++            <path d={`M${sx(fit.robust)} 8v36`} className="lab-robust" />
++            <path d={`M${sx(fit.ols)} 8v36`} className="lab-ols" />
++          </svg>
++          <span>Each dot is the slope between one pair of points. The bright marker is their median.</span>
++        </div>
++      </div>
++      <div className="lab-controls">
++        <p className="lab-title">How a robust trend line is found</p>
++        <ol className="lab-steps">
++          <li><strong>Connect every pair.</strong> {fit.pairs.length} pairs from {ys.length} points.</li>
++          <li><strong>Measure each slope.</strong> Some are steep, some are flat.</li>
++          <li><strong>Take the middle one.</strong> That median is the {slopeName(analysis)}.</li>
++        </ol>
++        <div className="lab-toggles">
++          <button type="button" className={`lab-toggle ${outlier ? "is-on" : ""}`} aria-pressed={outlier} onClick={() => setOutlier((o) => !o)}>{outlier ? "Remove the outlier" : "Add an outlier year"}</button>
++          <button type="button" className={`lab-toggle ${showPairs ? "is-on" : ""}`} aria-pressed={showPairs} onClick={() => setShowPairs((p) => !p)}>Pairwise slopes</button>
++        </div>
++        <dl className="lab-readout" aria-live="polite">
++          <div className="lr-robust"><dt>Robust median slope</dt><dd className="mono">{signed(fit.robust, 2)}</dd></div>
++          <div className="lr-ols"><dt>Ordinary straight-line fit</dt><dd className="mono">{signed(fit.ols, 2)}</dd></div>
++        </dl>
++        <p className="lab-insight">{outlier ? "One extreme year pulls the ordinary line upward, while the median moves far less." : "Try adding an outlier: watch which line gets dragged."}</p>
++        <p className="lab-real">
++          <span className="trace-label">Your real result</span>
++          {t?.slope != null ? `The backend’s ${slopeName(analysis)} for this investigation is ${signed(t.slope, 4)} ${t.slope_units ?? analysis.units.slope}. An ordinary fit was not computed on the real data.` : "No slope was estimated for this investigation, so there is no real line to compare."}
++        </p>
++      </div>
++    </div>
++  );
++}
+diff --git a/frontend/src/components/science/chartTheme.ts b/frontend/src/components/science/chartTheme.ts
+index b75eb5c..dc458f3 100644
+--- a/frontend/src/components/science/chartTheme.ts
++++ b/frontend/src/components/science/chartTheme.ts
+@@ -9,6 +9,7 @@ export const CHART = {
+   axis: "var(--chart-axis)",
+   tick: "var(--chart-tick)",
+   band: "var(--chart-band)",
++  focus: "var(--chart-focus, #80e3ef)", // year selected in the evidence explorer
+   step: "var(--warning)", // detected sudden step (data break), dashed vertical marker
+   font: "'IBM Plex Mono', ui-monospace, monospace",
+ } as const;
+diff --git a/frontend/src/expedition.test.tsx b/frontend/src/expedition.test.tsx
+new file mode 100644
+index 0000000..bdbda51
+--- /dev/null
++++ b/frontend/src/expedition.test.tsx
+@@ -0,0 +1,172 @@
++/// <reference types="node" />
++import { readFileSync } from "node:fs";
++import { render, screen, within } from "@testing-library/react";
++import userEvent from "@testing-library/user-event";
++import { describe, expect, it, vi } from "vitest";
++import type { Analysis } from "./api/types";
++import { Cautions, ResultSummary } from "./components/ResultPanels";
++import MissionFindings from "./components/expedition/MissionFindings";
++import MethodExplorer from "./components/expedition/MethodExplorer";
++import MemoryLab from "./components/expedition/MemoryLab";
++import { schematicFits, SCHEMATIC } from "./components/expedition/TrendLab";
++import { guardrails, headlineParts, methodNotes, yearRecords } from "./lib/evidence";
++
++import heatRaw from "../public/snapshots/yangon-2015-2024-extreme_heat.json?raw";
++import ndviRaw from "../public/snapshots/yangon-2015-2024-ndvi.json?raw";
++import precipRaw from "../public/snapshots/yangon-2015-2024-precipitation.json?raw";
++import tempRaw from "../public/snapshots/yangon-2015-2024-temperature.json?raw";
++
++/** Real saved NASA retrievals shipped with the app (Yangon, 2015–2024). */
++const RAW: Record<string, string> = { temperature: tempRaw, precipitation: precipRaw, ndvi: ndviRaw, extreme_heat: heatRaw };
++const snap = (name: string): Analysis => JSON.parse(RAW[name]!);
++const temperature = () => snap("temperature"); // inference, not significant
++const precipitation = () => snap("precipitation"); // descriptive: serial dependence blocked the test
++const ndvi = () => snap("ndvi"); // no eligible years
++const heat = () => snap("extreme_heat"); // annual-only, threshold methodology
++
++describe("Experience A: discovery in seconds", () => {
++  it("separates a short headline from its qualification without upgrading a descriptive slope", () => {
++    render(<ResultSummary analysis={precipitation()} />);
++    const h = screen.getByRole("heading", { level: 2 });
++    expect(h).toHaveTextContent("A downward estimated trend in precipitation.");
++    expect(h).not.toHaveTextContent(/significant/i);
++    expect(screen.getByText("This result is descriptive. A significance test was not reported.")).toBeInTheDocument();
++    expect(screen.getByText("Not evaluated")).toBeInTheDocument();
++    expect(screen.queryByText("Not significant")).not.toBeInTheDocument();
++  });
++
++  it("keeps the full scientific statement available behind progressive disclosure", async () => {
++    render(<ResultSummary analysis={precipitation()} />);
++    const details = screen.getByText("Full scientific statement").closest("details")!;
++    expect(details).not.toHaveAttribute("open");
++    await userEvent.click(screen.getByText("Full scientific statement"));
++    expect(details).toHaveAttribute("open");
++    expect(within(details).getByText(/described without a significance test/)).toBeInTheDocument();
++  });
++
++  it("says inconclusive prominently and never 'not evaluated' when a test was run", () => {
++    const h = headlineParts(temperature());
++    expect(h.headline).toMatch(/evidence is inconclusive/);
++    expect(h.significance).toBe("Not significant");
++    expect(h.qualifier).toMatch(/not proof of no change/);
++  });
++});
++
++describe("Experience B: evidence explorer", () => {
++  it("selects evidence stages and reveals the matching backend evidence", async () => {
++    render(<MissionFindings analysis={temperature()} />);
++    const journey = screen.getByRole("list", { name: "Evidence journey" });
++    expect(screen.getByRole("heading", { name: "NASA dataset", level: 4 })).toBeInTheDocument();
++    await userEvent.click(within(journey).getByRole("button", { name: /Scientific finding/ }));
++    expect(screen.getByRole("heading", { name: "Scientific finding", level: 4 })).toBeInTheDocument();
++    expect(screen.getByText("Includes zero")).toBeInTheDocument();
++    await userEvent.click(within(journey).getByRole("button", { name: /^Trend/ }));
++    const panel = screen.getByRole("heading", { name: "Trend", level: 4 }).closest("section")!;
++    expect(within(panel).getByText("+0.0205")).toBeInTheDocument();
++    expect(within(panel).getByText("Theil–Sen slope")).toBeInTheDocument();
++  });
++
++  it("inspects a year's real months and links it to the chart focus", async () => {
++    render(<MissionFindings analysis={ndvi()} />);
++    await userEvent.click(within(screen.getByRole("list", { name: "Evidence journey" })).getByRole("button", { name: /Eligible years/ }));
++    await userEvent.click(screen.getByRole("button", { name: /^2018: set aside, 3 of 12 months with data/ }));
++    const card = screen.getByRole("article", { name: "Year 2018 details" });
++    expect(within(card).getByText("Set aside")).toBeInTheDocument();
++    expect(within(card).getByText("March: missing")).toBeInTheDocument();
++    expect(within(card).getByText("January: data")).toBeInTheDocument();
++    expect(within(card).getByText("A whole three-month season had no data.")).toBeInTheDocument();
++    expect(within(card).getByText("missing_calendar_quarter")).toBeInTheDocument();
++    expect(screen.getByText("Inspecting 2018")).toBeInTheDocument();
++  });
++
++  it("never treats missing or unreported months as zero", () => {
++    const a = ndvi();
++    const r = yearRecords(a).find((y) => y.year === 2018)!;
++    expect(r.months.filter((m) => m === "missing")).toHaveLength(9);
++    r.months.forEach((m, i) => { if (m !== "valid") expect(r.monthValues[i]).toBeNull(); });
++    const annualOnly = yearRecords(heat())[0]!;
++    expect(annualOnly.monthSource).toBe("none");
++    expect(annualOnly.months.every((m) => m === "unknown")).toBe(true);
++  });
++
++  it("explains unavailable inference as 'not evaluated', not 'not significant'", () => {
++    render(<MemoryLab analysis={precipitation()} />);
++    expect(screen.getByText("Not evaluated / reported")).toBeInTheDocument();
++    expect(screen.getByText(/Some years may be related to earlier years, making the usual significance test unreliable\./)).toBeInTheDocument();
++    expect(screen.getByText("Material lag-1 serial dependence detected")).toBeInTheDocument();
++    expect(screen.getByText(/invented series, not NASA data/)).toBeInTheDocument();
++  });
++
++  it("labels the Theil–Sen lab as schematic and shows the outlier effect only on invented points", () => {
++    const clean = schematicFits(SCHEMATIC);
++    const spiked = schematicFits(SCHEMATIC.map((v, i) => (i === 6 ? 9.2 : v)));
++    expect(Math.abs(spiked.ols - clean.ols)).toBeGreaterThan(Math.abs(spiked.robust - clean.robust));
++    render(<MissionFindings analysis={temperature()} />);
++    expect(screen.getByText(/invented points, not NASA data/)).toBeInTheDocument();
++    expect(screen.getByText(/An ordinary fit was not computed on the real data/)).toBeInTheDocument();
++  });
++});
++
++describe("B5: methodology preservation", () => {
++  it("keeps every extreme-heat threshold note verbatim behind Technical details", () => {
++    const a = heat();
++    render(<MethodExplorer analysis={a} />);
++    for (const v of ["Hyndman-Fan type 8", "interpolated February 28/March 1 threshold", "Zhang-style leave-one-year-out replacement bootstrap for 1991-2020", "1991", "2020"]) {
++      expect(screen.getAllByText(v).length).toBeGreaterThan(0);
++    }
++  });
++
++  it("preserves every string methodology note and caveat at least once across topics", async () => {
++    const a = precipitation();
++    const notes = methodNotes(a).map((n) => n.value);
++    for (const v of Object.values(a.methodology.trend_method)) expect(notes).toContain(v);
++    for (const v of Object.values(a.methodology.source as Record<string, string>)) expect(notes).toContain(v);
++    for (const c of a.caveats) expect(notes).toContain(c);
++    render(<MethodExplorer analysis={a} />);
++    const tabs = screen.getAllByRole("tab");
++    expect(tabs.length).toBeGreaterThanOrEqual(3);
++    await userEvent.click(screen.getByRole("tab", { name: /uncertainty/ }));
++    expect(screen.getByText(/two-sided Mann-Kendall test/)).toBeInTheDocument();
++  });
++});
++
++describe("Experience C: scientific guardrails", () => {
++  it("renders only relevant boundaries and attaches each backend limitation exactly once", () => {
++    const desc = guardrails(precipitation()).map((g) => g.title);
++    expect(desc).toContain("No significance test means no significance conclusion.");
++    expect(desc).not.toContain("“No trend detected” is not “no change”.");
++    const none = guardrails(ndvi()).map((g) => g.title);
++    expect(none).toContain("Absence of a result is not absence of change.");
++    expect(none).not.toContain("A trend is not a cause.");
++    const a = heat();
++    const attached = guardrails(a).flatMap((g) => g.notes).filter((n) => a.limitations.includes(n));
++    expect([...attached].sort()).toEqual([...a.limitations].sort());
++  });
++
++  it("starts compact and reveals relevance and verbatim notes on selection", async () => {
++    const onShow = vi.fn();
++    render(<Cautions analysis={temperature()} onShowEvidence={onShow} />);
++    expect(screen.queryByText("In this investigation")).not.toBeInTheDocument();
++    const card = screen.getByRole("button", { name: /An area is not an address/ });
++    expect(card).toHaveAttribute("aria-expanded", "false");
++    await userEvent.click(card);
++    expect(card).toHaveAttribute("aria-expanded", "true");
++    expect(screen.getByText(/0\.5° × 0\.625° grid cell/)).toBeInTheDocument();
++    await userEvent.click(screen.getByRole("button", { name: /See the supporting evidence/ }));
++    expect(onShow).toHaveBeenCalledWith("dataset");
++  });
++
++  it("uses a 'test run · inconclusive' visual for not-detected results, not 'not evaluated'", () => {
++    expect(guardrails(temperature()).find((g) => g.id === "inference")!.visual).toBe("inconclusive");
++    expect(guardrails(precipitation()).find((g) => g.id === "inference")!.visual).toBe("inference");
++  });
++});
++
++describe("motion and responsiveness", () => {
++  it("disables expedition animations under prefers-reduced-motion and collapses layouts on small screens", () => {
++    const css = readFileSync(`${process.cwd()}/src/styles/expedition.css`, "utf8");
++    const reduced = css.slice(css.indexOf("@media (prefers-reduced-motion: reduce)"));
++    for (const sel of [".stage-panel", ".guard-detail", ".limb-satellite"]) expect(reduced).toContain(sel);
++    expect(css).toMatch(/@media \(max-width: 640px\)[\s\S]*\.journey-stages \{ grid-template-columns: repeat\(2/);
++  });
++});
+diff --git a/frontend/src/lib/evidence.ts b/frontend/src/lib/evidence.ts
+new file mode 100644
+index 0000000..3cf4ab8
+--- /dev/null
++++ b/frontend/src/lib/evidence.ts
+@@ -0,0 +1,493 @@
++import type { Analysis, AnnualPoint, SerialDependence } from "../api/types";
++import { fmt, pText, reasonLabel, signed } from "./format";
++import { calendarSeries } from "./series";
++import { stepWarning } from "./summary";
++import { inSentence, isSeasonal, monthsUsed, periodLabel, testName, trendVerdict, type VerdictKind } from "./verdict";
++
++/**
++ * View models for the Earth Evidence Expedition.
++ *
++ * Everything here reshapes values the backend already returned. Nothing computes a new
++ * statistic on the real observations, invents an exclusion reason or fills a missing month.
++ * When the backend does not expose a detail, the model says so explicitly.
++ */
++
++export const MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
++export const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
++
++const pretty = (k: string) => k.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
++
++/* ------------------------------------------------------------------ */
++/* Plain-language translations                                         */
++/* ------------------------------------------------------------------ */
++
++const PLAIN_REASONS: Record<string, string> = {
++  "Material lag-1 serial dependence detected": "Some years may be related to earlier years, making the usual significance test unreliable.",
++  "Inferential confidence interval not supported": "An uncertainty range is only reported when the significance test can be trusted.",
++  "At least 3 eligible annual observations are required": "At least 3 complete years are needed before a slope can be estimated.",
++  "At least 8 eligible annual observations are required": "At least 8 complete years are needed before a significance test is run.",
++};
++
++/** A friendlier sentence for a backend reason string; the original stays available as technical text. */
++export function plainReason(reason: string | null | undefined): string | null {
++  if (!reason) return null;
++  if (PLAIN_REASONS[reason]) return PLAIN_REASONS[reason];
++  const m = /^At least (\d+) eligible annual observations are required/.exec(reason);
++  if (m) return `At least ${m[1]} complete years are needed for this step.`;
++  return reason;
++}
++
++const PLAIN_YEAR_REASONS: Record<string, string> = {
++  partial_calendar_year: "The year is only partly inside the requested period.",
++  no_valid_observations: "No usable measurements were returned for this year.",
++  insufficient_represented_months: "Too few months had usable data.",
++  insufficient_valid_slot_coverage: "Too many days or time steps were missing.",
++  missing_calendar_quarter: "A whole three-month season had no data.",
++  insufficient_valid_months: "Fewer than 12 months had usable values.",
++  missing_monthly_value: "At least one monthly value is missing.",
++  provisional_recent_product: "Recent data are provisional and may still be revised.",
++  outside_availability: "The dataset does not cover this year.",
++};
++
++export const plainYearReason = (code: string) => PLAIN_YEAR_REASONS[code] ?? reasonLabel(code);
++
++export type DependencePlain = { tone: "ok" | "caution" | "unknown"; headline: string; detail: string };
++
++/** Translates the lag-1 serial-dependence screen into everyday words. */
++export function plainDependence(sd: SerialDependence | null | undefined): DependencePlain {
++  if (!sd) return { tone: "unknown", headline: "Year-to-year memory was not checked for this result.", detail: "The backend did not report a serial-dependence screen, usually because too few years were eligible." };
++  if (sd.status === "material_dependence_detected" || sd.supported_for_standard_inference === false) {
++    return {
++      tone: "caution",
++      headline: "Some years may be related to earlier years, making the usual significance test unreliable.",
++      detail: sd.unavailable_reason ? `Backend screen: ${sd.unavailable_reason}.` : "The backend screen flagged dependence between neighbouring years.",
++    };
++  }
++  if (sd.lag1_spearman_rho === null) return { tone: "unknown", headline: "Year-to-year memory could not be measured.", detail: sd.unavailable_reason ?? sd.caveat };
++  return {
++    tone: "ok",
++    headline: "No strong link between neighbouring years was found.",
++    detail: "That does not prove the years are independent: with short records this check has little power.",
++  };
++}
++
++/* ------------------------------------------------------------------ */
++/* Experience A — headline                                              */
++/* ------------------------------------------------------------------ */
++
++export interface Headline { kind: VerdictKind; headline: string; qualifier: string; significance: string; significanceDetail: string }
++
++/**
++ * Two-level discovery: a short headline plus the qualification that must travel with it.
++ * The headline never states more certainty than the verdict allows.
++ */
++export function headlineParts(a: Analysis): Headline {
++  const v = trendVerdict(a);
++  const t = a.trend;
++  const name = inSentence(a.variable.name);
++  const slope = t?.slope ?? 0;
++  const dir = slope > 0 ? "upward" : slope < 0 ? "downward" : null;
++  const mk = t?.mann_kendall;
++  const test = testName(a);
++  switch (v.kind) {
++    case "unavailable":
++      return {
++        kind: v.kind,
++        headline: "There isn’t enough reliable data to determine a long-term trend.",
++        qualifier: "That is not evidence of no change. The record is too incomplete to judge.",
++        significance: "Not evaluated",
++        significanceDetail: plainReason(t?.significance_unavailable_reason) ?? "No slope, so no test.",
++      };
++    case "increasing":
++    case "decreasing":
++      return {
++        kind: v.kind,
++        headline: `An ${v.kind === "increasing" ? "upward" : "downward"} trend in ${name}, supported by the trend test.`,
++        qualifier: `Treat it as indicative, not certain: the test can over-report trends when neighbouring ${isSeasonal(a) ? "months" : "years"} are related.`,
++        significance: "Significant*",
++        significanceDetail: mk ? `${test} ${pText(mk.p_value)} (α = ${mk.alpha})` : "",
++      };
++    case "not_detected":
++      return {
++        kind: v.kind,
++        headline: dir ? `${dir === "upward" ? "An upward" : "A downward"} slope in ${name}, but the evidence is inconclusive.` : `No monotonic trend detected in ${name}.`,
++        qualifier: "The trend test could not tell this slope apart from year-to-year ups and downs. That is not proof of no change.",
++        significance: "Not significant",
++        significanceDetail: mk ? `${test} ${pText(mk.p_value)} (α = ${mk.alpha})` : "",
++      };
++    case "descriptive":
++      return {
++        kind: v.kind,
++        headline: dir ? `${dir === "upward" ? "An upward" : "A downward"} estimated trend in ${name}.` : `A flat estimated trend in ${name}.`,
++        qualifier: "This result is descriptive. A significance test was not reported.",
++        significance: "Not evaluated",
++        significanceDetail: plainReason(t?.significance_unavailable_reason) ?? "No significance test was reported.",
++      };
++  }
++}
++
++/* ------------------------------------------------------------------ */
++/* Experience B — evidence journey                                      */
++/* ------------------------------------------------------------------ */
++
++export type StageId = "dataset" | "observations" | "screening" | "eligible" | "trend" | "finding";
++export type StageStatus = "ok" | "limited" | "unavailable";
++
++export interface Stage { id: StageId; label: string; question: string; readout: string; status: StageStatus }
++
++export type ProvenanceKind = "model" | "satellite" | "other";
++export function provenanceKind(a: Analysis): ProvenanceKind {
++  const p = `${a.dataset.provenance} ${a.dataset.source}`.toLowerCase();
++  if (/model|reanalysis|assimilat|land surface|noah|gldas/.test(p)) return "model";
++  if (/satellite|retriev|remote|modis|imerg|smap|radiometer/.test(p)) return "satellite";
++  return "other";
++}
++
++/** Monthly observation counts from the returned series; null when no monthly series was returned. */
++export function observationCounts(a: Analysis): { valid: number; withheld: number; notReturned: number; total: number } | null {
++  if (!a.series.length) return null;
++  const rows = calendarSeries(a.series, a.period.start, a.period.end_exclusive);
++  return {
++    valid: rows.filter((r) => r.state === "valid").length,
++    withheld: rows.filter((r) => r.state === "withheld").length,
++    notReturned: rows.filter((r) => r.state === "not_returned").length,
++    total: rows.length,
++  };
++}
++
++export function stages(a: Analysis): Stage[] {
++  const t = a.trend;
++  const v = trendVerdict(a);
++  const obs = observationCounts(a);
++  const requested = a.coverage.years_requested;
++  const eligible = a.coverage.eligible_years;
++  const excluded = a.annual.filter((y) => !y.eligible).length;
++  const seasonal = isSeasonal(a);
++  const yearsWithValues = a.annual.filter((y) => y.value !== null).length;
++  return [
++    { id: "dataset", label: "NASA dataset", question: "Where do the numbers come from?", readout: a.dataset.source, status: "ok" },
++    {
++      id: "observations",
++      label: "Observations",
++      question: "What was actually measured or estimated?",
++      readout: obs ? `${obs.valid} of ${obs.total} months` : `${yearsWithValues} annual values`,
++      status: obs ? (obs.valid === 0 ? "unavailable" : obs.valid < obs.total ? "limited" : "ok") : yearsWithValues ? "ok" : "unavailable",
++    },
++    {
++      id: "screening",
++      label: "Quality screening",
++      question: "Which years were complete enough?",
++      readout: excluded ? `${excluded} year${excluded === 1 ? "" : "s"} set aside` : "All years passed",
++      status: excluded === 0 ? "ok" : excluded === a.annual.length ? "unavailable" : "limited",
++    },
++    seasonal
++      ? { id: "eligible", label: "Eligible data", question: "What went into the trend?", readout: `${t?.sample_count ?? 0} monthly values`, status: (t?.sample_count ?? 0) > 0 ? "ok" : "unavailable" }
++      : { id: "eligible", label: "Eligible years", question: "What went into the trend?", readout: `${eligible} of ${requested} years`, status: eligible === 0 ? "unavailable" : eligible < requested ? "limited" : "ok" },
++    {
++      id: "trend",
++      label: "Trend",
++      question: "How fast did it change?",
++      readout: t?.slope != null ? `${signed(t.slope, 3)} ${t.slope_units ?? a.units.slope}` : "Not estimated",
++      status: t?.slope != null ? "ok" : "unavailable",
++    },
++    {
++      id: "finding",
++      label: "Scientific finding",
++      question: "What can we conclude?",
++      readout: v.label,
++      status: v.kind === "increasing" || v.kind === "decreasing" ? "ok" : v.kind === "unavailable" ? "unavailable" : "limited",
++    },
++  ];
++}
++
++/* ------------------------------------------------------------------ */
++/* B2 — year and month records                                          */
++/* ------------------------------------------------------------------ */
++
++export type MonthCell = "valid" | "missing" | "unknown";
++
++export interface YearRecord {
++  year: number;
++  value: number | null;
++  eligible: boolean;
++  status: "eligible" | "excluded" | "empty";
++  reasons: string[];
++  months: MonthCell[];
++  /** Where the month states came from; "none" means the backend reported no month detail. */
++  monthSource: "annual" | "series" | "none";
++  monthValues: (number | null)[];
++  coverage: number | null;
++  facts: [string, string][];
++}
++
++function factValue(v: unknown): string | null {
++  if (v === null || v === undefined) return null;
++  if (typeof v === "number") return fmt(v, 3);
++  if (typeof v === "string") return v;
++  if (typeof v === "boolean") return v ? "yes" : "no";
++  if (Array.isArray(v) && v.every((x) => typeof x === "number")) return v.map((x) => fmt(x as number, 3)).join(" – ");
++  return null;
++}
++
++export function yearRecords(a: Analysis): YearRecord[] {
++  const byYear = new Map<number, Map<number, { value: number | null; valid: boolean }>>();
++  for (const p of a.series) {
++    const y = Number(p.date.slice(0, 4));
++    const m = Number(p.date.slice(5, 7));
++    if (!Number.isFinite(y) || !m) continue;
++    const valid = p.usable !== false && p.value !== null && Number.isFinite(p.value);
++    if (!byYear.has(y)) byYear.set(y, new Map());
++    byYear.get(y)!.set(m, { value: valid ? p.value : null, valid });
++  }
++  return a.annual.map((y: AnnualPoint) => {
++    const series = byYear.get(y.year);
++    let months: MonthCell[];
++    let monthSource: YearRecord["monthSource"];
++    if (y.represented_months !== null) {
++      monthSource = "annual";
++      months = MONTH_ABBR.map((_, i) => (y.represented_months!.includes(i + 1) ? "valid" : y.missing_months?.includes(i + 1) ? "missing" : "unknown"));
++    } else if (series) {
++      monthSource = "series";
++      months = MONTH_ABBR.map((_, i) => {
++        const s = series.get(i + 1);
++        return s ? (s.valid ? "valid" : "missing") : "unknown";
++      });
++    } else {
++      monthSource = "none";
++      months = MONTH_ABBR.map(() => "unknown");
++    }
++    const monthValues = MONTH_ABBR.map((_, i) => series?.get(i + 1)?.value ?? null);
++    const facts = Object.entries(y.extra ?? {})
++      .map(([k, v]) => [pretty(k), factValue(v)] as const)
++      .filter((e): e is [string, string] => e[1] !== null);
++    return {
++      year: y.year,
++      value: y.value,
++      eligible: y.eligible,
++      status: y.eligible ? "eligible" : y.value === null ? "empty" : "excluded",
++      reasons: y.reasons,
++      months,
++      monthSource,
++      monthValues,
++      coverage: y.coverage_percentage,
++      facts,
++    };
++  });
++}
++
++/** How many years were set aside for each backend reason code. */
++export function reasonTally(a: Analysis): { code: string; years: number }[] {
++  const m = new Map<string, number>();
++  for (const y of a.annual) if (!y.eligible) for (const r of y.reasons) m.set(r, (m.get(r) ?? 0) + 1);
++  return [...m.entries()].map(([code, years]) => ({ code, years })).sort((x, y) => y.years - x.years);
++}
++
++/* ------------------------------------------------------------------ */
++/* B5 — methodology explorer                                           */
++/* ------------------------------------------------------------------ */
++
++export type TopicId = "derived" | "selected" | "trend" | "uncertainty" | "caveats";
++export interface MethodNote { key: string; label: string; value: string; origin: "source" | "trend_method" | "extra" | "caveat" }
++export interface Topic { id: TopicId; title: string; plain: string; notes: MethodNote[]; facts: string[] }
++
++const TOPIC_RULES: [TopicId, RegExp][] = [
++  ["caveats", /(inference_caveat|descriptive_slope_note|thresholds_are_universal|status$)/],
++  ["uncertainty", /(significance|serial_dependence|confidence_interval|alpha|lag1|residual_pairs)/],
++  ["trend", /(^|›\s*)(slope|trend_policy|minimum_slope_years)|trend_basis/],
++  ["selected", /(minimum|require|exclude|support_policy|annual_policy|missing_values|provisional|min_|slot)/],
++  ["derived", /(conversion|aggregation|trend_input|value_definition|percentile|window|quantile|comparison|leap|bootstrap|reference_period)/],
++];
++
++function topicFor(key: string): TopicId {
++  for (const [id, re] of TOPIC_RULES) if (re.test(key)) return id;
++  return "derived";
++}
++
++function flatten(obj: unknown, prefix: string, out: [string, string][]) {
++  if (obj === null || obj === undefined) return;
++  if (typeof obj !== "object" || Array.isArray(obj)) {
++    out.push([prefix, Array.isArray(obj) ? JSON.stringify(obj) : String(obj)]);
++    return;
++  }
++  for (const [k, v] of Object.entries(obj as Record<string, unknown>)) flatten(v, prefix ? `${prefix} › ${k}` : k, out);
++}
++
++const leaf = (k: string) => k.split(" › ").pop()!;
++
++/** Every backend methodology note, grouped by topic. Values are kept verbatim; identical repeats appear once. */
++export function methodNotes(a: Analysis): MethodNote[] {
++  const seen = new Set<string>();
++  const notes: MethodNote[] = [];
++  const add = (key: string, value: string, origin: MethodNote["origin"]) => {
++    const sig = `${leaf(key)}=${value}`;
++    if (seen.has(sig) || seen.has(`=${value}`) && value.length > 60) return;
++    seen.add(sig);
++    if (value.length > 60) seen.add(`=${value}`);
++    notes.push({ key, label: key.split(" › ").map(pretty).join(" › "), value, origin });
++  };
++  const tm: [string, string][] = [];
++  flatten(a.methodology.trend_method ?? {}, "", tm);
++  const src: [string, string][] = [];
++  flatten(a.methodology.source ?? {}, "", src);
++  for (const [k, v] of src) add(k, v, "source");
++  for (const [k, v] of tm) add(k, v, "trend_method");
++  // Extreme heat: the reference period lives in `extra`; keep it with the derivation notes.
++  const ref = a.extra?.reference_period;
++  if (ref && typeof ref === "object") {
++    const r: [string, string][] = [];
++    flatten(ref, "reference_period", r);
++    for (const [k, v] of r) add(k, v, "extra");
++  }
++  if (typeof a.extra?.trend_basis === "string") add("trend_basis", a.extra.trend_basis, "extra");
++  a.caveats.forEach((c, i) => add(`caveat_${i + 1}`, c, "caveat"));
++  return notes;
++}
++
++const TOPIC_TITLES: Record<TopicId, string> = {
++  derived: "How the measurements were derived",
++  selected: "How usable observations were selected",
++  trend: "How the trend was estimated",
++  uncertainty: "How uncertainty and significance were assessed",
++  caveats: "Important assumptions and caveats",
++};
++
++export function methodTopics(a: Analysis): Topic[] {
++  const notes = methodNotes(a);
++  const t = a.trend;
++  const v = trendVerdict(a);
++  const seasonal = isSeasonal(a);
++  const plain: Record<TopicId, string> = {
++    derived: `Each yearly number is the ${a.variable.annual_value_definition.replace(/\.$/, "")}.`,
++    selected: seasonal
++      ? `Calendar months with data in enough years were kept: ${monthsUsed(a) || "none qualified"}.`
++      : `${a.coverage.eligible_years} of ${a.coverage.years_requested} years were complete enough to use. Gaps are never filled or treated as zero.`,
++    trend: t?.slope != null
++      ? `The slope is the median of the slopes between every pair of ${seasonal ? "same-month values" : "years"}, so one unusual year cannot drag it far.`
++      : "No slope was estimated because too little data passed the completeness rules.",
++    uncertainty: v.kind === "descriptive" || v.kind === "unavailable"
++      ? "No significance test was reported for this result, so its reliability was not evaluated."
++      : `A ${testName(a)} test checked whether the ups and downs could hide the slope.`,
++    caveats: "Read these before quoting the result.",
++  };
++  return (Object.keys(TOPIC_TITLES) as TopicId[])
++    .map((id) => {
++      const own = notes.filter((n) => (n.origin === "caveat" ? "caveats" : topicFor(n.key)) === id);
++      const facts = own.filter((n) => n.value.length <= 26 && n.origin !== "caveat").slice(0, 4).map((n) => `${pretty(leaf(n.key))}: ${n.value}`);
++      return { id, title: TOPIC_TITLES[id], plain: plain[id], notes: own, facts };
++    })
++    .filter((tp) => tp.notes.length > 0 || tp.id === "trend" || tp.id === "uncertainty");
++}
++
++/* ------------------------------------------------------------------ */
++/* Experience C — guardrails                                            */
++/* ------------------------------------------------------------------ */
++
++export type GuardVisual = "cause" | "area" | "inference" | "inconclusive" | "indicative" | "nochange" | "station" | "satellite" | "step" | "months" | "years" | "dataset";
++
++export interface Guardrail { id: string; visual: GuardVisual; title: string; line: string; detail: string; relevance: string; notes: string[]; stage?: StageId }
++
++const AREA_RE = /grid|pixel|cell|area|region|footprint|spatial/i;
++const SOURCE_RE = /station|model|estimate|retriev|satellite|observation|reanalysis|in situ/i;
++
++/** Only the limitations that apply to this dataset and this result. Each backend limitation appears once. */
++export function guardrails(a: Analysis): Guardrail[] {
++  const v = trendVerdict(a);
++  const t = a.trend;
++  const s = a.spatial_support;
++  const tm = a.methodology.trend_method ?? {};
++  const units = t?.slope_units ?? a.units.slope;
++  const items: Guardrail[] = [];
++  const remaining = [...a.limitations];
++  const take = (re: RegExp) => {
++    const hit = remaining.filter((l) => re.test(l));
++    for (const h of hit) remaining.splice(remaining.indexOf(h), 1);
++    return hit;
++  };
++
++  if (v.kind === "unavailable") {
++    items.push({
++      id: "nochange", visual: "nochange",
++      title: "Absence of a result is not absence of change.",
++      line: "Too little complete data means we cannot judge, not that nothing happened.",
++      detail: "A trend needs enough complete years. When the record has too many gaps, the honest answer is “we don’t know yet”.",
++      relevance: plainReason(t?.slope_unavailable_reason) ?? `Only ${a.coverage.eligible_years} of ${a.coverage.years_requested} years met the completeness rules.`,
++      notes: [t?.slope_unavailable_reason].filter((x): x is string => !!x),
++      stage: "eligible",
++    });
++  } else {
++    items.push({
++      id: "cause", visual: "cause",
++      title: "A trend is not a cause.",
++      line: "The slope shows how values changed, not why they changed.",
++      detail: "Many things can move a signal at once: natural variability, land-use change, or changes in the data itself. A trend line summarises direction; finding the cause needs a separate attribution study.",
++      relevance: `This slope (${signed(t?.slope ?? null, 4)} ${units}) describes ${periodLabel(a)} only. It is not a forecast.`,
++      notes: [tm.descriptive_slope_note ?? a.caveats[1]].filter((x): x is string => !!x),
++      stage: "trend",
++    });
++  }
++
++  if (v.kind === "descriptive") {
++    items.push({
++      id: "inference", visual: "inference",
++      title: "No significance test means no significance conclusion.",
++      line: "We can describe the slope, but not say whether it is more than noise.",
++      detail: "Without a test, “not significant” would be wrong too. The reliability of this slope was simply not evaluated.",
++      relevance: plainReason(t?.significance_unavailable_reason) ?? "The backend did not report a significance test for this result.",
++      notes: [t?.significance_unavailable_reason, t?.confidence_interval_unavailable_reason, t?.serial_dependence?.caveat].filter((x): x is string => !!x),
++      stage: "finding",
++    });
++  } else if (v.kind === "not_detected") {
++    items.push({
++      id: "inference", visual: "inconclusive",
++      title: "“No trend detected” is not “no change”.",
++      line: "The test could not separate the slope from natural ups and downs.",
++      detail: "The data are consistent with no trend, and also with a modest trend that this record is too short or noisy to detect.",
++      relevance: t?.mann_kendall ? `${testName(a)} ${pText(t.mann_kendall.p_value)} at α = ${t.mann_kendall.alpha}.` : "The test did not reject “no monotonic trend”.",
++      notes: [tm.inference_caveat ?? a.caveats[0]].filter((x): x is string => !!x),
++      stage: "finding",
++    });
++  } else if (v.kind === "increasing" || v.kind === "decreasing") {
++    items.push({
++      id: "inference", visual: "indicative",
++      title: "Significant is indicative, not certain.",
++      line: "Related neighbouring years can make the test too confident.",
++      detail: "The screened test can reject “no trend” more often than its nominal 5% when years are autocorrelated. Treat the result as a strong hint, not proof.",
++      relevance: t?.mann_kendall ? `${testName(a)} ${pText(t.mann_kendall.p_value)} at α = ${t.mann_kendall.alpha}.` : "",
++      notes: [tm.inference_caveat ?? a.caveats[0]].filter((x): x is string => !!x),
++      stage: "finding",
++    });
++  }
++
++  items.push({
++    id: "area", visual: "area",
++    title: "An area is not an address.",
++    line: "The value describes a whole sampled area around your point.",
++    detail: "Gridded and pixel products average conditions over an area. A street, a field or a rooftop inside it can be hotter, wetter or greener than the average.",
++    relevance: `This result is a ${inSentence(s.description)} (${s.resolution}).`,
++    notes: take(AREA_RE),
++    stage: "dataset",
++  });
++
++  const kind = provenanceKind(a);
++  items.push({
++    id: "source",
++    visual: kind === "satellite" ? "satellite" : "station",
++    title: kind === "model" ? "Models are not ground stations." : kind === "satellite" ? "A satellite view is not a ground station." : "Know what kind of data this is.",
++    line: kind === "model" ? "These values are model estimates, not instrument readings at a site." : kind === "satellite" ? "Satellites infer conditions from orbit; they do not touch the ground." : "Different sources measure in different ways.",
++    detail: "Model estimates and satellite retrievals are checked against ground instruments, but they are not the same thing. Agreement between products is not the same as validated accuracy.",
++    relevance: `${a.dataset.source}: ${a.dataset.provenance.replace(/_/g, " ")}.`,
++    notes: take(SOURCE_RE),
++    stage: "dataset",
++  });
++
++  const step = stepWarning(a);
++  if (step) items.push({ id: "step", visual: "step", title: "A sudden step is not a gradual trend.", line: "One jump can masquerade as steady change.", detail: step, relevance: step, notes: [], stage: "trend" });
++  if (isSeasonal(a) && t?.slope != null)
++    items.push({ id: "months", visual: "months", title: "Only some months are used.", line: "The other months had too little usable data.", detail: `The trend compares ${monthsUsed(a)} with the same months in other years.`, relevance: "The result says nothing about the months that were left out.", notes: [], stage: "eligible" });
++  const excluded = a.coverage.years_requested - a.coverage.eligible_years;
++  if (excluded > 0 && !isSeasonal(a) && v.kind !== "unavailable")
++    items.push({ id: "years", visual: "years", title: "Not every year counted.", line: `${excluded} of ${a.coverage.years_requested} years were set aside.`, detail: "Years that failed the completeness rules are shown for context only; they do not shape the trend.", relevance: `${excluded} requested year${excluded === 1 ? "" : "s"} excluded by the completeness rules.`, notes: [], stage: "eligible" });
++  if (remaining.length)
++    items.push({ id: "dataset", visual: "dataset", title: "What this dataset can’t tell you.", line: `${remaining.length} limit${remaining.length === 1 ? "" : "s"} stated by the data provider.`, detail: "These limits come with the dataset itself and apply to every result built from it.", relevance: "Stated for this product by the backend.", notes: remaining, stage: "dataset" });
++  return items;
++}
+diff --git a/frontend/src/pages/ExplorePage.tsx b/frontend/src/pages/ExplorePage.tsx
+index 1f3575a..41b98a7 100644
+--- a/frontend/src/pages/ExplorePage.tsx
++++ b/frontend/src/pages/ExplorePage.tsx
+@@ -5,14 +5,12 @@ import { isUnreachable } from "../api/types";
+ import AnalysisControls from "../components/AnalysisControls";
+ import LocationPanel from "../components/LocationPanel";
+ import type { Footprint } from "../components/MapView";
+-import { Cautions, ErrorBox, Limitations, Loading, MethodNotes, ProvenanceCard, ResultSummary } from "../components/ResultPanels";
+-import SeriesChart from "../components/SeriesChart";
+-import TrendChart from "../components/TrendChart";
++import { ErrorBox, Loading } from "../components/ResultPanels";
++import MissionFindings from "../components/expedition/MissionFindings";
+ import MapBoundary from "../components/explore/MapBoundary";
+ import LaunchCraft from "../components/explore/LaunchCraft";
+ import Starfield from "../components/layout/Starfield";
+ import DiscoveryChamber from "../components/explore/DiscoveryChamber";
+-import SeasonalChart from "../components/science/SeasonalChart";
+ import { boxPatch, boxProblem, circleProblem, regionLimits } from "../lib/region";
+ import type { EditableRegion } from "../lib/regionInteraction";
+ import { signed } from "../lib/format";
+@@ -235,24 +233,7 @@ export default function ExplorePage({ variables, selection, onChange, submitted,
+                   <strong>Controls changed since this investigation.</strong> These findings still describe {analysis.variable.name} at {submittedPlace || "the earlier point"}, {periodLabel(analysis)}. Launch again to investigate the new selection.
+                 </p>
+               )}
+-              <ResultSummary analysis={analysis} place={submittedPlace} />
+-              <section className="layer layer-data" aria-labelledby="layer-4">
+-                <h3 id="layer-4" className="layer-title"><span className="layer-num" aria-hidden>04</span>What does the data look like?</h3>
+-                <div className="charts">
+-                  <TrendChart analysis={analysis} />
+-                  <SeriesChart analysis={analysis} />
+-                  <SeasonalChart analysis={analysis} />
+-                </div>
+-              </section>
+-              <Cautions analysis={analysis} />
+-              <div className="dossier-foot">
+-                <ProvenanceCard analysis={analysis} />
+-                <div className="stack">
+-                  <MethodNotes analysis={analysis} />
+-                  <Limitations analysis={analysis} />
+-                  <a className="text-link" href="#evaluation">Open Mission Control for the full evidence review →</a>
+-                </div>
+-              </div>
++              <MissionFindings analysis={analysis} place={submittedPlace} />
+             </article>
+           )}
+         </div>
+diff --git a/frontend/src/styles.css b/frontend/src/styles.css
+index b7e9b0e..a5dc8dc 100644
+--- a/frontend/src/styles.css
++++ b/frontend/src/styles.css
+@@ -3,4 +3,5 @@
+ @import "./styles/base.css";
+ @import "./styles/layout.css";
+ @import "./styles/explore.css";
++@import "./styles/expedition.css";
+ @import "./styles/pages.css";
+diff --git a/frontend/src/styles/expedition.css b/frontend/src/styles/expedition.css
+new file mode 100644
+index 0000000..f83f3f1
+--- /dev/null
++++ b/frontend/src/styles/expedition.css
+@@ -0,0 +1,393 @@
++/* ==========================================================================
++   Earth Evidence Expedition — discovery, evidence explorer, scientific guardrails.
++   Graphics here explain: grids show footprints, orbits connect evidence, pips show months.
++   ========================================================================== */
++
++.findings {
++  --chart-focus: var(--aurora-teal);
++  --xp-glass: linear-gradient(150deg, rgba(22, 34, 72, .78), rgba(6, 12, 29, .9));
++  --xp-line: rgba(146, 166, 232, .3);
++  --xp-line-strong: rgba(146, 166, 232, .55);
++  --xp-ok: var(--aurora-teal);
++  --xp-limited: var(--celestial-peach);
++  --xp-off: #8d9bbb;
++}
++
++/* ---------- Experience A: discovery ---------- */
++.discovery-headline { max-width: 17ch; }
++.discovery-qualifier {
++  max-width: 46ch; font-size: clamp(1.05rem, .95rem + .4vw, 1.3rem); line-height: 1.45; color: var(--moonlight-warm);
++  padding-left: 14px; border-left: 2px solid var(--celestial-peach);
++}
++.qualifier-increasing, .qualifier-decreasing { border-left-color: var(--aurora-teal); }
++.qualifier-unavailable { border-left-style: dotted; }
++
++.readout-deck { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: stretch; }
++.readout { position: relative; display: grid; align-content: start; gap: 4px; padding: 22px 22px 20px; min-width: 0; border: 1px solid var(--xp-line); background: var(--xp-glass); border-radius: 4px 24px 4px 24px; overflow: hidden; }
++.readout::before { content: ""; position: absolute; inset: 0 auto auto 0; width: 54px; height: 2px; background: var(--cosmic-indigo); }
++.readout-q { font: 500 .7rem var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: #a9b8e6; margin-bottom: 8px; }
++.readout .figure-label { font: 600 var(--fs-xs) var(--font-brand); color: #c9d3ef; letter-spacing: .04em; }
++.readout-rate { background: radial-gradient(ellipse at 100% 0%, rgba(143,100,232,.32), transparent 55%), var(--xp-glass); }
++.readout-rate .figure-value { font-size: clamp(2.6rem, 3.6vw, 4.2rem); line-height: 1; color: var(--starlight); }
++.readout-rate .figure-unit { color: #c6d1ec; }
++.readout-sub { color: var(--aurora-teal); font-size: var(--fs-sm); margin-top: 2px; }
++.discovery-spark { width: 100%; height: 64px; margin-top: 10px; }
++.spark-ground { stroke: rgba(184,198,239,.2); }
++.spark-trend { stroke: var(--nebula-lavender); stroke-width: 2.5; stroke-linecap: round; }
++.spark-dot { fill: var(--aurora-teal); }
++.spark-ring { fill: none; stroke: #9cadd0; stroke-width: 1.5; }
++.spark-gap { stroke: #697a9e; stroke-width: 2; stroke-dasharray: 2 2; }
++.readout-evidence::before { background: var(--celestial-peach); }
++.readout-evidence.level-increasing::before, .readout-evidence.level-decreasing::before { background: var(--aurora-teal); }
++.readout-evidence .ev-value { font-family: var(--font-display); font-size: 1.9rem; font-weight: 500; }
++.readout-na { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--xp-line); }
++.readout-years::before { background: var(--atmosphere-cyan); }
++.readout-years .ev-value { font-size: 2.2rem; }
++.readout .year-strip { margin-top: 10px; }
++
++.statement { border-color: var(--xp-line) !important; }
++.statement > summary { color: #dfe5f7; }
++.statement-lead { font-size: var(--fs-lg); color: var(--starlight); margin-bottom: 12px; max-width: 72ch; }
++.statement-note { display: block; margin-top: 6px; font-size: var(--fs-sm); color: #c1cbe3; }
++.statement-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px 24px; margin: 16px 0; }
++.statement-facts dt, .sp-facts dt, .year-facts dt { font: 500 .68rem var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: #9fb0d8; }
++.statement-facts dd, .sp-facts dd, .year-facts dd { margin: 2px 0 0; color: #e7ecfa; }
++
++/* ---------- Experience B: expedition shell ---------- */
++.expedition { position: relative; display: grid; gap: 34px; padding: 210px clamp(0px, 2vw, 24px) 0; isolation: isolate; scroll-margin-top: calc(var(--topbar-h) + 12px); }
++.expedition:focus-visible { outline: none; }
++.expedition-sky { position: absolute; z-index: -1; inset: 0 calc(-1 * clamp(16px, 3vw, 48px)) auto; height: 320px; overflow: hidden; pointer-events: none; -webkit-mask-image: linear-gradient(180deg, #000 60%, transparent); mask-image: linear-gradient(180deg, #000 60%, transparent); }
++.expedition-limb { width: 100%; height: 100%; }
++.limb-planet { stroke: rgba(128, 227, 239, .55); stroke-width: 1.2; }
++.limb-grid { fill: none; stroke: rgba(128,227,239,.18); stroke-dasharray: 2 9; transform: translateY(26px); }
++.limb-satellite rect { fill: #202a3d; stroke: var(--frost); stroke-width: 1; }
++.limb-satellite .sat-panel { fill: rgba(86,118,232,.5); stroke: #8fa6ff; }
++.limb-satellite .sat-beam { stroke: rgba(128,227,239,.45); stroke-dasharray: 3 5; }
++.limb-satellite { animation: xp-float 9s ease-in-out infinite alternate; }
++.expedition-head { display: grid; gap: 8px; max-width: 760px; }
++.expedition-title, .guard-title { font-family: var(--font-display); font-weight: 400; font-size: clamp(2rem, 1.3rem + 2.4vw, 3.4rem); line-height: 1; letter-spacing: -.035em; color: var(--starlight); }
++.expedition-sub, .guard-sub { color: #c3cde6; max-width: 56ch; }
++.expedition-head .kicker, .guard-head .kicker { color: var(--aurora-teal); letter-spacing: .18em; }
++
++/* ---------- B1: journey ---------- */
++.journey { position: relative; display: grid; gap: 22px; }
++.journey-orbit { position: absolute; left: 0; right: 0; top: -6px; width: 100%; height: 110px; pointer-events: none; }
++.jo-path { fill: none; stroke: rgba(143,166,255,.35); stroke-width: 1.4; stroke-dasharray: 2 7; vector-effect: non-scaling-stroke; }
++.jo-progress { fill: none; stroke: var(--aurora-teal); stroke-width: 2; stroke-dasharray: 100; vector-effect: non-scaling-stroke; transition: stroke-dashoffset var(--dur-slow) var(--ease); filter: drop-shadow(0 0 6px rgba(128,227,239,.7)); }
++.journey-stages { position: relative; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
++.js:nth-child(1), .js:nth-child(6) { transform: translateY(46px); }
++.js:nth-child(2), .js:nth-child(5) { transform: translateY(14px); }
++.js-btn { width: 100%; display: grid; justify-items: center; gap: 3px; padding: 6px 4px 10px; background: none; border: 0; color: inherit; cursor: pointer; text-align: center; border-radius: 14px; font: inherit; }
++.js-btn:hover .js-node { border-color: var(--aurora-teal); transform: translateY(-2px); }
++.js-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
++.js-node { width: 70px; height: 70px; display: grid; place-items: center; border-radius: 50%; border: 1.5px solid var(--xp-line-strong); background: radial-gradient(circle at 35% 30%, #1c2a55, #070d20 70%); box-shadow: inset 0 0 18px rgba(86,118,232,.25); transition: transform var(--dur) var(--ease), border-color var(--dur), box-shadow var(--dur); }
++.js.is-reached .js-node { border-color: rgba(128,227,239,.6); }
++.js.is-active .js-node { border-color: var(--aurora-teal); box-shadow: 0 0 0 6px rgba(128,227,239,.12), 0 0 30px rgba(128,227,239,.45), inset 0 0 18px rgba(128,227,239,.25); }
++.js-num { font-size: .62rem; color: #8ea0cf; margin-top: 4px; }
++.js-label { font: 600 var(--fs-sm) var(--font-brand); color: var(--starlight); line-height: 1.2; }
++.js-readout { font-size: var(--fs-xs); color: #b8c4e2; line-height: 1.3; }
++.js-ok .js-readout::before, .js-limited .js-readout::before, .js-unavailable .js-readout::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 5px; border-radius: 50%; vertical-align: 1px; }
++.js-ok .js-readout::before { background: var(--xp-ok); }
++.js-limited .js-readout::before { background: var(--xp-limited); }
++.js-unavailable .js-readout::before { border: 1.5px dotted var(--xp-off); }
++
++.stage-glyph { width: 38px; height: 38px; fill: none; stroke-linecap: round; stroke-linejoin: round; }
++.g-line, .g-tick { stroke: #9fb3e8; stroke-width: 1.4; }
++.g-stroke { stroke: var(--frost); stroke-width: 1.6; }
++.g-fill { fill: rgba(86,118,232,.28); }
++.g-limb { stroke: var(--atmosphere-cyan); stroke-width: 2; }
++.g-panel { fill: rgba(86,118,232,.6); stroke: #a9bbff; stroke-width: 1; }
++.g-beam { stroke: var(--aurora-teal); stroke-width: 1.4; stroke-dasharray: 2 3; }
++.g-dot { fill: var(--aurora-teal); }
++.g-hollow { fill: none; stroke: var(--celestial-peach); stroke-width: 1.4; }
++.g-cell-on { fill: rgba(128,227,239,.75); }
++.g-cell-off { fill: none; stroke: var(--celestial-peach); stroke-width: 1.2; stroke-dasharray: 2 2; }
++.g-trend { stroke: var(--nebula-lavender); stroke-width: 2.4; }
++.g-core { fill: var(--celestial-peach); }
++
++.stage-panel { position: relative; margin-top: 40px; display: grid; gap: 18px; padding: clamp(20px, 3vw, 34px); border: 1px solid var(--xp-line); border-radius: 4px 30px 4px 30px; background: var(--xp-glass); box-shadow: 0 30px 80px rgba(0,0,0,.25); animation: xp-rise 420ms var(--ease-out-expo) both; }
++.stage-panel::before { content: ""; position: absolute; top: -40px; left: var(--panel-anchor, 50%); width: 1px; height: 40px; background: linear-gradient(transparent, var(--aurora-teal)); }
++.sp-dataset { --panel-anchor: 8.3%; } .sp-observations { --panel-anchor: 25%; } .sp-screening { --panel-anchor: 41.6%; }
++.sp-eligible { --panel-anchor: 58.3%; } .sp-trend { --panel-anchor: 75%; } .sp-finding { --panel-anchor: 91.6%; }
++.sp-head { display: grid; gap: 2px; }
++.sp-num { font-size: .68rem; color: var(--aurora-teal); letter-spacing: .12em; }
++.sp-title { font-family: var(--font-display); font-weight: 400; font-size: 1.7rem; color: var(--starlight); line-height: 1.1; }
++.sp-question { color: #b8c4e2; }
++.sp-grid { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 24px; align-items: start; }
++.sp-grid-wide { grid-template-columns: minmax(0, 1.5fr) minmax(240px, 1fr); }
++.sp-visual { display: grid; place-items: center; aspect-ratio: 1; border-radius: 50%; border: 1px solid var(--xp-line); background: radial-gradient(circle, rgba(72,184,232,.18), transparent 70%); }
++.sp-visual .stage-glyph { width: 70%; height: 70%; }
++.sp-stack { display: grid; gap: 14px; align-content: start; }
++.sp-lead { color: #dbe2f4; max-width: 64ch; }
++.sp-muted { color: #a9b6d6; font-size: var(--fs-sm); }
++.sp-big { font-size: var(--fs-lg); color: #e9eefb; }
++.sp-big .mono { font-size: 2rem; color: var(--aurora-teal); margin-right: 6px; }
++.sp-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px 22px; margin: 12px 0 0; }
++.sp-nav { display: flex; justify-content: space-between; gap: 12px; padding-top: 14px; border-top: 1px solid var(--xp-line); }
++.sp-step { background: none; border: 0; color: #c5d0ee; font: 500 var(--fs-sm) var(--font-brand); cursor: pointer; padding: 6px 2px; }
++.sp-step:hover:not(:disabled) { color: var(--aurora-teal); }
++.sp-step:disabled { opacity: .35; cursor: default; }
++.sp-step:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
++
++.obs-strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(7px, 1fr)); gap: 3px; max-width: 760px; }
++.obs { display: inline-block; height: 22px; border-radius: 3px; }
++.obs-legend .obs { width: 10px; height: 10px; vertical-align: -1px; }
++.obs-valid { background: var(--aurora-teal); }
++.obs-withheld { background: repeating-linear-gradient(135deg, var(--celestial-peach) 0 2px, transparent 2px 4px); outline: 1px solid rgba(244,182,138,.6); }
++.obs-not_returned { background: transparent; outline: 1px dashed #6f81a8; outline-offset: -1px; }
++.obs-legend, .xp-timeline-legend { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: var(--fs-xs); color: #b9c5e3; }
++
++.funnel { display: grid; gap: 6px; max-width: 560px; }
++.funnel-bar { display: block; padding: 8px 12px; border-radius: 3px 14px 3px 14px; background: rgba(86,118,232,.22); border: 1px solid var(--xp-line); color: #dbe3f7; font-size: var(--fs-sm); white-space: nowrap; overflow: visible; }
++.funnel-bar b { color: var(--starlight); margin-right: 6px; }
++.funnel-pass { background: linear-gradient(90deg, rgba(128,227,239,.35), rgba(72,184,232,.2)); border-color: rgba(128,227,239,.5); }
++.reason-tally { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
++.reason-tally li { display: flex; gap: 12px; align-items: baseline; color: #dce3f5; }
++.rt-count { min-width: 2.2em; padding: 2px 8px; border-radius: 99px; text-align: center; color: #1a1406; background: var(--celestial-peach); font-size: var(--fs-xs); }
++
++.finding-chain { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 0; counter-reset: fc; }
++.fc { position: relative; display: grid; gap: 4px; align-content: start; padding: 16px 16px 16px 0; border-top: 2px solid var(--xp-line); }
++.fc-mark { width: 14px; height: 14px; border-radius: 50%; margin-top: -24px; margin-bottom: 6px; background: #070d20; border: 2px solid var(--xp-off); }
++.fc-pass .fc-mark { background: var(--xp-ok); border-color: var(--xp-ok); box-shadow: 0 0 12px rgba(128,227,239,.6); }
++.fc-pass { border-top-color: rgba(128,227,239,.6); }
++.fc-warn .fc-mark { border-color: var(--xp-limited); background: rgba(244,182,138,.3); }
++.fc-warn { border-top-color: rgba(244,182,138,.55); }
++.fc-off .fc-mark { border-style: dotted; }
++.fc-off { border-top-style: dashed; }
++.fc-k { font: 500 .66rem var(--font-mono); text-transform: uppercase; letter-spacing: .12em; color: #9fb0d8; }
++.fc-v { font: 600 var(--fs-md) var(--font-brand); color: var(--starlight); }
++.fc-d { font-size: var(--fs-xs); color: #b9c5e3; }
++.fc-verdict { border-top-color: var(--nebula-lavender); }
++.fc-verdict .fc-mark { background: var(--nebula-lavender); border-color: var(--nebula-lavender); }
++
++/* ---------- B2: completeness xp-timeline ---------- */
++.xp-timeline { display: grid; gap: 16px; }
++.xp-timeline-track { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 8px; }
++.tl-year { width: 100%; display: grid; gap: 6px; justify-items: center; padding: 10px 6px 8px; border-radius: 14px; border: 1px solid var(--xp-line); background: rgba(9,16,37,.7); color: inherit; cursor: pointer; font: inherit; transition: border-color var(--dur), transform var(--dur) var(--ease); }
++.tl-year:hover { transform: translateY(-2px); border-color: var(--aurora-teal); }
++.tl-year:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
++.tl-year.is-selected { border-color: var(--aurora-teal); background: rgba(128,227,239,.12); box-shadow: 0 0 22px rgba(128,227,239,.3); }
++.tl-excluded, .tl-empty { border-style: dashed; border-color: rgba(244,182,138,.45); }
++.tl-pips { display: grid; grid-template-columns: repeat(4, 8px); gap: 3px; }
++.tl-pip { display: inline-block; width: 8px; height: 8px; border-radius: 2px; }
++.xp-timeline-legend .tl-pip { vertical-align: -1px; margin-right: 6px; }
++.pip-valid { background: var(--aurora-teal); }
++.pip-missing { background: transparent; outline: 1.5px solid var(--celestial-peach); outline-offset: -1.5px; }
++.pip-unknown { background: rgba(141,155,187,.25); }
++.tl-label { font: 500 var(--fs-xs) var(--font-mono); color: #d8e0f4; }
++.tl-key { display: inline-block; width: 14px; height: 10px; border-radius: 4px; margin-right: 6px; vertical-align: -1px; border: 1px solid var(--aurora-teal); }
++.tl-key.tl-excluded { border: 1px dashed var(--celestial-peach); }
++.xp-timeline-hint { color: #aebbd9; font-size: var(--fs-sm); }
++.year-card { display: grid; gap: 14px; padding: 18px; border-radius: 4px 20px 4px 20px; border: 1px solid var(--xp-line); background: rgba(5,10,26,.6); animation: xp-rise 300ms var(--ease-out-expo) both; }
++.year-card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 16px; }
++.year-card-year { font-size: 1.8rem; color: var(--starlight); }
++.year-chip { padding: 3px 10px; border-radius: 99px; font: 600 var(--fs-xs) var(--font-brand); }
++.chip-eligible { background: rgba(128,227,239,.18); color: var(--aurora-teal); }
++.chip-excluded, .chip-empty { background: rgba(244,182,138,.16); color: var(--celestial-peach); }
++.year-card-value { color: #dfe6f7; margin-left: auto; }
++.month-row { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 4px; }
++.month { display: grid; gap: 2px; justify-items: center; padding: 8px 2px; border-radius: 8px; font-size: .68rem; color: #d7dff3; }
++.month small { font-size: .58rem; color: #a8b6d8; }
++.month-valid { background: rgba(128,227,239,.16); border: 1px solid rgba(128,227,239,.45); }
++.month-missing { border: 1.5px dashed var(--celestial-peach); color: var(--celestial-peach); }
++.month-unknown { border: 1px dotted #6f81a8; color: #8d9bbb; }
++.year-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px 18px; margin: 0; }
++.year-extra { padding-top: 12px; border-top: 1px dashed var(--xp-line); }
++.year-reasons ul { margin: 6px 0 0; padding-left: 18px; color: #e3e9f8; display: grid; gap: 4px; }
++.reason-code { font-size: .66rem; color: #96a6cc; margin-left: 6px; }
++.year-note { color: #b9c5e3; font-size: var(--fs-sm); }
++
++/* ---------- evidence plot (real data) ---------- */
++.evidence-plot { width: 100%; height: auto; max-height: 260px; overflow: visible; }
++.ep-grid { stroke: rgba(184,198,239,.13); }
++.ep-tick, .ep-year { fill: #b6c3e4; font: 10px var(--font-mono); }
++.ep-year.is-focus { fill: var(--aurora-teal); font-weight: 600; }
++.ep-trend { stroke: var(--nebula-lavender); stroke-width: 3; stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(193,132,236,.5)); }
++.emphasis-trend .ep-trend { stroke-width: 4; }
++.ep-dot { fill: var(--aurora-teal); stroke: #050b1b; stroke-width: 2; transition: r var(--dur); }
++.ep-ring { fill: #050b1b; stroke: #9cadd0; stroke-width: 2; }
++.ep-gap { stroke: #6f81a8; stroke-width: 2; stroke-dasharray: 2 2; }
++.ep-focus { fill: rgba(128,227,239,.14); stroke: rgba(128,227,239,.5); }
++.ep-hit { fill: transparent; cursor: pointer; }
++.evidence-empty { color: #aebbd9; }
++.key-focus { display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: rgba(128,227,239,.3); border: 1px solid var(--aurora-teal); }
++
++/* ---------- B3/B4: labs ---------- */
++.labs { display: grid; gap: 14px; scroll-margin-top: calc(var(--topbar-h) + 12px); }
++.labs:focus-visible { outline: none; }
++.labs-switch, .methods-tabs { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: thin; padding-bottom: 2px; }
++.labs-tab, .methods-tab { flex: none; display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 99px; border: 1px solid var(--xp-line); background: rgba(9,16,37,.6); color: #cdd6ef; font: 600 var(--fs-sm) var(--font-brand); cursor: pointer; }
++.labs-tab.is-active, .methods-tab.is-active { background: var(--starlight); color: #070d20; border-color: var(--starlight); }
++.labs-tab:focus-visible, .methods-tab:focus-visible, .lab-toggle:focus-visible, .guard-card:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
++.xp-lab { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(260px, 1fr); gap: 0; border: 1px solid var(--xp-line); border-radius: 30px 4px 30px 4px; overflow: hidden; background: rgba(5,10,26,.72); }
++.lab-stage { position: relative; display: grid; gap: 10px; align-content: start; padding: 22px; background: radial-gradient(ellipse at 20% 0%, rgba(86,118,232,.22), transparent 60%), repeating-linear-gradient(0deg, transparent 0 31px, rgba(184,198,239,.05) 31px 32px), repeating-linear-gradient(90deg, transparent 0 31px, rgba(184,198,239,.05) 31px 32px); }
++.lab-badge { justify-self: start; padding: 4px 10px; border-radius: 99px; border: 1px dashed var(--celestial-peach); color: var(--celestial-peach); font: 500 .68rem var(--font-mono); letter-spacing: .08em; text-transform: uppercase; }
++.lab-plot { width: 100%; height: auto; }
++.lab-axis { stroke: rgba(184,198,239,.35); }
++.lab-pair { stroke: rgba(143,166,255,.22); stroke-width: 1; transition: stroke var(--dur); }
++.lab-pair.is-focus { stroke: rgba(128,227,239,.8); stroke-width: 1.5; }
++.lab-ols { stroke: var(--celestial-peach); stroke-width: 2; stroke-dasharray: 6 5; fill: none; }
++.lab-robust { stroke: var(--aurora-teal); stroke-width: 3; fill: none; filter: drop-shadow(0 0 6px rgba(128,227,239,.6)); }
++.lab-point { fill: var(--starlight); stroke: #070d20; stroke-width: 2; cursor: pointer; transition: cy var(--dur-slow) var(--ease-out-expo); }
++.lab-point.is-outlier { fill: var(--celestial-peach); }
++.lab-strip { display: grid; gap: 2px; font-size: var(--fs-xs); color: #aebbd9; }
++.lab-strip svg { width: 100%; height: 46px; }
++.lab-slope-dot { fill: rgba(143,166,255,.75); }
++.lab-controls { display: grid; gap: 14px; align-content: start; padding: 22px; border-left: 1px solid var(--xp-line); }
++.lab-title { font: 600 var(--fs-lg) var(--font-brand); color: var(--starlight); }
++.lab-steps { margin: 0; padding-left: 20px; display: grid; gap: 6px; color: #cfd8ee; font-size: var(--fs-sm); }
++.lab-steps strong { color: var(--starlight); }
++.lab-toggles { display: flex; flex-wrap: wrap; gap: 8px; }
++.lab-toggle { padding: 8px 14px; border-radius: 10px; border: 1px solid var(--xp-line-strong); background: transparent; color: #dce3f6; font: 600 var(--fs-sm) var(--font-brand); cursor: pointer; }
++.lab-toggle.is-on { background: rgba(128,227,239,.16); border-color: var(--aurora-teal); color: var(--aurora-teal); }
++.lab-readout { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0; }
++.lab-readout > div { padding: 10px 12px; border-radius: 10px; background: rgba(9,16,37,.8); border: 1px solid var(--xp-line); }
++.lab-readout dt { font: 500 .64rem var(--font-mono); text-transform: uppercase; letter-spacing: .1em; color: #9fb0d8; }
++.lab-readout dd { margin: 4px 0 0; color: var(--starlight); font-size: var(--fs-md); }
++.lr-robust { border-color: rgba(128,227,239,.5) !important; } .lr-robust dd { color: var(--aurora-teal); font-size: 1.4rem; }
++.lr-ols { border-color: rgba(244,182,138,.45) !important; } .lr-ols dd { color: var(--celestial-peach); font-size: 1.4rem; }
++.lab-insight { color: #dbe2f4; font-size: var(--fs-sm); }
++.lab-real { display: grid; gap: 4px; padding-top: 12px; border-top: 1px dashed var(--xp-line); color: #cfd8ee; font-size: var(--fs-sm); }
++.lab-footnote { font-size: var(--fs-xs); color: #9fb0d8; }
++.memory-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
++.memory-spark { margin: 0; display: grid; gap: 4px; }
++.memory-spark svg { width: 100%; height: 90px; }
++.memory-spark figcaption { font-size: var(--fs-xs); color: #b9c5e3; }
++.ms-zero { stroke: rgba(184,198,239,.3); stroke-dasharray: 3 4; }
++.ms-line { fill: none; stroke: rgba(184,198,239,.55); stroke-width: 1.2; }
++.ms-run { stroke: var(--celestial-peach); stroke-width: 3; stroke-linecap: round; opacity: .8; }
++.ms-dot { fill: var(--starlight); }
++.memory-slider { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; font-size: var(--fs-sm); color: #cfd8ee; }
++.memory-slider input { accent-color: var(--aurora-teal); width: 100%; }
++.memory-verdict { padding: 14px; border-radius: 12px; border: 1px solid var(--xp-line); background: rgba(9,16,37,.75); display: grid; gap: 4px; }
++.memory-verdict.tone-caution { border-color: rgba(244,182,138,.55); background: rgba(70,44,30,.3); }
++.memory-verdict.tone-ok { border-color: rgba(128,227,239,.45); }
++.memory-headline { color: var(--starlight); font-weight: 600; }
++.memory-detail { color: #b9c5e3; font-size: var(--fs-sm); }
++.memory-scale { position: relative; height: 54px; margin: 10px 4px 0; }
++.msc-track { position: absolute; left: 0; right: 0; top: 24px; height: 4px; border-radius: 2px; background: linear-gradient(90deg, rgba(86,118,232,.6), rgba(184,198,239,.3) 50%, rgba(244,182,138,.7)); }
++.msc-threshold { position: absolute; top: 12px; height: 28px; border-left: 2px dashed var(--celestial-peach); }
++.msc-threshold small { position: absolute; left: 4px; top: -12px; font: .6rem var(--font-mono); color: var(--celestial-peach); white-space: nowrap; }
++.msc-dot { position: absolute; top: 18px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: var(--aurora-teal); box-shadow: 0 0 12px rgba(128,227,239,.7); }
++.msc-dot small { position: absolute; top: 18px; left: 50%; transform: translateX(-50%); font-size: .66rem; color: var(--aurora-teal); white-space: nowrap; }
++.msc-ticks { position: absolute; left: 0; right: 0; top: 36px; display: flex; justify-content: space-between; font: .6rem var(--font-mono); color: #8ea0cf; }
++.msc-ticks i { font-style: normal; }
++
++/* ---------- B5: methodology ---------- */
++.methods { display: grid; gap: 14px; padding: clamp(18px, 3vw, 28px); border-top: 1px solid var(--xp-line); }
++.methods-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; }
++.methods-count { font-size: var(--fs-xs); color: #9fb0d8; }
++.methods-tab svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
++.methods-tab small { opacity: .7; }
++.methods-panel { display: grid; gap: 12px; }
++.methods-plain { font-size: var(--fs-lg); color: #e8edf9; max-width: 66ch; }
++.methods-facts { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
++.methods-facts li { padding: 5px 11px; border-radius: 99px; border: 1px solid rgba(128,227,239,.35); color: var(--aurora-teal); font-size: var(--fs-xs); background: rgba(128,227,239,.06); }
++.methods-none { color: #9fb0d8; font-size: var(--fs-sm); }
++.methods-technical .method-grid { margin-top: 6px; }
++
++/* ---------- Experience C: guardrails ---------- */
++.guardrails { position: relative; display: grid; gap: 26px; padding: 120px clamp(18px, 3vw, 40px) clamp(22px, 3vw, 40px); border-radius: 0 0 36px 36px; background: linear-gradient(180deg, transparent, rgba(47,34,74,.38) 40%, rgba(16,14,40,.6)); isolation: isolate; }
++.guard-horizon { position: absolute; z-index: -1; inset: 0 0 auto; height: 140px; pointer-events: none; }
++.guard-horizon svg { width: 100%; height: 100%; }
++.guard-horizon path { fill: none; stroke: rgba(193,132,236,.55); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
++.guard-horizon .guard-horizon-glow { stroke: rgba(193,132,236,.18); stroke-width: 14; filter: blur(6px); }
++.guard-head { display: grid; gap: 8px; }
++.guard-head .kicker { color: var(--nebula-lavender); }
++.guard-title em { font-style: italic; color: var(--nebula-lavender); }
++.guard-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
++.guard-card { width: 100%; height: 100%; display: grid; grid-template-rows: auto auto 1fr auto; gap: 6px; padding: 16px; text-align: left; border-radius: 20px 4px 20px 4px; border: 1px solid rgba(193,132,236,.3); background: rgba(14,16,40,.75); color: inherit; font: inherit; cursor: pointer; transition: transform var(--dur) var(--ease), border-color var(--dur), background var(--dur); }
++.guard-card:hover { transform: translateY(-3px); border-color: var(--nebula-lavender); }
++.guard.is-open .guard-card { border-color: var(--nebula-lavender); background: rgba(56,38,96,.6); box-shadow: 0 0 30px rgba(193,132,236,.25); }
++.guard-art { width: 100%; height: 86px; fill: none; stroke-linecap: round; stroke-linejoin: round; }
++.guard-name { font: 600 var(--fs-md) var(--font-brand); color: var(--starlight); line-height: 1.25; }
++.guard-line { font-size: var(--fs-sm); color: #c4cce0; }
++.guard-more { font: 500 .68rem var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--nebula-lavender); }
++.guard-detail { display: grid; grid-template-columns: minmax(180px, 280px) minmax(0, 1fr); gap: 24px; padding: clamp(18px, 3vw, 28px); border-radius: 4px 28px 4px 28px; border: 1px solid rgba(193,132,236,.45); background: linear-gradient(140deg, rgba(56,38,96,.55), rgba(10,12,32,.9)); animation: xp-rise 360ms var(--ease-out-expo) both; }
++.guard-detail-art .guard-art { height: auto; }
++.guard-detail-copy { display: grid; gap: 12px; align-content: start; color: #dfe4f5; }
++.guard-detail-title { font-family: var(--font-display); font-size: 1.6rem; line-height: 1.1; color: var(--starlight); }
++.guard-relevance { display: grid; gap: 4px; padding: 12px 14px; border-radius: 10px; background: rgba(5,8,22,.6); }
++.guard-notes ul { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 6px; font-size: var(--fs-sm); color: #c8cfe3; }
++.guard-evidence { justify-self: start; }
++
++/* guard art strokes */
++.a-axis, .a-grid { stroke: rgba(184,198,239,.35); stroke-width: 1.2; }
++.a-dot { fill: var(--aurora-teal); }
++.a-ring { fill: none; stroke: var(--celestial-peach); stroke-width: 1.6; stroke-dasharray: 2 2; }
++.a-trend { stroke: var(--nebula-lavender); stroke-width: 2.6; }
++.a-dash { stroke: rgba(184,198,239,.5); stroke-width: 1.4; stroke-dasharray: 4 4; }
++.a-mark { stroke: var(--celestial-peach); stroke-width: 1.5; stroke-dasharray: 5 4; }
++.a-link-broken { stroke: var(--celestial-peach); stroke-width: 2; stroke-dasharray: 3 4; }
++.a-question { stroke: rgba(184,198,239,.6); stroke-width: 1.5; fill: rgba(9,16,37,.8); }
++.a-q-text { fill: #c4cce0; font: 600 20px var(--font-brand); stroke: none; }
++.a-strike { stroke: var(--celestial-peach); stroke-width: 2.4; }
++.a-cell { stroke: rgba(184,198,239,.35); stroke-width: 1; fill: rgba(9,16,37,.4); }
++.a-cell-on { fill: rgba(128,227,239,.28); stroke: var(--aurora-teal); stroke-width: 1.4; }
++.a-cell-gap { fill: none; stroke: var(--celestial-peach); stroke-width: 1.2; stroke-dasharray: 2 2; }
++.a-pin { fill: var(--celestial-peach); stroke: #070d20; stroke-width: 1.5; }
++.a-leader { stroke: rgba(244,182,138,.7); stroke-width: 1; }
++.a-label { fill: #c4cce0; font: 10px var(--font-mono); stroke: none; }
++.a-gauge { stroke: rgba(184,198,239,.3); stroke-width: 8; }
++.a-gauge-on { stroke: var(--aurora-teal); stroke-width: 8; opacity: .7; }
++.a-gauge-band { stroke: var(--celestial-peach); stroke-width: 8; opacity: .55; }
++.a-needle { stroke: var(--starlight); stroke-width: 2.5; }
++.a-needle-off { stroke: rgba(184,198,239,.4); stroke-width: 2.5; stroke-dasharray: 3 3; }
++.a-hub { fill: var(--starlight); }
++.a-chip { fill: rgba(244,182,138,.18); stroke: var(--celestial-peach); stroke-width: 1; }
++.a-chip-text { fill: var(--celestial-peach); font: 600 9px var(--font-mono); stroke: none; }
++.a-station { stroke: var(--frost); stroke-width: 2; }
++.a-wave { stroke: var(--aurora-teal); stroke-width: 1.4; }
++.a-dim { opacity: .95; }
++
++.dossier-foot-single { grid-template-columns: 1fr; }
++.dossier-foot-single > .text-link { justify-self: start; }
++
++@keyframes xp-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
++@keyframes xp-float { from { transform: translate(0, 0); } to { transform: translate(-18px, 8px); } }
++
++/* ---------- responsive ---------- */
++@media (max-width: 1100px) {
++  .readout-deck { grid-template-columns: 1fr 1fr; }
++  .readout-rate { grid-column: 1 / -1; }
++}
++@media (max-width: 900px) {
++  .journey-orbit { display: none; }
++  .journey-stages { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 12px; }
++  .js:nth-child(n) { transform: none; }
++  .stage-panel { margin-top: 8px; }
++  .stage-panel::before { display: none; }
++  .xp-lab { grid-template-columns: 1fr; border-radius: 22px 4px 22px 4px; }
++  .lab-controls { border-left: 0; border-top: 1px solid var(--xp-line); }
++  .sp-grid-wide { grid-template-columns: 1fr; }
++  .guard-detail { grid-template-columns: 1fr; }
++  .guard-detail-art { max-width: 280px; }
++}
++@media (max-width: 640px) {
++  .readout-deck { grid-template-columns: 1fr; }
++  .expedition { padding-top: 150px; }
++  .expedition-sky { height: 220px; }
++  .journey-stages { grid-template-columns: repeat(2, minmax(0, 1fr)); }
++  .js-node { width: 56px; height: 56px; }
++  .sp-grid { grid-template-columns: 1fr; }
++  .sp-visual { width: 96px; }
++  .month-row { grid-template-columns: repeat(6, minmax(0, 1fr)); }
++  .memory-pair { grid-template-columns: 1fr; }
++  .lab-readout { grid-template-columns: 1fr; }
++  .guardrails { padding-top: 90px; }
++  .guard-grid { grid-template-columns: 1fr; }
++  .guard-card { grid-template-columns: 96px minmax(0, 1fr); grid-template-rows: auto auto auto; column-gap: 14px; }
++  .guard-card .guard-art { grid-row: 1 / span 3; height: 64px; align-self: center; }
++}
++@media (prefers-reduced-motion: reduce) {
++  .stage-panel, .year-card, .guard-detail, .limb-satellite { animation: none !important; }
++  .jo-progress, .js-node, .tl-year, .guard-card, .lab-point, .lab-pair, .ep-dot { transition: none !important; }
++  .js-btn:hover .js-node, .tl-year:hover, .guard-card:hover { transform: none; }
++}
++
++/* Buttons inside stacked panels keep their natural width. */
++.sp-stack > .btn, .sp-grid .btn, .guard-detail-copy > .btn { justify-self: start; width: auto; }
++.methods-tabs { flex-wrap: wrap; overflow: visible; }
++.tl-orb { width: 18px; height: 18px; margin: 6px 0; border-radius: 50%; background: var(--aurora-teal); box-shadow: 0 0 10px rgba(128,227,239,.5); }
++.tl-orb.orb-excluded { background: transparent; border: 2px solid var(--celestial-peach); box-shadow: none; }
++.tl-orb.orb-empty { background: transparent; border: 2px dotted var(--xp-off); box-shadow: none; }
+diff --git a/frontend/src/styles/tokens.css b/frontend/src/styles/tokens.css
+index 5932d85..ac48743 100644
+--- a/frontend/src/styles/tokens.css
++++ b/frontend/src/styles/tokens.css
+@@ -12,6 +12,14 @@
+   --haze: #90A1BA;
+   --frost: #CDD5E1;
+   --starlight: #EFF2F7;
++  /* Expanded cinematic accents */
++  --cosmic-indigo: #5676E8;
++  --cosmic-violet: #8F64E8;
++  --nebula-lavender: #C184EC;
++  --atmosphere-cyan: #48B8E8;
++  --aurora-teal: #80E3EF;
++  --celestial-peach: #F4B68A;
++  --moonlight-warm: #F2E7D9;
+ }
+ :root, [data-theme="dark"], [data-theme="light"] {
+   color-scheme: dark;

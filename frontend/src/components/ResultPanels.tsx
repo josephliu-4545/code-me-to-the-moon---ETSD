@@ -47,27 +47,34 @@ export function ResultSummary({ analysis, place }: { analysis: Analysis; place?:
   return (
     <section className="discovery" aria-labelledby="finding-title">
       <header className="discovery-head">
-        <div className="finding-meta">
-          <p className="kicker">Mission findings</p>
-          <DataStatusBadge analysis={analysis} />
+        <div className="finding-hero-visual" aria-hidden="true">
+          <div className="finding-image-glow" />
+          <img className="finding-earth-art" src="/mission-earth-astronaut.png" alt="" />
+          <span className="finding-visual-caption">A living planet, observed from orbit</span>
         </div>
-        <p className="finding-context">
-          <VariableGlyph id={analysis.variable.id} size={18} />
-          <span>{analysis.variable.name}</span>
-          <span className="sep" aria-hidden>·</span>
-          <span>{place || fmtCoord(s.requested.latitude, s.requested.longitude)}</span>
-          <span className="sep" aria-hidden>·</span>
-          <span className="mono">{periodLabel(analysis)}</span>
-        </p>
-        <h2 id="finding-title" className="discovery-headline">{discoveryHeadline(analysis)}</h2>
-        <div className="verdict-row">
-          <span className={`verdict-pill verdict-${verdict.kind}`}><span className="verdict-mark" aria-hidden />{verdict.label}</span>
-          <p className="finding-note">{verdict.note}</p>
+        <div className="finding-hero-copy">
+          <div className="finding-meta">
+            <p className="kicker">Mission findings</p>
+            <DataStatusBadge analysis={analysis} />
+          </div>
+          <p className="finding-context">
+            <VariableGlyph id={analysis.variable.id} size={18} />
+            <span>{analysis.variable.name}</span>
+            <span className="sep" aria-hidden>·</span>
+            <span>{place || fmtCoord(s.requested.latitude, s.requested.longitude)}</span>
+            <span className="sep" aria-hidden>·</span>
+            <span className="mono">{periodLabel(analysis)}</span>
+          </p>
+          <h2 id="finding-title" className="discovery-headline">{discoveryHeadline(analysis)}</h2>
+          <div className="verdict-row">
+            <span className={`verdict-pill verdict-${verdict.kind}`}><span className="verdict-mark" aria-hidden />{verdict.label}</span>
+            <p className="finding-note">{verdict.note}</p>
+          </div>
+          {step && <p className="step-warning" role="note"><strong>Sudden step in the record.</strong> {step}</p>}
+          <p className="support-note">
+            Values describe a {inSentence(s.description)} ({s.resolution}), not the exact point. Source: {analysis.dataset.source} · {analysis.dataset.title ?? analysis.dataset.id}.
+          </p>
         </div>
-        {step && <p className="step-warning" role="note"><strong>Sudden step in the record.</strong> {step}</p>}
-        <p className="support-note">
-          Values describe a {inSentence(s.description)} ({s.resolution}), not the exact point. Source: {analysis.dataset.source} · {analysis.dataset.title ?? analysis.dataset.id}.
-        </p>
       </header>
 
       <div className="layers">
@@ -196,27 +203,60 @@ export function ProvenanceCard({ analysis }: { analysis: Analysis }) {
   const d = analysis.dataset;
   const s = analysis.spatial_support;
   return (
-    <section className="sheet provenance" aria-labelledby="prov-title">
-      <h3 id="prov-title" className="sheet-title">Data provenance</h3>
-      <dl className="kv">
-        <dt>Dataset</dt><dd>{d.title ?? d.id}</dd>
-        <dt>Source / version</dt><dd>{d.source} · {d.version}</dd>
-        <dt>Type</dt><dd>{d.provenance.replace(/_/g, " ")}</dd>
-        {d.depth && (<><dt>Depth</dt><dd>{d.depth.top_cm}–{d.depth.bottom_cm} cm ({d.depth.semantics.replace(/_/g, " ")})</dd></>)}
-        <dt>DOI</dt><dd>{d.doi ? <a href={`https://doi.org/${d.doi}`} target="_blank" rel="noreferrer">{d.doi}</a> : "—"}</dd>
-        {d.citation && (<><dt>Citation</dt><dd>{d.citation}</dd></>)}
-        <dt>Requested point</dt><dd className="mono">{fmtCoord(s.requested.latitude, s.requested.longitude)}</dd>
-        <dt>Spatial support</dt><dd>{s.description}</dd>
-        <dt>Resolution</dt><dd>{s.resolution}</dd>
-        {s.bbox && (<><dt>Region box</dt><dd className="mono">W {s.bbox.west}°, S {s.bbox.south}°, E {s.bbox.east}°, N {s.bbox.north}°{s.region_area_km2 ? ` · ${Math.round(s.region_area_km2).toLocaleString()} km²` : ""}</dd></>)}
-        {s.months_meeting_area_threshold !== undefined && (<><dt>Area coverage</dt><dd>{s.months_meeting_area_threshold} months met the {Math.round((s.min_valid_area_fraction ?? 0) * 100)}% valid-area rule</dd></>)}
-        {s.cell && (<><dt>Cell centre</dt><dd className="mono">{fmtCoord(s.cell.center[0], s.cell.center[1])}{s.cell.approximate ? " (approximate footprint)" : ""}</dd></>)}
-        {s.cell_status && s.cell_status !== "ok" && (<><dt>Cell status</dt><dd className="warn-text">{s.cell_status.replace(/_/g, " ")}</dd></>)}
-        {s.coastal_proximity && (<><dt>Mask edge</dt><dd className="warn-text">Near water or a mask edge; no substitution</dd></>)}
-        <dt>Annual value</dt><dd>{analysis.variable.annual_value_definition}</dd>
-        <dt>Units</dt><dd>{analysis.units.annual_value} · slope {analysis.units.slope}</dd>
-        {analysis.cache && (<><dt>Retrieved</dt><dd className="mono">{new Date(analysis.cache.retrieved_at).toLocaleString()}</dd></>)}
-      </dl>
+    <section className="provenance source-journey" aria-labelledby="prov-title">
+      <header className="trace-heading">
+        <div><p className="kicker">Follow the evidence</p><h3 id="prov-title">Data provenance</h3></div>
+        <p>Every finding has a starting point. Trace this one from its source to the value you see.</p>
+      </header>
+      <div className="trace-stations">
+        <article className="trace-station trace-source">
+          <span className="trace-stop"><span aria-hidden>01</span> The source</span>
+          <svg className="trace-satellite" viewBox="0 0 280 150" aria-hidden="true">
+            <ellipse cx="140" cy="77" rx="115" ry="48" transform="rotate(-18 140 77)" fill="none" stroke="currentColor" strokeDasharray="2 7" opacity=".4" />
+            <g transform="translate(140 75) rotate(-22)">
+              <path d="M-100-21h65v42h-65zM35-21h65v42H35z" fill="rgba(88,120,167,.22)" stroke="currentColor" />
+              <path d="M-80-21v42m20-42v42M55-21v42m20-42v42M-100 0h65M35 0h65M-35 0h70" fill="none" stroke="currentColor" opacity=".6" />
+              <path d="M-24-25h48v50h-48z" fill="#202A3D" stroke="#CDD5E1" /><circle r="12" fill="#082A46" stroke="#80e3ef" />
+              <path d="M0-25v-17m-15 0q15-18 30 0z" fill="none" stroke="#CDD5E1" />
+            </g>
+          </svg>
+          <p className="trace-provider">{d.source}</p>
+          <h4>{d.title ?? d.id}</h4>
+          <p className="trace-type">{d.provenance.replace(/_/g, " ")}</p>
+          <p className="trace-secondary">{d.version}</p>
+          <small className="trace-art-note">Decorative spacecraft illustration</small>
+        </article>
+        <article className="trace-station trace-location">
+          <span className="trace-stop"><span aria-hidden>02</span> The sampled area</span>
+          <div className="trace-footprint" aria-hidden="true"><i /><i /><i /><i /><span /></div>
+          <p className="trace-art-note">Sampling concept · not to scale</p>
+          <h4>{s.resolution}</h4>
+          <p>{s.description}</p>
+          <dl className="trace-facts">
+            <div><dt>Requested point</dt><dd className="mono">{fmtCoord(s.requested.latitude, s.requested.longitude)}</dd></div>
+            {s.cell && <div><dt>Cell centre</dt><dd className="mono">{fmtCoord(s.cell.center[0], s.cell.center[1])}{s.cell.approximate ? " (approximate footprint)" : ""}</dd></div>}
+            {s.bbox && <div><dt>Region box</dt><dd>W {s.bbox.west}°, S {s.bbox.south}°, E {s.bbox.east}°, N {s.bbox.north}°{s.region_area_km2 ? ` · ${Math.round(s.region_area_km2).toLocaleString()} km²` : ""}</dd></div>}
+            {s.months_meeting_area_threshold !== undefined && <div><dt>Area coverage</dt><dd>{s.months_meeting_area_threshold} months met the {Math.round((s.min_valid_area_fraction ?? 0) * 100)}% valid-area rule</dd></div>}
+          </dl>
+          {s.cell_status && s.cell_status !== "ok" && <p className="trace-alert">Cell status: {s.cell_status.replace(/_/g, " ")}</p>}
+          {s.coastal_proximity && <p className="trace-alert">Near water or a mask edge; no substitution</p>}
+        </article>
+        <article className="trace-station trace-measure">
+          <span className="trace-stop"><span aria-hidden>03</span> The measurement</span>
+          <VariableGlyph id={analysis.variable.id} size={58} />
+          <h4>{analysis.variable.name}</h4>
+          <p>{analysis.variable.annual_value_definition}</p>
+          <dl className="trace-facts">
+            <div><dt>Annual units</dt><dd>{analysis.units.annual_value}</dd></div>
+            <div><dt>Slope units</dt><dd>{analysis.units.slope}</dd></div>
+            {d.depth && <div><dt>Depth</dt><dd>{d.depth.top_cm}–{d.depth.bottom_cm} cm ({d.depth.semantics.replace(/_/g, " ")})</dd></div>}
+          </dl>
+        </article>
+      </div>
+      <footer className="trace-receipt">
+        <div><span className="trace-label">Reference</span>{d.doi ? <a href={`https://doi.org/${d.doi}`} target="_blank" rel="noreferrer">DOI {d.doi} ↗</a> : <span>No DOI supplied by this dataset</span>}{d.citation && <p>{d.citation}</p>}</div>
+        {analysis.cache && <div><span className="trace-label">Retrieved</span><time dateTime={analysis.cache.retrieved_at}>{new Date(analysis.cache.retrieved_at).toLocaleString()}</time></div>}
+      </footer>
     </section>
   );
 }
@@ -227,11 +267,11 @@ export function MethodNotes({ analysis }: { analysis: Analysis }) {
   const srcEntries = src && typeof src === "object" ? Object.entries(src as Record<string, unknown>).filter(([, v]) => typeof v === "string") : [];
   return (
     <Disclosure summary="Methods and caveats" meta={`${Object.keys(tm).length + srcEntries.length} notes`}>
-      <dl className="kv">
-        {srcEntries.map(([k, v]) => (<div className="kv-row" key={`s-${k}`}><dt>{pretty(k)}</dt><dd>{String(v)}</dd></div>))}
-        {Object.entries(tm).map(([k, v]) => (<div className="kv-row" key={k}><dt>{pretty(k)}</dt><dd>{v}</dd></div>))}
+      <dl className="method-grid">
+        {srcEntries.map(([k, v]) => (<div className="method-item" key={`s-${k}`}><dt>{pretty(k)}</dt><dd>{String(v)}</dd></div>))}
+        {Object.entries(tm).map(([k, v]) => (<div className="method-item" key={k}><dt>{pretty(k)}</dt><dd>{v}</dd></div>))}
       </dl>
-      {analysis.caveats.slice(1).map((c) => <p key={c} className="note">{c}</p>)}
+      {analysis.caveats.length > 1 && <div className="method-caveats"><p className="trace-label">Additional scientific notes</p>{analysis.caveats.slice(1).map((c) => <p key={c}>{c}</p>)}</div>}
     </Disclosure>
   );
 }

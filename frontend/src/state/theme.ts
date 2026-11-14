@@ -32,7 +32,7 @@ export function applyTheme(theme: Theme, animate = false) {
     window.setTimeout(() => root.classList.remove("theme-transition"), 450);
   }
   root.dataset.theme = theme;
-  root.style.colorScheme = theme;
+  root.style.colorScheme = "dark";
 }
 
 export function useTheme(): [Theme, (t: Theme) => void, () => void] {

@@ -49,11 +49,12 @@ export async function getJson<T>(path: string, params: Record<string, string | n
     const { message, reason } = describe((body as { detail?: unknown } | null)?.detail);
     throw new ApiError(response.status, message, reason);
   }
+  if (path === "/api/v2/analysis") validateAnalysis(body);
   return body as T;
 }
 
 export const api = {
-  variables: (signal?: AbortSignal) => getJson<VariablesResponse>("/api/v2/variables", {}, signal),
+  variables: (signal?: AbortSignal, verify = false) => getJson<VariablesResponse>("/api/v2/variables", verify ? { verify_availability: "true" } : {}, signal),
   analysis: (r: AnalysisRequest, signal?: AbortSignal) =>
     getJson<Analysis>(
       "/api/v2/analysis",
@@ -107,3 +108,20 @@ export const api = {
   geocode: (q: string, signal?: AbortSignal) =>
     getJson<{ results: GeocodeResult[]; attribution?: string }>("/api/v2/geocode", { q }, signal),
 };
+
+/** Reject malformed scientific payloads rather than displaying invented defaults. */
+export function validateAnalysis(body: unknown): asserts body is Analysis {
+  const bad = () => { throw new ApiError(502, "The service returned an invalid scientific response. No findings were accepted.", "invalid_analysis_response"); };
+  if (!body || typeof body !== "object") return bad();
+  const a = body as Analysis;
+  const finiteOrNull = (n: unknown) => n === null || (typeof n === "number" && Number.isFinite(n));
+  if (!a.variable?.id || !a.dataset?.id || !a.dataset?.version || !a.spatial_support?.requested ||
+      !Number.isFinite(a.spatial_support.requested.latitude) || !Number.isFinite(a.spatial_support.requested.longitude) ||
+      !a.period?.start || !a.period?.end_exclusive || !a.units?.annual_value ||
+      !Array.isArray(a.annual) || !Array.isArray(a.series) || !a.coverage ||
+      !Array.isArray(a.caveats) || !Array.isArray(a.limitations) || !a.methodology) return bad();
+  if (a.annual.some((y) => !Number.isInteger(y.year) || !finiteOrNull(y.value) || typeof y.eligible !== "boolean") ||
+      a.series.some((m) => !/^\d{4}-\d{2}-\d{2}$/.test(m.date) || !finiteOrNull(m.value))) return bad();
+  if (a.trend && (!finiteOrNull(a.trend.slope) || !Array.isArray(a.trend.eligible_years) ||
+      (a.trend.confidence_interval !== null && (!Array.isArray(a.trend.confidence_interval) || a.trend.confidence_interval.length !== 2 || !a.trend.confidence_interval.every(Number.isFinite))))) return bad();
+}

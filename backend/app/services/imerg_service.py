@@ -100,7 +100,8 @@ class ImergService:
             value = image.select(BAND).reduceRegion(
                 reducer=ee.Reducer.first(),
                 geometry=point,
-                scale=NOMINAL_SCALE_METRES,
+                crs="EPSG:4326",
+                crsTransform=[0.1, 0, -180.0, 0, -0.1, 90.0],
                 bestEffort=False,
                 maxPixels=10,
             ).get(BAND)

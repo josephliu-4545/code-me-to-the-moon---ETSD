@@ -6,6 +6,8 @@ values are never converted into a misleading common quantity. v1 is unchanged.
 """
 
 import asyncio
+import hashlib
+import json
 from collections import OrderedDict
 from dataclasses import asdict
 from datetime import date, datetime, timedelta, timezone
@@ -17,6 +19,9 @@ from typing import Annotated, Any, Literal
 import httpx
 from fastapi import APIRouter, HTTPException, Query, Request
 from scipy.stats import spearmanr
+from pydantic import BaseModel, ConfigDict
+from app.soil_moisture.datasets import DATASETS
+from app.api.routes.soil_moisture import descriptor_payload
 
 from app.api.scientific_notes import (
     DESCRIPTIVE_SLOPE_NOTE, INFERENCE_CAVEAT, SEASONAL_DESCRIPTIVE_SLOPE_NOTE, SEASONAL_TREND_METHOD, TREND_METHOD,
@@ -105,7 +110,7 @@ VARIABLES: dict[str, dict[str, Any]] = {
                     "provenance": "model (GLDAS) or satellite retrieval (SMAP)", "doi": None},
         "datasets": ["gldas_2_1_noah_0_10cm", "smap_l3e_v005_am", "smap_l3e_v006_am"],
         "default_dataset": "gldas_2_1_noah_0_10cm",
-        "spatial_resolution": "0.25° (GLDAS) or 9 km (SMAP) native grid cell", "temporal_resolution": "3-hourly or daily → monthly → annual",
+        "spatial_resolution": "0.25° GLDAS grid; SMAP enhanced 9 km product sampled on the EE geographic grid (not sensing resolution)", "temporal_resolution": "3-hourly or daily → monthly → annual",
         "available_from": "2000-01-01", "max_years": 27, "default_period": [2015, 2025],
         "modes": {"point": True, "region": False},
         "region_unsupported_reason": "Soil moisture uses the native grid cell containing the point; region-wide analysis is not implemented.",
@@ -161,10 +166,15 @@ def _cache(request: Request) -> ResultCache:
 async def _call_v1(request: Request, path: str, params: dict[str, Any]) -> dict[str, Any]:
     transport = httpx.ASGITransport(app=request.app)
     async with httpx.AsyncClient(transport=transport, base_url="http://internal", timeout=None) as client:
-        response = await client.get(path, params={k: v for k, v in params.items() if v is not None})
+        response = await client.get(path, headers={"X-API-Key": request.headers.get("x-api-key", "")}, params={k: v for k, v in params.items() if v is not None})
     body = response.json()
     if response.status_code != 200:
-        raise HTTPException(response.status_code, body.get("detail", body))
+        detail = body.get("detail", body)
+        if isinstance(detail, str):
+            reason = {401: "authentication_required", 422: "unsupported_request", 502: "provider_failure",
+                      503: "provider_unavailable", 504: "request_timeout"}.get(response.status_code, "analysis_failed")
+            detail = {"reason": reason, "message": detail}
+        raise HTTPException(response.status_code, detail)
     return body
 
 
@@ -175,8 +185,8 @@ def _power_cell(lat: float, lon: float) -> dict[str, Any]:
     dlat, dlon = POWER_GRID["latitude_step"], POWER_GRID["longitude_step"]
     clat = max(-90.0, min(90.0, round(lat / dlat) * dlat))
     clon = round(lon / dlon) * dlon
-    return {"center": [clat, clon], "bounds": {"south": clat - dlat / 2, "north": clat + dlat / 2,
-                                               "west": clon - dlon / 2, "east": clon + dlon / 2},
+    return {"center": [clat, clon], "bounds": {"south": max(-90, clat - dlat / 2), "north": min(90, clat + dlat / 2),
+                                               "west": max(-180, clon - dlon / 2), "east": min(180, clon + dlon / 2)},
             "approximate": True}
 
 
@@ -243,7 +253,7 @@ def _monthly_series(items: list[dict[str, Any]], key: str = "monthly_values") ->
     return series
 
 
-def _seasonal_ndvi(body: dict[str, Any], slope_units: str) -> dict[str, Any]:
+def _seasonal_ndvi(body: dict[str, Any], slope_units: str, policy: TrendPolicy | None = None) -> dict[str, Any]:
     """NDVI trend from monthly means with the Seasonal Kendall test (see SEASONAL_TREND_METHOD).
 
     Cloud-masked months rarely leave complete years for the annual method (Yangon 2015-2024:
@@ -253,8 +263,8 @@ def _seasonal_ndvi(body: dict[str, Any], slope_units: str) -> dict[str, Any]:
     monthly = {(s["year"], m): v for s in body["annual_summaries"] for m, v in _monthly_pairs(s.get("monthly_values"))}
     first = date.fromisoformat(str(body["period"]["start"])).year
     last = (date.fromisoformat(str(body["period"]["end"])) - timedelta(days=1)).year
-    # shortcut: default TrendPolicy (3 / 8 years, alpha 0.05) equals the settings defaults; pass settings if they diverge.
-    result, months = seasonal_trend(monthly, first, last, slope_units.removesuffix("/year"), TrendPolicy())
+    # Unified requests pass the configured scientific policy; direct callers retain defaults.
+    result, months = seasonal_trend(monthly, first, last, slope_units.removesuffix("/year"), policy or TrendPolicy())
     trend = _trend(asdict(result))
     years = list(result.eligible_years)
     used = {k: v for k, v in monthly.items() if k[1] in months and k[0] in years}
@@ -269,7 +279,7 @@ def _seasonal_ndvi(body: dict[str, Any], slope_units: str) -> dict[str, Any]:
     return trend
 
 
-def normalise(variable: str, body: dict[str, Any], lat: float, lon: float, mode: str = "point") -> dict[str, Any]:
+def normalise(variable: str, body: dict[str, Any], lat: float, lon: float, mode: str = "point", policy: TrendPolicy | None = None) -> dict[str, Any]:
     meta = VARIABLES[variable]
     spatial: dict[str, Any]
     extra: dict[str, Any] = {}
@@ -356,7 +366,7 @@ def normalise(variable: str, body: dict[str, Any], lat: float, lon: float, mode:
     period = body.get("period", {})
     trend = _trend(body.get("trend"))
     if variable == "ndvi":
-        trend = _seasonal_ndvi(body, slope_units)
+        trend = _seasonal_ndvi(body, slope_units, policy)
     elif trend is not None:
         add_change_point(trend, annual)
     return {
@@ -364,7 +374,8 @@ def normalise(variable: str, body: dict[str, Any], lat: float, lon: float, mode:
                      "annual_value_definition": meta["annual_value"]},
         "dataset": dataset,
         "spatial_support": {**spatial, "resolution": resolution, "requested": {"latitude": lat, "longitude": lon}},
-        "period": {"start": period.get("start"), "end_exclusive": period.get("end_exclusive") or period.get("end")},
+        "period": {"start": period.get("start"), "end_exclusive": period.get("end_exclusive") or period.get("end"),
+                   "catalog_first_image": period.get("catalog_first_image"), "catalog_last_image": period.get("catalog_last_image")},
         "units": {"annual_value": units, "slope": slope_units},
         "annual": annual,
         "series": series,
@@ -394,8 +405,11 @@ def normalise(variable: str, body: dict[str, Any], lat: float, lon: float, mode:
 
 
 @router.get("/variables")
-async def variables(request: Request) -> dict[str, Any]:
+async def variables(request: Request, verify_availability: bool = False) -> dict[str, Any]:
     settings = request.app.state.settings
+    if verify_availability:
+        # Explicit opt-in only; provider caches catalog results for six hours.
+        await _call_v1(request, "/api/v1/soil-moisture/datasets", {"include_live_availability": "true"})
     out = []
     for key, meta in VARIABLES.items():
         item = {k: v for k, v in meta.items() if not k.startswith("v1")}
@@ -409,6 +423,36 @@ async def variables(request: Request) -> dict[str, Any]:
             item["max_years"] = settings.soil_moisture_max_date_range_years
         if key in ("temperature", "relative_humidity", "extreme_heat"):
             item["max_years"] = settings.power_max_date_range_years
+        item["availability"] = {
+            "documented_first": meta["available_from"], "documented_last": None,
+            "latest_observation": None, "latest_complete_year": None,
+            "verification": "documented_only", "provisional": "Recent observations may be incomplete or provisional; eligibility is evaluated after retrieval.",
+        }
+        item["sampling"] = {"point_radius_km": 0.25 if key == "ndvi" else None,
+                            "approximate": key in ("temperature", "relative_humidity", "extreme_heat")}
+        item["geographic_limitations"] = ["Coverage and quality masks can leave locations without usable observations."]
+        if key == "precipitation":
+            item["max_region_span_degrees"] = settings.precipitation_region_max_span_degrees
+            item["min_region_span_degrees"] = 0.1
+            item["region_description"] = f"Area-weighted mean over valid IMERG cells; months need at least {settings.precipitation_region_min_valid_area_fraction:.0%} valid area. Antimeridian crossing is unsupported."
+        if key == "soil_moisture":
+            item["products"] = []
+            for d in DATASETS.values():
+                product = descriptor_payload(d)
+                product["availability"] = {"documented_first": d.documented_first_date.isoformat(),
+                    "documented_last": d.documented_last_date.isoformat() if d.documented_last_date else None,
+                    "latest_observation": None, "latest_complete_year": ((d.documented_last_date.year if d.documented_last_date.month == 12 and d.documented_last_date.day == 31 else d.documented_last_date.year - 1) if d.documented_last_date else None), "verification": "documented_only",
+                    "as_of": d.availability_as_of.isoformat(), "provisional": "GLDAS provisional months are excluded from inference." if d.is_model else "Quality-filtered sampled days; missing observations remain missing."}
+                # Use an already verified cached catalog result without making network calls on page load.
+                service = request.app.state.soil_moisture_service
+                a = service.cached_availability(d.key) if hasattr(service, "cached_availability") else None
+                if a:
+                    last = a.last_image_date
+                    product["availability"].update(latest_observation=last.isoformat(),
+                        latest_complete_year=last.year if last.month == 12 and last.day == 31 else last.year - 1,
+                        verification="live_catalog_cached")
+                item["products"].append(product)
+            item["geographic_limitations"] = ["GLDAS: modelled land, 60°S–90°N; Greenland screening and water/ice masks apply.", "SMAP: approximately 85°S–85°N; swath and retrieval-quality masks apply."]
         out.append(item)
     return {"variables": out, "caveats": [INFERENCE_CAVEAT], "api_version": "2"}
 
@@ -418,7 +462,20 @@ def _year_bounds(start_date: date, end_date: date) -> None:
         raise HTTPException(422, "start_date must be before end_date")
 
 
-@router.get("/analysis")
+class UnifiedAnalysisResponse(BaseModel):
+    model_config = ConfigDict(extra="allow", allow_inf_nan=False)
+    variable: dict[str, Any]
+    dataset: dict[str, Any]
+    spatial_support: dict[str, Any]
+    period: dict[str, Any]
+    annual: list[dict[str, Any]]
+    series: list[dict[str, Any]]
+    trend: dict[str, Any] | None
+    investigation: dict[str, Any]
+    data_status: str
+
+
+@router.get("/analysis", response_model=UnifiedAnalysisResponse)
 async def analysis(
     request: Request,
     variable: Literal["temperature", "relative_humidity", "extreme_heat", "precipitation", "ndvi", "soil_moisture"],
@@ -474,10 +531,24 @@ async def analysis(
 
     async def compute():
         body = await _call_v1(request, path, params)
-        return normalise(variable, body, latitude, longitude, mode)
+        settings = request.app.state.settings
+        policy = TrendPolicy(settings.trend_min_slope_years, settings.trend_min_significance_years,
+                             settings.trend_significance_alpha, settings.trend_min_adjacent_pairs,
+                             settings.trend_material_lag1_rho)
+        return normalise(variable, body, latitude, longitude, mode, policy)
 
     payload, cache_meta = await _cache(request).get_or_compute(key, compute)
-    return {**payload, "cache": cache_meta,
+    identity = {"variable": variable, "dataset": payload["dataset"]["id"], "version": payload["dataset"]["version"],
+                "latitude": round(latitude, 4), "longitude": round(longitude, 4), "mode": mode,
+                "radius_km": params.get("radius_km"), "bbox": box,
+                "start_date": start_date.isoformat(), "end_date": end_date.isoformat()}
+    request_id = hashlib.sha256(json.dumps(identity, sort_keys=True).encode()).hexdigest()[:24]
+    return {**payload, "investigation": {"id": request_id, "request": identity,
+            "requested_period": {"start": start_date.isoformat(), "end_exclusive": end_date.isoformat()},
+            "effective_years": (payload.get("trend") or {}).get("eligible_years", []),
+            "source": payload["dataset"]["source"], "method": "seasonal_sen" if variable == "ndvi" else "theil_sen",
+            "retrieved_at": cache_meta["retrieved_at"],
+            "provenance_status": "cached_nasa_retrieval" if cache_meta["hit"] else payload["data_status"]}, "cache": cache_meta,
             "data_status": "cached_nasa_retrieval" if cache_meta["hit"] else payload["data_status"]}
 
 
@@ -548,7 +619,7 @@ async def geocode(q: Annotated[str, Query(min_length=2, max_length=120)]) -> dic
     key = q.strip().lower()
     hit = _GEOCODE_CACHE.get(key)
     if hit and time.monotonic() - hit[0] < 86400:
-        return {"query": q, "results": hit[1], "source": "OpenStreetMap Nominatim (cached)"}
+        return {"query": q, "results": hit[1], "source": "OpenStreetMap Nominatim (cached)", "attribution": "© OpenStreetMap contributors"}
     try:
         async with httpx.AsyncClient(timeout=10, headers={"User-Agent": "EarthSystemTrendDetective/0.2 (hackathon demo)"}) as client:
             r = await client.get("https://nominatim.openstreetmap.org/search",

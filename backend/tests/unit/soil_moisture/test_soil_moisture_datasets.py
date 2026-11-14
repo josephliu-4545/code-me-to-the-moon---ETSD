@@ -14,6 +14,7 @@ from app.soil_moisture.datasets import (
     primary_dataset,
 )
 from app.soil_moisture.units import QuantityKind
+from app.services.soil_moisture_provider import native_cell
 
 
 GLDAS = "gldas_2_1_noah_0_10cm"
@@ -182,7 +183,11 @@ def test_smap_units_depth_and_resolution(key: str) -> None:
     assert (d.depth_top_cm, d.depth_bottom_cm) == (0.0, 5.0)
     assert d.depth_semantics is DepthSemantics.APPROXIMATE_SENSING_DEPTH
     assert d.valid_range == (0.0, 1.0)
-    assert d.native_grid == "9 km EASE-Grid 2.0 (EE geographic)"
+    assert "9 km" in d.title and "EASE-Grid" in d.title
+    assert "0.08 degree" in d.native_grid and "EE geographic" in d.native_grid
+    assert "not effective sensing resolution" in d.native_grid
+    assert native_cell(d, 16.8661, 96.1951).cell_size_degrees == pytest.approx(0.08)
+    assert "not the effective radiometer sensing resolution" in " ".join(d.limitations)
     assert d.nominal_scale_m == 9000.0
     assert d.expected_slots_per_day == 1
     assert "06:00" in d.temporal_sampling and "descending" in d.temporal_sampling

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { AnalysisRequest } from "./api/types";
+import type { Analysis, AnalysisRequest } from "./api/types";
 import SiteHeader, { type NavItem } from "./components/layout/SiteHeader";
 import Wordmark from "./components/layout/Wordmark";
 import Starfield from "./components/layout/Starfield";
@@ -35,6 +35,8 @@ export default function App() {
   const [tab, setTab] = useState<Tab>(currentTab);
   const [selection, update] = useSelection();
   const [submitted, setSubmitted] = useState<AnalysisRequest | null>(null);
+  const [submittedPlace, setSubmittedPlace] = useState("");
+  const [snapshot, setSnapshot] = useState<Analysis | null>(null);
   const variables = useVariables();
   const [theme, , toggleTheme] = useTheme();
 
@@ -87,11 +89,14 @@ export default function App() {
                 selection={selection}
                 onChange={update}
                 submitted={submitted}
-                onSubmit={() => setSubmitted(toRequest(selection))}
+                submittedPlace={submittedPlace}
+                snapshot={snapshot}
+                onSnapshot={setSnapshot}
+                onSubmit={() => { setSnapshot(null); setSubmittedPlace(selection.placeName); setSubmitted(toRequest(selection)); }}
                 theme={theme}
               />
             )}
-            {tab === "evaluation" && <EvaluationPage submitted={submitted} />}
+            {tab === "evaluation" && <EvaluationPage submitted={submitted} snapshot={snapshot} />}
             {tab === "compare" && <CompareDatasetsPage selection={selection} />}
             {tab === "relationships" && <RelationshipsPage variables={variables.data.variables} selection={selection} />}
             {tab === "science" && <SciencePage variables={variables.data.variables} caveats={variables.data.caveats} />}

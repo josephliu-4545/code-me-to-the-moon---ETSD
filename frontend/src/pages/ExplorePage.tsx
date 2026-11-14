@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import type { Analysis, AnalysisRequest, VariableInfo } from "../api/types";
 import { isUnreachable } from "../api/types";
@@ -8,14 +9,18 @@ import { Cautions, ErrorBox, Limitations, Loading, MethodNotes, ProvenanceCard, 
 import SeriesChart from "../components/SeriesChart";
 import TrendChart from "../components/TrendChart";
 import MapBoundary from "../components/explore/MapBoundary";
+import LaunchCraft from "../components/explore/LaunchCraft";
 import Starfield from "../components/layout/Starfield";
+import DiscoveryChamber from "../components/explore/DiscoveryChamber";
 import SeasonalChart from "../components/science/SeasonalChart";
+import { boxPatch, boxProblem, circleProblem, regionLimits } from "../lib/region";
+import type { EditableRegion } from "../lib/regionInteraction";
 import { signed } from "../lib/format";
 import { periodLabel, trendVerdict } from "../lib/verdict";
 import { useLaunchSequence } from "../state/launch";
-import { selectionBox, toRequest, type Selection } from "../state/selection";
+import { requestIdentity, selectionBox, toRequest, type Selection } from "../state/selection";
 import type { Theme } from "../state/theme";
-import { findSnapshot, useAnalysis } from "../state/useAnalysis";
+import { analysisKey, findSnapshot, useAnalysis } from "../state/useAnalysis";
 
 const MapView = lazy(() => import("../components/MapView"));
 
@@ -26,6 +31,9 @@ interface Props {
   submitted: AnalysisRequest | null;
   onSubmit: () => void;
   theme?: Theme;
+  submittedPlace: string;
+  snapshot: Analysis | null;
+  onSnapshot: (value: Analysis | null) => void;
 }
 
 export function footprintFor(selection: Selection, analysis: Analysis | undefined): Footprint | null {
@@ -37,7 +45,7 @@ export function footprintFor(selection: Selection, analysis: Analysis | undefine
   }
   if (selection.variable === "precipitation" && selection.mode === "region") {
     const [west, south, east, north] = selectionBox(selection);
-    return { kind: "cell", bounds: { west, south, east, north }, approximate: false, label: `${selection.boxSpan.toFixed(1)}° box (area-weighted mean)` };
+    return { kind: "cell", bounds: { west, south, east, north }, approximate: false, label: `${(east-west).toFixed(3)}° × ${(north-south).toFixed(3)}° box (area-weighted mean)` };
   }
   if (selection.variable === "ndvi") {
     const r = selection.mode === "region" ? selection.radiusKm : 0.25;
@@ -48,7 +56,7 @@ export function footprintFor(selection: Selection, analysis: Analysis | undefine
 
 /** True when the controls no longer match the investigation the findings describe. */
 export function selectionDiffers(selection: Selection, submitted: AnalysisRequest | null): boolean {
-  return !!submitted && JSON.stringify(toRequest(selection)) !== JSON.stringify(submitted);
+  return !!submitted && requestIdentity(toRequest(selection)) !== requestIdentity(submitted);
 }
 
 function scrollToEl(el: HTMLElement | null) {
@@ -56,29 +64,43 @@ function scrollToEl(el: HTMLElement | null) {
   el?.scrollIntoView?.({ behavior: reduce ? "auto" : "smooth", block: "start" });
 }
 
-export default function ExplorePage({ variables, selection, onChange, submitted, onSubmit, theme = "dark" }: Props) {
+export default function ExplorePage({ variables, selection, onChange, submitted, onSubmit, submittedPlace, snapshot, onSnapshot, theme = "dark" }: Props) {
+  const queryClient = useQueryClient();
+  const [cancelled, setCancelled] = useState(false);
   const query = useAnalysis(submitted);
-  const [snapshot, setSnapshot] = useState<Analysis | null>(null);
   const [snapshotMissing, setSnapshotMissing] = useState(false);
-  const [submittedPlace, setSubmittedPlace] = useState(selection.placeName);
-  const analysis = query.data ?? (query.isError ? snapshot ?? undefined : undefined);
+  const analysis = cancelled ? undefined : query.data ?? (query.isError ? snapshot ?? undefined : undefined);
   const sameAsSubmitted =
-    submitted && Math.abs(submitted.latitude - selection.latitude) < 1e-4 && Math.abs(submitted.longitude - selection.longitude) < 1e-4;
+    submitted && requestIdentity(submitted) === requestIdentity(toRequest(selection));
   const footprint = useMemo(() => footprintFor(selection, sameAsSubmitted ? analysis : undefined), [selection, analysis, sameAsSubmitted]);
+  const info = variables.find(v => v.id === selection.variable);
+  const region = useMemo<EditableRegion | null>(() => {
+    if (selection.mode !== "region" || !info?.modes.region) return null;
+    if (info.region_shape === "bbox") {
+      const limits = regionLimits(info), bounds = selectionBox(selection);
+      return limits && !boxProblem(bounds, limits) ? { kind: "box", bounds, limits } : null;
+    }
+    if (selection.variable === "ndvi" && info.max_radius_km && !circleProblem(selection.latitude, selection.radiusKm, info.max_radius_km))
+      return { kind: "circle", center: [selection.longitude, selection.latitude], radiusKm: selection.radiusKm, maxRadius: info.max_radius_km };
+    return null;
+  }, [selection, info]);
   const unreachable = isUnreachable(query.error);
   const resultsRef = useRef<HTMLElement>(null);
-  const { phase, launch } = useLaunchSequence(query.isFetching, query.isError);
+  const launchRef = useRef<HTMLButtonElement>(null);
+  const beaconRef = useRef<HTMLSpanElement>(null);
+  const sequence = useLaunchSequence(query.isFetching, query.isError, requestIdentity(submitted), query.isSuccess || query.isError);
+  const { phase, launch, cancel } = sequence;
   const stale = selectionDiffers(selection, submitted);
 
   useEffect(() => {
     // On stacked (narrow) layouts, bring new results into view.
-    if ((query.data || query.isError) && window.innerWidth <= 960) scrollToEl(resultsRef.current);
-  }, [query.data, query.isError]);
+    if ((query.isError || (query.data && phase === "completed")) && window.innerWidth <= 960) scrollToEl(resultsRef.current);
+  }, [query.data, query.isError, phase]);
 
   async function loadSnapshot() {
     if (!submitted) return;
     const s = await findSnapshot(submitted);
-    setSnapshot(s);
+    onSnapshot(s);
     setSnapshotMissing(!s);
   }
 
@@ -91,13 +113,15 @@ export default function ExplorePage({ variables, selection, onChange, submitted,
 
   const verdict = analysis && !query.isFetching ? trendVerdict(analysis) : null;
   const statusText =
-    phase === "launching" ? "Investigation launched. Retrieving NASA data…" :
+    phase === "ignition" ? "Investigation launched. Retrieving NASA data…" :
     query.isFetching ? "Analysis running. Retrieving NASA data and computing statistics…" :
-    phase === "aborted" ? "The investigation did not complete." :
+    phase === "cancelled" ? "Investigation cancelled." :
+    phase === "failed" ? "The investigation did not complete." :
     verdict ? `Findings ready: ${verdict.label}.` : "";
 
   return (
     <div className="explore">
+      <LaunchCraft phase={phase} run={sequence.run} reduced={sequence.reduced} origin={launchRef} destination={beaconRef} />
       <h1 className="sr-only">Explore Earth</h1>
       <p className="sr-only" role="status" aria-live="polite">{statusText}</p>
       <section className="stage" aria-label="Earth from orbit and investigation controls">
@@ -112,16 +136,18 @@ export default function ExplorePage({ variables, selection, onChange, submitted,
               <MapView
                 latitude={selection.latitude}
                 longitude={selection.longitude}
-                footprint={footprint}
+                footprint={selection.mode === "region" && !region ? null : footprint ? { ...footprint, confirmed: !!sameAsSubmitted && !!analysis } : null}
                 theme={theme}
+                region={region}
+                onRegionChange={(r) => onChange(r.kind === "box" ? boxPatch(r.bounds) : { longitude: r.center[0], latitude: r.center[1], radiusKm: r.radiusKm, placeName: "" })}
                 onSelect={(lat, lon) => onChange({ latitude: lat, longitude: lon, placeName: "" })}
               />
             </Suspense>
           </MapBoundary>
         </div>
         <div className="stage-caption" aria-hidden>
-          <p className="kicker">Mission 01 · Explore Earth</p>
-          <p className="stage-title">Discover the signals<br />of a changing planet.</p>
+          <p className="kicker">Orbital observatory / 01</p>
+          <p className="stage-title">A living planet.<br />A longer perspective.</p>
         </div>
         <aside className="dossier" aria-label="Investigation">
           <header className="dossier-head">
@@ -139,18 +165,22 @@ export default function ExplorePage({ variables, selection, onChange, submitted,
             selection={selection}
             onChange={onChange}
             phase={phase}
+            launchRef={launchRef}
             onAnalyze={() => {
-              setSnapshot(null);
+              setCancelled(false);
+              onSnapshot(null);
               setSnapshotMissing(false);
-              setSubmittedPlace(selection.placeName);
-              launch();
+              const nextKey = requestIdentity(toRequest(selection));
+              launch(nextKey);
+              // Repeating the same investigation must still execute a request.
+              if (nextKey === requestIdentity(submitted)) void query.refetch();
               onSubmit();
             }}
             busy={query.isFetching}
             status={submitted && (
               <div className="dossier-status">
                 {query.isFetching ? (
-                  <p className="ds-line"><span className="orbit-loader orbit-sm" aria-hidden><span /></span>{phase === "launching" ? "Launching investigation…" : "Analysis running — retrieving NASA data"}</p>
+                  <p className="ds-line"><span className="orbit-loader orbit-sm" aria-hidden><span /></span>{phase === "ignition" ? "Launching investigation…" : "Analysis running — retrieving NASA data"}</p>
                 ) : verdict && analysis ? (
                   <a className={`ds-result ${stale ? "is-stale" : ""}`} href="#findings" onClick={jumpToFindings}>
                     <span className={`ds-verdict verdict-${verdict.kind}`}>{verdict.label}</span>
@@ -166,8 +196,10 @@ export default function ExplorePage({ variables, selection, onChange, submitted,
         </aside>
       </section>
 
-      <section id="findings" className={`findings ${phase === "arrived" ? "has-arrived" : ""}`} ref={resultsRef} aria-label="Mission findings" tabIndex={-1}>
+      <section id="findings" className={`findings ${(phase === "docking" || phase === "completed") ? "has-arrived" : ""}`} ref={resultsRef} aria-label="Mission findings" tabIndex={-1}>
+        <DiscoveryChamber phase={phase} active={!!analysis || query.isFetching} />
         <div className="findings-inner">
+          <div className={`results-beacon beacon-${phase}`}><span ref={beaconRef} aria-hidden className="beacon-ring" /><span>Mission Findings</span><small>Launch visualization represents your analysis request, not a spacecraft mission.</small></div>
           {!submitted && (
             <div className="findings-intro">
               <p className="kicker">Mission findings</p>
@@ -181,11 +213,13 @@ export default function ExplorePage({ variables, selection, onChange, submitted,
               </ol>
             </div>
           )}
+          {query.isFetching && <button className="btn btn-ghost" type="button" onClick={() => { cancel(); setCancelled(true); void queryClient.cancelQueries({ queryKey: analysisKey(submitted), exact: true }); }}>Cancel investigation</button>}
+          {cancelled && <p role="status">Investigation cancelled. Provider work already started may finish in the background.</p>}
           {query.isFetching && <Loading label="Retrieving NASA data and computing statistics…" />}
           {query.isError && !snapshot && (
             <ErrorBox
               error={query.error}
-              onRetry={() => { launch(); query.refetch(); }}
+              onRetry={() => { setCancelled(false); launch(requestIdentity(submitted)); void query.refetch(); }}
               extra={unreachable ? (
                 <>
                   <button type="button" className="btn btn-ghost" onClick={loadSnapshot}>Show saved snapshot</button>

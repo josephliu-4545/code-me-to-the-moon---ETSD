@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../api/client";
-import type { AnalysisRequest, AnnualPoint } from "../api/types";
+import type { Analysis, AnalysisRequest, AnnualPoint } from "../api/types";
 import { SOIL_DATASETS } from "../components/AnalysisControls";
 import { DataStatusBadge, ErrorBox, Limitations, Loading } from "../components/ResultPanels";
 import CiRuler from "../components/science/CiRuler";
@@ -134,7 +134,7 @@ const LabArt = () => (
   </svg>
 );
 
-export default function EvaluationPage({ submitted }: { submitted: AnalysisRequest | null }) {
+export default function EvaluationPage({ submitted, snapshot }: { submitted: AnalysisRequest | null; snapshot?: Analysis | null }) {
   const query = useAnalysis(submitted);
   if (!submitted)
     return (
@@ -150,8 +150,8 @@ export default function EvaluationPage({ submitted }: { submitted: AnalysisReque
       </div>
     );
   if (query.isFetching) return <div className="page page-control page-status"><Loading label="Waiting for the analysis…" /></div>;
-  if (query.isError) return <div className="page page-control page-status"><ErrorBox error={query.error} onRetry={() => query.refetch()} /></div>;
-  const a = query.data;
+  if (query.isError && !snapshot) return <div className="page page-control page-status"><ErrorBox error={query.error} onRetry={() => query.refetch()} /></div>;
+  const a = query.data ?? snapshot;
   if (!a) return null;
   const t = a.trend;
   const sd = t?.serial_dependence;
