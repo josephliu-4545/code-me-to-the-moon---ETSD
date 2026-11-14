@@ -33,6 +33,8 @@ def test_monthly_coverage_distinguishes_supported_statuses_and_denominator() -> 
         "expected_within_supported_coverage": 4,
         "percentage": 25.0,
         "label": "Valid months / Expected months within supported dataset coverage",
+        "status": "observed",
+        "unavailable_reason": None,
     }
     assert result["counts"] == {"valid": 1, "missing": 1, "excluded": 1, "provisional": 1, "outside_coverage": 1, "unavailable": 0}
 
@@ -60,12 +62,53 @@ def test_annual_fallback_preserves_exclusion_reasons_and_missing_is_not_zero() -
     assert result["completeness"]["percentage"] == pytest.approx(100 / 3)
 
 
-def test_unavailable_dataset_still_reports_requested_period_without_fabricated_values() -> None:
-    result = evaluate_dataset(POWER, None, date(2019, 1, 1), date(2021, 1, 1))
+@pytest.mark.parametrize(
+    ("outcome", "reason"),
+    [
+        ("provider_error", "provider_retrieval_failed"),
+        ("unsupported_location", "unsupported_location"),
+    ],
+)
+def test_failed_or_unsupported_retrieval_has_unknown_completeness(outcome: str, reason: str) -> None:
+    result = evaluate_dataset(POWER, None, date(2019, 1, 1), date(2021, 1, 1), outcome=outcome)
 
     assert result["resolution"] == "annual"
     assert [cell["status"] for cell in result["cells"]] == ["unavailable", "unavailable"]
+    assert all(cell["reasons"] == [reason] for cell in result["cells"])
     assert result["completeness"]["valid"] == 0
+    assert result["completeness"]["expected_within_supported_coverage"] == 2
+    assert result["completeness"]["percentage"] is None
+    assert result["completeness"]["status"] == "unavailable"
+
+
+def test_successful_retrieval_with_no_valid_observations_reports_zero_completeness() -> None:
+    analysis = {"series": [], "annual": [], "coverage": {"eligible_years": 0, "excluded_years": []}}
+
+    result = evaluate_dataset(POWER, analysis, date(2019, 1, 1), date(2021, 1, 1), outcome="no_data")
+
+    assert result["completeness"]["expected_within_supported_coverage"] == 2
+    assert result["completeness"]["percentage"] == 0.0
+    assert result["completeness"]["status"] == "observed"
+
+
+def test_soil_moisture_status_vocabulary_maps_qc_and_availability_distinctly() -> None:
+    smap = find("soil_moisture", "smap_l3e_v006_am")
+    analysis = {
+        "series": [
+            {"date": "2015-04-01", "value": None, "status": "outside_availability", "usable": False},
+            {"date": "2015-05-01", "value": None, "status": "insufficient_support", "usable": False},
+            {"date": "2015-06-01", "value": None, "status": "insufficient_temporal_spread", "usable": False},
+        ],
+        "annual": [],
+        "coverage": {"eligible_years": 0, "excluded_years": []},
+    }
+
+    result = evaluate_dataset(smap, analysis, date(2015, 4, 1), date(2015, 7, 1), outcome="no_data")
+
+    assert [cell["status"] for cell in result["cells"]] == ["outside_coverage", "excluded", "excluded"]
+    assert [cell["reasons"] for cell in result["cells"]] == [
+        ["outside_availability"], ["insufficient_support"], ["insufficient_temporal_spread"]
+    ]
     assert result["completeness"]["expected_within_supported_coverage"] == 2
     assert result["completeness"]["percentage"] == 0.0
 

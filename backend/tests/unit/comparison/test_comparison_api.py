@@ -118,6 +118,9 @@ def test_partial_failure_keeps_successful_datasets(client) -> None:
     failed = body["evaluation"]["datasets"]["chirps_v2_daily"]
     assert failed["resolution"] == "annual"
     assert set(cell["status"] for cell in failed["cells"]) == {"unavailable"}
+    assert failed["completeness"]["status"] == "unavailable"
+    assert failed["completeness"]["percentage"] is None
+    assert "Unsupported location" in failed["completeness"]["unavailable_reason"]
     assert body["evaluation"]["datasets"]["gpm_imerg_v07"]["counts"]["valid"] == 10
 
 
@@ -138,6 +141,10 @@ def test_provider_errors_are_reported_per_dataset(monkeypatch, client) -> None:
     assert body["results"]["gpm_imerg_v07"]["outcome"] == "provider_error"
     assert body["results"]["gpm_imerg_v07"]["http_status"] == 503
     assert body["results"]["era5_land_tp"]["analysis"] is not None
+    failed = body["evaluation"]["datasets"]["gpm_imerg_v07"]
+    assert failed["completeness"]["status"] == "unavailable"
+    assert failed["completeness"]["percentage"] is None
+    assert "Provider retrieval failed" in failed["completeness"]["unavailable_reason"]
 
 
 def test_outside_record(client) -> None:
@@ -148,6 +155,7 @@ def test_outside_record(client) -> None:
     assert set(cell["status"] for cell in coverage["cells"]) == {"outside_coverage"}
     assert coverage["completeness"]["expected_within_supported_coverage"] == 0
     assert coverage["completeness"]["percentage"] is None
+    assert coverage["completeness"]["status"] == "unavailable"
 
 
 def test_no_data_outcome(client) -> None:
@@ -156,6 +164,9 @@ def test_no_data_outcome(client) -> None:
     client.app.state.comparison_provider = EEMonthlyProvider(FakeManager(), loader=empty)
     body = client.get("/api/v2/compare", params={**Q, "variable": "temperature", "datasets": "nasa_power_t2m,era5_land_t2m"}).json()
     assert body["results"]["era5_land_t2m"]["outcome"] == "no_data"
+    empty_coverage = body["evaluation"]["datasets"]["era5_land_t2m"]["completeness"]
+    assert empty_coverage["status"] == "observed"
+    assert empty_coverage["percentage"] == 0.0
 
 
 @pytest.mark.parametrize(

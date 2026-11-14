@@ -73,6 +73,7 @@ export interface PairComparison {
   common_eligible_years: number[];
   full_period_slopes: Record<string, number | null>;
   common_period_slopes: Record<string, number> | null;
+  common_period_slope_sign_agreement?: boolean | null;
   slope_sign_agreement: boolean | null;
   confidence_intervals_overlap: boolean | null;
   annual_differences: { year: number; difference: number }[] | null;
@@ -112,6 +113,8 @@ export interface DatasetEvaluation {
     expected_within_supported_coverage: number;
     percentage: number | null;
     label: string;
+    status?: "observed" | "unavailable";
+    unavailable_reason?: string | null;
   };
   eligible_years: number[];
   excluded_years: { year: number; reasons: string[] }[];

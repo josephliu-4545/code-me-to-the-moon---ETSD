@@ -99,9 +99,15 @@ def compare_pair(a: DatasetEntry, b: DatasetEntry, ra: dict[str, Any], rb: dict[
             out["common_period_slopes"][a.key] - out["common_period_slopes"][b.key]
             if comparable else None
         )
+        common_sa = out["common_period_slopes"][a.key]
+        common_sb = out["common_period_slopes"][b.key]
+        out["common_period_slope_sign_agreement"] = (
+            (common_sa > 0) - (common_sa < 0) == (common_sb > 0) - (common_sb < 0)
+        )
     else:
         out["common_period_slopes"] = None
         out["slope_difference"] = None
+        out["common_period_slope_sign_agreement"] = None
         out["unavailable_reasons"].append("fewer_than_3_common_eligible_years")
 
     if comparable and common:
@@ -132,13 +138,24 @@ def compare_pair(a: DatasetEntry, b: DatasetEntry, ra: dict[str, Any], rb: dict[
     else:
         out["spearman_rho"] = out["pearson_r"] = out["spearman_rho_year_to_year"] = None
         out["unavailable_reasons"].append("fewer_than_8_common_eligible_years_for_correlation")
-    direct_unavailable = None if comparable else "Datasets measure different physical quantities or use incompatible units."
+    direct_unavailable = (
+        "Datasets measure different physical quantities or use incompatible units."
+        if not comparable else ("No common eligible years." if not common else None)
+    )
     slope_unavailable = direct_unavailable or (
         None if out["slope_difference"] is not None else "Fewer than 3 common eligible years for common-period slopes."
     )
-    correlation_unavailable = (
-        None if out["spearman_rho"] is not None
-        else f"Requires at least {MIN_COMMON_YEARS_FOR_CORRELATION} common eligible years and non-constant values."
+    if not common:
+        correlation_unavailable = "No common eligible years."
+    elif len(common) < MIN_COMMON_YEARS_FOR_CORRELATION:
+        correlation_unavailable = f"Requires at least {MIN_COMMON_YEARS_FOR_CORRELATION} common eligible years."
+    elif len({va[y] for y in common}) < 2 or len({vb[y] for y in common}) < 2:
+        correlation_unavailable = "Correlation is undefined because one or both matched series are constant."
+    else:
+        correlation_unavailable = None
+    direction_unavailable = (
+        None if out["common_period_slope_sign_agreement"] is not None
+        else ("No common eligible years." if not common else "Fewer than 3 common eligible years for common-period slopes.")
     )
     product_difference = "A product-to-product difference; it is not an error or established bias."
     no_truth = "Neither product is treated as ground truth; spatial footprints and production methods differ."
@@ -155,10 +172,12 @@ def compare_pair(a: DatasetEntry, b: DatasetEntry, ra: dict[str, Any], rb: dict[
         _metric("spearman_rho", "Spearman rank correlation", out["spearman_rho"], None, len(common),
                 "Rank correlation of matched annual values.", "Describes monotonic co-variation, not accuracy or causation.",
                 "No p-value is reported; shared inputs can inflate agreement.", correlation_unavailable),
-        _metric("trend_direction", "Trend-direction agreement", out["slope_sign_agreement"], None, len(common),
-                "Whether the signs of the two full-request trend slopes are equal.", "Shows directional consistency only.",
-                "Full-request slopes can use different eligible years; inspect common-period slopes too.",
-                None if out["slope_sign_agreement"] is not None else "One or both slopes are unavailable."),
+        _metric("trend_direction", "Common-period trend-direction agreement",
+                out["common_period_slope_sign_agreement"], None, len(common),
+                "Whether the signs of the two Theil–Sen slopes over the common eligible years are equal.",
+                "Shows directional consistency over matched years only.",
+                "Descriptive only; the legacy Comparison view retains each dataset's full-request trend.",
+                direction_unavailable),
         _metric("slope_difference", "Difference in common-period slopes", out["slope_difference"],
                 ta.get("slope_units") or rb.get("units", {}).get("slope"), len(common),
                 "Dataset A common-period Theil–Sen slope minus Dataset B common-period Theil–Sen slope.", product_difference,
@@ -212,6 +231,7 @@ def compare(results: list[tuple[DatasetEntry, dict[str, Any]]]) -> dict[str, Any
         "method": {
             "pairing": "only calendar years eligible in both datasets are paired",
             "common_period_slope": "Theil–Sen slope of each dataset over the common eligible years only (descriptive, no inference)",
+            "direction_metric": "direction agreement in Evaluation Lab uses common-period slopes; legacy full-request direction remains unchanged",
             "correlation": f"Spearman ρ and Pearson r of annual values, and Spearman ρ of year-to-year changes; withheld below {MIN_COMMON_YEARS_FOR_CORRELATION} common years; no p-values",
             "differences": "computed only for datasets measuring the same quantity in the same units",
         },

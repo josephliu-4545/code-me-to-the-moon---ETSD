@@ -60,11 +60,12 @@ export default function CoverageMatrix({ data }: { data: CompareResponse }) {
       <div className="eval-quality-grid">
         {rows.map(([key, evaluation]) => {
           const denominator = evaluation.completeness.expected_within_supported_coverage;
+          const unavailable = evaluation.completeness.status === "unavailable";
           return (
             <article className="eval-quality-card" key={key}>
               <h3>{data.results[key]?.entry.name ?? key}</h3>
-              <strong className="mono">{evaluation.completeness.valid} / {denominator} valid {evaluation.resolution === "monthly" ? "months" : "years"}</strong>
-              <p>{evaluation.completeness.percentage === null ? "Not calculable" : `${evaluation.completeness.percentage.toFixed(1)}% complete`}</p>
+              <strong className="mono">{unavailable ? "Completeness unavailable" : `${evaluation.completeness.valid} / ${denominator} valid ${evaluation.resolution === "monthly" ? "months" : "years"}`}</strong>
+              <p>{unavailable ? evaluation.completeness.unavailable_reason : evaluation.completeness.percentage === null ? "Not calculable" : `${evaluation.completeness.percentage.toFixed(1)}% complete`}</p>
               <p className="note">{evaluation.completeness.label}</p>
               <p className="note">Requested: {evaluation.requested_period.start} → {evaluation.requested_period.end_exclusive} · Product record: {evaluation.supported_period.start} → {evaluation.supported_period.end ?? "present"}</p>
               <p className="note">Missing {evaluation.counts.missing} · QC excluded {evaluation.counts.excluded} · Provisional {evaluation.counts.provisional} · Outside record {evaluation.counts.outside_coverage}</p>

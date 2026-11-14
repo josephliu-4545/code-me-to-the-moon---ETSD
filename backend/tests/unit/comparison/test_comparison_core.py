@@ -304,6 +304,44 @@ def test_matched_metadata_distinguishes_each_dataset_valid_years_from_pair_overl
     assert p["matched_observations"]["excluded_from_pairing"]["era5_land_t2m"] == ["2017"]
 
 
+def test_direction_metric_uses_common_period_slopes_not_different_full_periods() -> None:
+    a = analysis({2018: 1.0, 2019: 2.0, 2020: 3.0, 2021: 100.0}, slope=-0.5)
+    b = analysis({2017: 0.0, 2018: 1.5, 2019: 2.5, 2020: 3.5}, slope=0.5)
+
+    p = compare_pair(find("temperature", "nasa_power_t2m"), T_ERA5, a, b)
+    metric = next(m for m in p["metrics"] if m["id"] == "trend_direction")
+
+    assert p["slope_sign_agreement"] is False  # legacy full-request context remains unchanged
+    assert p["common_period_slope_sign_agreement"] is True
+    assert metric["value"] is True
+    assert "common eligible years" in metric["definition"]
+
+
+def test_every_unavailable_metric_explains_no_common_eligible_years() -> None:
+    a = analysis({2018: 1.0}, eligible={2018})
+    b = analysis({2019: 2.0}, eligible={2019})
+
+    p = compare_pair(find("temperature", "nasa_power_t2m"), T_ERA5, a, b)
+
+    unavailable = [m for m in p["metrics"] if m["value"] is None]
+    assert unavailable
+    assert all(m["unavailable_reason"] for m in unavailable)
+    for metric_id in {"mean_difference", "mae", "rmse"}:
+        assert "No common eligible years" in next(m for m in unavailable if m["id"] == metric_id)["unavailable_reason"]
+
+
+def test_constant_matched_observations_explain_undefined_correlation() -> None:
+    years = range(2010, 2018)
+    p = compare_pair(
+        find("temperature", "nasa_power_t2m"), T_ERA5,
+        analysis({year: 1.0 for year in years}), analysis({year: float(year) for year in years}),
+    )
+
+    for metric_id in ("pearson_r", "spearman_rho"):
+        reason = next(m for m in p["metrics"] if m["id"] == metric_id)["unavailable_reason"]
+        assert "constant" in reason.lower()
+
+
 def test_agreement_levels() -> None:
     assert agreement_summary([])["level"] == "not_assessable"
     assert agreement_summary([{"slope_sign_agreement": True, "spearman_rho": 0.9}])["level"] == "consistent"

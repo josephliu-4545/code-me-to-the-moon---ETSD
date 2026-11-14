@@ -110,7 +110,7 @@ function evaluationResponse(): CompareResponse {
         requested_period: { start: "2015-01-01", end_exclusive: "2018-01-01" }, supported_period: { start: "2016-01-01", end: null },
         cells: [{ period: "2015", status: "outside_coverage", reasons: ["outside_dataset_record"], value: null }, { period: "2016", status: "unavailable", reasons: ["dataset_result_unavailable"], value: null }],
         counts: { valid: 0, missing: 0, excluded: 0, provisional: 0, outside_coverage: 1, unavailable: 1 },
-        completeness: { valid: 0, expected_within_supported_coverage: 1, percentage: 0, label: "Valid years / Expected years within supported dataset coverage" },
+        completeness: { valid: 0, expected_within_supported_coverage: 1, percentage: null, status: "unavailable", unavailable_reason: "Unsupported location; completeness was not assessed.", label: "Completeness unavailable" },
         eligible_years: [], excluded_years: [],
       },
     },
@@ -300,6 +300,8 @@ describe("Dataset Evaluation Lab", () => {
     expect(screen.getByText("1 / 3 valid years")).toBeInTheDocument();
     expect(screen.getByText("1 / 2 valid months")).toBeInTheDocument();
     expect(screen.getAllByText(/within supported dataset coverage/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Completeness unavailable")).toHaveLength(2);
+    expect(screen.getByText("Unsupported location; completeness was not assessed.")).toBeInTheDocument();
   });
 
   it("shows matched evidence, metric definitions, unavailable reasons, and product differences", () => {

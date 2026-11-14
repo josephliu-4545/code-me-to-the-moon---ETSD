@@ -15,7 +15,10 @@ from app.comparison.catalog import DatasetEntry
 
 STATUSES = ("valid", "missing", "excluded", "provisional", "outside_coverage", "unavailable")
 MISSING_STATUSES = {"no_images", "no_valid_values", "missing"}
-EXCLUDED_STATUSES = {"invalid_values", "insufficient_coverage", "excluded"}
+EXCLUDED_STATUSES = {
+    "invalid_values", "insufficient_coverage", "insufficient_support",
+    "insufficient_temporal_spread", "excluded",
+}
 
 
 def _month_starts(start: date, end: date) -> Iterable[date]:
@@ -50,6 +53,8 @@ def _monthly_status(row: dict[str, Any] | None) -> tuple[str, list[str], float |
         return "provisional", reasons or ["provisional_recent_product"], float(value) if value is not None else None
     if row.get("provisional"):
         return "provisional", reasons or ["provisional_recent_product"], float(value) if value is not None else None
+    if source_status == "outside_availability":
+        return "outside_coverage", reasons, None
     if source_status in MISSING_STATUSES:
         return "missing", reasons, None
     if source_status in EXCLUDED_STATUSES:
@@ -74,6 +79,7 @@ def evaluate_dataset(
     analysis: dict[str, Any] | None,
     requested_start: date,
     requested_end: date,
+    outcome: str | None = None,
 ) -> dict[str, Any]:
     """Return coverage evidence with a denominator limited to supported periods."""
     available_start, available_end = _catalog_bounds(entry)
@@ -113,11 +119,29 @@ def evaluate_dataset(
         unit = "years"
         resolution_note = "Annual coverage: monthly quality-control information is not available for this dataset response."
 
+    unavailable_reason = None
+    if analysis is None:
+        unavailable_reason = {
+            "provider_error": "Provider retrieval failed; completeness was not assessed.",
+            "unsupported_location": "Unsupported location; completeness was not assessed.",
+            "unsupported_mode": "Unsupported analysis mode; completeness was not assessed.",
+            "outside_record": "Requested period was not retrieved; completeness was not assessed.",
+        }.get(outcome, "Dataset retrieval was unavailable; completeness was not assessed.")
+        cell_reason = {
+            "provider_error": "provider_retrieval_failed",
+            "unsupported_location": "unsupported_location",
+            "unsupported_mode": "unsupported_mode",
+            "outside_record": "outside_dataset_record",
+        }.get(outcome, "dataset_result_unavailable")
+        for cell in cells:
+            if cell["status"] != "outside_coverage":
+                cell.update(status="unavailable", reasons=[cell_reason], value=None)
+
     counts = Counter(cell["status"] for cell in cells)
     complete_counts = {status: counts.get(status, 0) for status in STATUSES}
     denominator = len(cells) - complete_counts["outside_coverage"]
     valid = complete_counts["valid"]
-    percentage = valid / denominator * 100 if denominator else None
+    percentage = valid / denominator * 100 if denominator and analysis is not None else None
     annual = (analysis or {}).get("annual") or []
     return {
         "dataset": entry.key,
@@ -131,7 +155,10 @@ def evaluate_dataset(
             "valid": valid,
             "expected_within_supported_coverage": denominator,
             "percentage": percentage,
-            "label": f"Valid {unit} / Expected {unit} within supported dataset coverage",
+            "label": (f"Valid {unit} / Expected {unit} within supported dataset coverage"
+                      if analysis is not None else "Completeness unavailable"),
+            "status": "observed" if analysis is not None else "unavailable",
+            "unavailable_reason": unavailable_reason,
         },
         "eligible_years": [row["year"] for row in annual if row.get("eligible")],
         "excluded_years": [

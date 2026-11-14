@@ -189,7 +189,7 @@ async def compare(
     succeeded = [(e, r["analysis"]) for e, r in zip(selected, results) if r["analysis"] is not None]
     comparison = engine.compare(succeeded) if len(succeeded) >= 2 else None
     dataset_evaluations = {
-        e.key: evaluate_dataset(e, result["analysis"], start_date, end_date)
+        e.key: evaluate_dataset(e, result["analysis"], start_date, end_date, outcome=result["outcome"])
         for e, result in zip(selected, results)
     }
     return {
