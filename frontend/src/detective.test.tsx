@@ -205,7 +205,7 @@ describe("answers (Layers 3–4)", () => {
         a: { entry: { name: "Dataset A", version: "1", citation: null }, outcome: "inference", message: "", analysis: null },
         b: { entry: { name: "Dataset B", version: "2", citation: null }, outcome: "inference", message: "", analysis: null },
       },
-      comparison: { pairs: [{ datasets: ["a", "b"], lineage: "independent", lineage_note: "Independent inputs.", numerically_comparable: true, slope_sign_agreement: true, spearman_rho: 0.8, common_eligible_years: [2015, 2016, 2017], unavailable_reasons: [] }], agreement: { level: "moderate agreement", explanation: "Signs agree.", caution: "Short record." } },
+      comparison: { pairs: [{ datasets: ["a", "b"], lineage: "independent", lineage_note: "Independent inputs.", numerically_comparable: true, slope_sign_agreement: true, common_period_slope_sign_agreement: true, spearman_rho: 0.8, common_eligible_years: [2015, 2016, 2017], unavailable_reasons: [] }], agreement: { level: "moderate agreement", explanation: "Signs agree.", caution: "Short record." } },
       comparison_unavailable_reason: null, caveats: [],
     } as unknown as CompareResponse;
     const key = (y: number) => ["compare", { variable: "temperature", datasets: ["a", "b"], latitude: 16.8661, longitude: 96.1951, startYear: y, endYear: 2025 }] as const;
@@ -213,7 +213,7 @@ describe("answers (Layers 3–4)", () => {
     const c = comparisonFromCache([[key(2015), compare]], i);
     expect(c?.agreementLevel).toBe("moderate agreement");
     const a = answerQuestion(classify("Why do the datasets disagree?", null), temp(), { comparison: c, relationships: [] });
-    expect(text(a)).toMatch(/Dataset A vs Dataset B: independent; 3 common eligible years; slope signs agree; Spearman ρ 0.8/);
+    expect(text(a)).toMatch(/Dataset A vs Dataset B: independent; 3 common eligible years; same \(descriptive\) over common years; Spearman ρ 0.8/);
   });
 
   it("uses cached relationships for the same place and period only", () => {

@@ -89,9 +89,9 @@ function SoilMoistureComparison({ request }: { request: AnalysisRequest }) {
               </div>
             ))}
             <div className={`compare-agree ${agree === true ? "is-yes" : agree === false ? "is-no" : ""}`}>
-              <span className="compare-agree-label">Slope signs agree</span>
+              <span className="compare-agree-label">Full-period slope signs agree (descriptive)</span>
               <strong>{agree === null || agree === undefined ? "not assessable" : agree ? "yes" : "no"}</strong>
-              <span className="compare-agree-note">Units differ, so slopes are compared by sign only.</span>
+              <span className="compare-agree-note">Units differ, so slopes are compared by sign only. Each slope uses that dataset&apos;s own eligible years, so the samples can differ; this is not an established agreement or conflict. Compare Datasets compares directions over common years.</span>
             </div>
           </div>
           <ul className="bullets">{q.data.differences.map((d) => <li key={d}>{d}</li>)}</ul>
