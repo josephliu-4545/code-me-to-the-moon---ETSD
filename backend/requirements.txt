@@ -1,5 +1,7 @@
 fastapi>=0.115,<1.0
 earthengine-api>=1.4,<2.0
+# Imported directly for keyless (Application Default Credentials) Earth Engine authentication.
+google-auth>=2.0,<3.0
 httpx>=0.28,<1.0
 pydantic-settings>=2.7,<3.0
 scipy>=1.16,<2.0
