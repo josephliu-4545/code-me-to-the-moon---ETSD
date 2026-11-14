@@ -12,6 +12,14 @@
   --haze: #90A1BA;
   --frost: #CDD5E1;
   --starlight: #EFF2F7;
+  /* Expanded cinematic accents */
+  --cosmic-indigo: #5676E8;
+  --cosmic-violet: #8F64E8;
+  --nebula-lavender: #C184EC;
+  --atmosphere-cyan: #48B8E8;
+  --aurora-teal: #80E3EF;
+  --celestial-peach: #F4B68A;
+  --moonlight-warm: #F2E7D9;
 }
 :root, [data-theme="dark"], [data-theme="light"] {
   color-scheme: dark;

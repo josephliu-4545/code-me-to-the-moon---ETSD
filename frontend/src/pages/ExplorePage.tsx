@@ -5,14 +5,12 @@ import { isUnreachable } from "../api/types";
 import AnalysisControls from "../components/AnalysisControls";
 import LocationPanel from "../components/LocationPanel";
 import type { Footprint } from "../components/MapView";
-import { Cautions, ErrorBox, Limitations, Loading, MethodNotes, ProvenanceCard, ResultSummary } from "../components/ResultPanels";
-import SeriesChart from "../components/SeriesChart";
-import TrendChart from "../components/TrendChart";
+import { ErrorBox, Loading } from "../components/ResultPanels";
+import MissionFindings from "../components/expedition/MissionFindings";
 import MapBoundary from "../components/explore/MapBoundary";
 import LaunchCraft from "../components/explore/LaunchCraft";
 import Starfield from "../components/layout/Starfield";
 import DiscoveryChamber from "../components/explore/DiscoveryChamber";
-import SeasonalChart from "../components/science/SeasonalChart";
 import { boxPatch, boxProblem, circleProblem, regionLimits } from "../lib/region";
 import type { EditableRegion } from "../lib/regionInteraction";
 import { signed } from "../lib/format";
@@ -235,24 +233,7 @@ export default function ExplorePage({ variables, selection, onChange, submitted,
                   <strong>Controls changed since this investigation.</strong> These findings still describe {analysis.variable.name} at {submittedPlace || "the earlier point"}, {periodLabel(analysis)}. Launch again to investigate the new selection.
                 </p>
               )}
-              <ResultSummary analysis={analysis} place={submittedPlace} />
-              <section className="layer layer-data" aria-labelledby="layer-4">
-                <h3 id="layer-4" className="layer-title"><span className="layer-num" aria-hidden>04</span>What does the data look like?</h3>
-                <div className="charts">
-                  <TrendChart analysis={analysis} />
-                  <SeriesChart analysis={analysis} />
-                  <SeasonalChart analysis={analysis} />
-                </div>
-              </section>
-              <Cautions analysis={analysis} />
-              <div className="dossier-foot">
-                <ProvenanceCard analysis={analysis} />
-                <div className="stack">
-                  <MethodNotes analysis={analysis} />
-                  <Limitations analysis={analysis} />
-                  <a className="text-link" href="#evaluation">Open Mission Control for the full evidence review →</a>
-                </div>
-              </div>
+              <MissionFindings analysis={analysis} place={submittedPlace} />
             </article>
           )}
         </div>

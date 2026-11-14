@@ -130,6 +130,41 @@ def test_hung_start_up_fails_after_the_timeout_instead_of_blocking() -> None:
     assert manager.status is EarthEngineStatus.FAILED
 
 
+def test_retry_does_not_start_another_initializer_while_timed_out_attempt_is_alive() -> None:
+    import threading
+
+    now = [0.0]
+    release = threading.Event()
+    attempts: list[str] = []
+
+    class HangingEarthEngine:
+        def Initialize(self, *, project: str) -> None:
+            attempts.append(project)
+            release.wait(5)
+
+    manager = EarthEngineManager(
+        "project-id",
+        HangingEarthEngine(),
+        retry_after_seconds=1,
+        startup_timeout_seconds=0.05,
+        clock=lambda: now[0],
+    )
+    try:
+        with pytest.raises(EarthEngineInitializationError):
+            manager.initialize()
+        now[0] = 2
+        with pytest.raises(EarthEngineInitializationError):
+            manager.initialize()
+        assert attempts == ["project-id"]
+        release.set()
+        now[0] = 4
+        manager.initialize()
+        assert attempts == ["project-id"]
+        assert manager.status is EarthEngineStatus.READY
+    finally:
+        release.set()
+
+
 def test_start_up_sets_a_deadline_on_later_requests() -> None:
     deadlines: list[int] = []
 

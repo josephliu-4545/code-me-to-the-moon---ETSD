@@ -14,7 +14,7 @@ from app.services.imerg_region_service import ImergRegionService
 from app.api.routes.unified import ResultCache, router as unified_router
 from app.api.routes.comparison import router as comparison_router
 from app.api.routes.status import router as status_router
-from app.core.access import AccessControlMiddleware, TokenBucket, parse_keys
+from app.core.access import AccessControlMiddleware, TokenBucket, parse_keys, parse_proxy_trust
 from app.core.ee_credentials import earth_engine_module
 from app.core.config import Settings, get_settings
 from app.core.earth_engine import EarthEngineError, EarthEngineManager
@@ -55,7 +55,9 @@ def create_app(
 ) -> FastAPI:
     resolved_settings = settings or get_settings()
     resolved_manager = ee_manager or EarthEngineManager(
-        resolved_settings.ee_project_id, earth_engine_module(resolved_settings.ee_service_account_key_file)
+        resolved_settings.ee_project_id, earth_engine_module(
+            resolved_settings.ee_service_account_key_file, resolved_settings.ee_use_application_default_credentials
+        )
     )
     resolved_service = modis_service or ModisService(resolved_manager)
     resolved_runner = operation_runner or BoundedOperationRunner(
@@ -174,12 +176,16 @@ def create_app(
     application.include_router(comparison_router)
     application.include_router(status_router)
     keys = parse_keys(resolved_settings.api_keys)
+    proxy_trust = parse_proxy_trust(
+        resolved_settings.trust_proxy_headers, resolved_settings.trusted_proxy_ips, resolved_settings.trusted_proxy_hops
+    )
+    application.state.proxy_trust = proxy_trust
     if keys or resolved_settings.rate_limit_per_minute:
         application.add_middleware(
             AccessControlMiddleware,
             api_keys=keys,
             bucket=TokenBucket(resolved_settings.rate_limit_per_minute) if resolved_settings.rate_limit_per_minute else None,
-            trust_proxy_headers=resolved_settings.trust_proxy_headers,
+            proxy_trust=proxy_trust,
         )
     application.state.unified_cache = ResultCache(
         resolved_settings.unified_cache_max_entries, resolved_settings.unified_cache_ttl_seconds

@@ -52,6 +52,9 @@ class EarthEngineManager:
         self._request_deadline_seconds = request_deadline_seconds
         self._clock = clock
         self._failed_at = 0.0
+        self._initialization_thread: Thread | None = None
+        self._initialization_done: Event | None = None
+        self._initialization_errors: list[BaseException] = []
 
     @property
     def status(self) -> EarthEngineStatus:
@@ -107,20 +110,29 @@ class EarthEngineManager:
         # ee.Initialize also fetches its API description through requests with no timeout; behind
         # a proxy that TLS handshake was seen to hang forever. Run it in a daemon thread and give
         # up after a deadline: start-up then fails and is retried later instead of blocking all requests.
-        done = Event()
-        errors: list[BaseException] = []
+        if self._initialization_thread is None:
+            self._initialization_done = Event()
+            self._initialization_errors = []
 
-        def run() -> None:
-            try:
-                self.ee.Initialize(project=self._project_id)
-            except BaseException as exc:  # re-raised in the caller's thread
-                errors.append(exc)
-            finally:
-                done.set()
+            def run() -> None:
+                try:
+                    self.ee.Initialize(project=self._project_id)
+                except BaseException as exc:  # re-raised in the caller's thread
+                    self._initialization_errors.append(exc)
+                finally:
+                    assert self._initialization_done is not None
+                    self._initialization_done.set()
 
-        Thread(target=run, name="earth-engine-startup", daemon=True).start()
-        if not done.wait(self._startup_timeout_seconds):
+            self._initialization_thread = Thread(target=run, name="earth-engine-startup", daemon=True)
+            self._initialization_thread.start()
+
+        assert self._initialization_done is not None
+        if not self._initialization_done.wait(self._startup_timeout_seconds):
             raise TimeoutError(f"Earth Engine start-up took longer than {self._startup_timeout_seconds:g} s")
+        errors = self._initialization_errors
+        self._initialization_thread = None
+        self._initialization_done = None
+        self._initialization_errors = []
         if errors:
             raise errors[0]
 

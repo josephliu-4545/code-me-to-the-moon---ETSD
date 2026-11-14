@@ -2,9 +2,13 @@ import { useEffect, useState } from "react";
 import AccessKeyForm from "./AccessKeyForm";
 import type { Analysis } from "../api/types";
 import { ApiError, isUnreachable } from "../api/types";
-import { dataStatusLabel, decadeUnits, fmt, fmtCoord, perDecade, pText, signed } from "../lib/format";
+import { dataStatusLabel, decadeUnits, fmt, fmtCoord, perDecade, signed } from "../lib/format";
 import { stepWarning, summarize } from "../lib/summary";
-import { discoveryHeadline, inSentence, fittedChange, intervalReading, isSeasonal, monthCompleteness, monthsUsed, periodLabel, slopeName, testName, trendVerdict } from "../lib/verdict";
+import { discoveryHeadline, inSentence, fittedChange, intervalReading, isSeasonal, monthCompleteness, monthsUsed, periodLabel, slopeName, trendVerdict } from "../lib/verdict";
+import { headlineParts, plainReason, type StageId } from "../lib/evidence";
+import MethodExplorer from "./expedition/MethodExplorer";
+import ScientificGuardrails from "./expedition/ScientificGuardrails";
+import { buildRows } from "./TrendChart";
 import CiRuler from "./science/CiRuler";
 import YearStrip from "./science/YearStrip";
 import Disclosure from "./ui/Disclosure";
@@ -20,21 +24,35 @@ export function DataStatusBadge({ analysis }: { analysis: Analysis }) {
   );
 }
 
-const pretty = (k: string) => k.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
 
-function Layer({ n, title, children, className = "" }: { n: number; title: string; children: React.ReactNode; className?: string }) {
+/** A compact sparkline of the real annual values and the backend's fitted line. Decorative twin of the full chart. */
+function DiscoverySpark({ analysis }: { analysis: Analysis }) {
+  const rows = buildRows(analysis);
+  const vals = rows.flatMap((r) => [r.eligible, r.excluded, r.trend]).filter((v): v is number => v !== null);
+  if (rows.length < 2 || !vals.length) return null;
+  const lo = Math.min(...vals), hi = Math.max(...vals), span = hi - lo || 1;
+  const y0 = rows[0]!.year, y1 = rows[rows.length - 1]!.year;
+  const x = (yr: number) => 8 + ((yr - y0) / Math.max(1, y1 - y0)) * 224;
+  const y = (v: number) => 62 - ((v - lo) / span) * 52;
+  const fitted = rows.filter((r) => r.trend !== null);
   return (
-    <section className={`layer ${className}`} aria-labelledby={`layer-${n}`}>
-      <h3 id={`layer-${n}`} className="layer-title"><span className="layer-num" aria-hidden>{String(n).padStart(2, "0")}</span>{title}</h3>
-      {children}
-    </section>
+    <svg className="discovery-spark" viewBox="0 0 240 70" aria-hidden="true" focusable="false">
+      <path d="M0 66h240" className="spark-ground" />
+      {fitted.length > 1 && <path className="spark-trend" d={`M${x(fitted[0]!.year)} ${y(fitted[0]!.trend!)}L${x(fitted[fitted.length - 1]!.year)} ${y(fitted[fitted.length - 1]!.trend!)}`} />}
+      {rows.map((r) => r.eligible !== null ? <circle key={r.year} cx={x(r.year)} cy={y(r.eligible)} r="3" className="spark-dot" /> : r.excluded !== null ? <circle key={r.year} cx={x(r.year)} cy={y(r.excluded)} r="3" className="spark-ring" /> : <path key={r.year} d={`M${x(r.year)} 60v6`} className="spark-gap" />)}
+    </svg>
   );
 }
 
-/** Layers 1–3 of the discovery reveal: what we found, how much it changed, how strong the evidence is. */
+/**
+ * Experience A: a discovery you can understand in seconds.
+ * Level 1 shows the short headline, its qualification and three instrument readouts.
+ * Level 3 (the full scientific statement) stays one click away.
+ */
 export function ResultSummary({ analysis, place }: { analysis: Analysis; place?: string }) {
   const t = analysis.trend;
   const verdict = trendVerdict(analysis);
+  const head = headlineParts(analysis);
   const lines = summarize(analysis);
   const months = monthCompleteness(analysis);
   const change = fittedChange(analysis);
@@ -54,7 +72,7 @@ export function ResultSummary({ analysis, place }: { analysis: Analysis; place?:
         </div>
         <div className="finding-hero-copy">
           <div className="finding-meta">
-            <p className="kicker">Mission findings</p>
+            <p className="kicker">Mission findings · what did we discover?</p>
             <DataStatusBadge analysis={analysis} />
           </div>
           <p className="finding-context">
@@ -65,138 +83,75 @@ export function ResultSummary({ analysis, place }: { analysis: Analysis; place?:
             <span className="sep" aria-hidden>·</span>
             <span className="mono">{periodLabel(analysis)}</span>
           </p>
-          <h2 id="finding-title" className="discovery-headline">{discoveryHeadline(analysis)}</h2>
+          <h2 id="finding-title" className="discovery-headline">{head.headline}</h2>
+          <p className={`discovery-qualifier qualifier-${head.kind}`}>{head.qualifier}</p>
           <div className="verdict-row">
             <span className={`verdict-pill verdict-${verdict.kind}`}><span className="verdict-mark" aria-hidden />{verdict.label}</span>
-            <p className="finding-note">{verdict.note}</p>
           </div>
           {step && <p className="step-warning" role="note"><strong>Sudden step in the record.</strong> {step}</p>}
-          <p className="support-note">
-            Values describe a {inSentence(s.description)} ({s.resolution}), not the exact point. Source: {analysis.dataset.source} · {analysis.dataset.title ?? analysis.dataset.id}.
-          </p>
         </div>
       </header>
 
-      <div className="layers">
-        <Layer n={2} title="How much did it change?" className="layer-change">
-          <div className="change-grid">
-            <div className="change-main">
-              <span className="figure-label">{slopeName(analysis)}</span>
-              <span className="figure-value mono">{t?.slope != null ? signed(t.slope, 4) : "—"}</span>
-              <span className="figure-unit">{t?.slope != null ? slopeUnits : "No slope estimated"}</span>
-            </div>
-            {t?.slope != null && (
-              <div className="change-side">
-                <span className="figure-label">Per decade</span>
-                <span className="change-value mono">{signed(perDecade(t.slope), 3)}</span>
-                <span className="figure-unit">{decadeUnits(t.slope_units ?? null)}</span>
-              </div>
-            )}
-            {change && (
-              <div className="change-side">
-                <span className="figure-label">Along the fitted line</span>
-                <span className="change-value mono">{signed(change.value, 3)}</span>
-                <span className="figure-unit">{analysis.units.annual_value} from {change.from} to {change.to}</span>
-              </div>
-            )}
+      <div className="readout-deck" aria-label="Key results">
+        <div className="readout readout-rate">
+          <span className="readout-q">How much did it change?</span>
+          <span className="figure-label">{slopeName(analysis)}</span>
+          <span className="figure-value mono">{t?.slope != null ? signed(t.slope, 4) : "—"}</span>
+          <span className="figure-unit">{t?.slope != null ? slopeUnits : plainReason(t?.slope_unavailable_reason) ?? "No slope estimated"}</span>
+          {t?.slope != null && <span className="readout-sub mono">{signed(perDecade(t.slope), 3)} {decadeUnits(t.slope_units ?? null)}</span>}
+          <DiscoverySpark analysis={analysis} />
+        </div>
+        <div className={`readout readout-evidence level-${verdict.kind}`}>
+          <span className="readout-q">How reliable is the evidence?</span>
+          <span className="figure-label">Significance</span>
+          <span className={`ev-value level-${verdict.kind}`}>{head.significance}</span>
+          <span className="ev-unit">{head.significanceDetail}</span>
+          {t?.slope != null && t.confidence_interval
+            ? <CiRuler slope={t.slope} ci={t.confidence_interval} units={slopeUnits} compact />
+            : <span className="ev-unit readout-na">95% interval: {t?.confidence_interval_unavailable_reason ? "not reported" : "only reported with a supported test"}</span>}
+        </div>
+        {seasonal ? (
+          <div className="readout readout-years">
+            <span className="readout-q">How much data?</span>
+            <span className="figure-label">Monthly values used</span>
+            <span className="ev-value mono">{t?.sample_count ?? 0}</span>
+            <span className="ev-unit">{monthsUsed(analysis) || "no calendar month qualified"}</span>
           </div>
-          {change && <p className="layer-note">The fitted-line change is slope × years between the first and last eligible years. It is not the observed difference between those two years’ values.</p>}
-        </Layer>
-
-        <Layer n={3} title="How strong is the evidence?" className="layer-evidence">
-          <dl className="evidence">
-            <div className="ev">
-              <dt>Inference</dt>
-              <dd>
-                <span className={`ev-value level-${verdict.kind}`}>{verdict.inference}</span>
-                <span className="ev-unit">{t?.mann_kendall ? `${testName(analysis)} ${pText(t.mann_kendall.p_value)} (α = ${t.mann_kendall.alpha})` : t?.result_level_label ?? ""}</span>
-              </dd>
-            </div>
-            <div className="ev">
-              <dt>95% slope interval</dt>
-              <dd>
-                {t?.confidence_interval ? (
-                  <span className="ev-value mono ev-range">{signed(t.confidence_interval[0], 3)} … {signed(t.confidence_interval[1], 3)}</span>
-                ) : (
-                  <span className="ev-value ev-na">Not reported</span>
-                )}
-                <span className="ev-unit">{t?.confidence_interval ? slopeUnits : t?.confidence_interval_unavailable_reason ?? "Only reported with statistical inference"}</span>
-                {t?.slope != null && t.confidence_interval && <CiRuler slope={t.slope} ci={t.confidence_interval} units={slopeUnits} compact />}
-              </dd>
-            </div>
-            {seasonal ? (
-              <div className="ev">
-                <dt>Monthly values used</dt>
-                <dd>
-                  <span className="ev-value mono">{t?.sample_count ?? 0}</span>
-                  <span className="ev-unit">{monthsUsed(analysis) || "no calendar month qualified"}</span>
-                </dd>
-              </div>
-            ) : (
-              <div className="ev">
-                <dt>Eligible years</dt>
-                <dd>
-                  <span className="ev-value mono">{analysis.coverage.eligible_years}/{analysis.coverage.years_requested}</span>
-                  <span className="ev-unit">complete-data years</span>
-                  <YearStrip annual={analysis.annual} units={analysis.units.annual_value} />
-                </dd>
-              </div>
-            )}
-            {months.expected > 0 ? (
-              <div className="ev">
-                <dt>Monthly completeness</dt>
-                <dd>
-                  <span className="ev-value mono">{Math.round((months.valid / months.expected) * 100)}%</span>
-                  <span className="ev-unit">{months.valid} of {months.expected} months valid</span>
-                  <span className="ev-meter" aria-hidden><span style={{ width: `${(months.valid / months.expected) * 100}%` }} /></span>
-                </dd>
-              </div>
-            ) : sd ? (
-              <div className="ev">
-                <dt>Year-to-year dependence</dt>
-                <dd>
-                  <span className="ev-value mono">{sd.lag1_spearman_rho === null ? "—" : fmt(sd.lag1_spearman_rho, 2)}</span>
-                  <span className="ev-unit">lag-1 residual ρ · {sd.status.replace(/_/g, " ")}</span>
-                </dd>
-              </div>
-            ) : null}
-          </dl>
-          {reading && <p className="layer-note">{reading}</p>}
-          <ul className="summary-lines">
-            {lines.map((l) => <li key={l}>{l}</li>)}
-          </ul>
-        </Layer>
+        ) : (
+          <div className="readout readout-years">
+            <span className="readout-q">How much data?</span>
+            <span className="figure-label">Eligible years</span>
+            <span className="ev-value mono">{analysis.coverage.eligible_years}/{analysis.coverage.years_requested}</span>
+            <span className="ev-unit">complete-data years</span>
+            <YearStrip annual={analysis.annual} units={analysis.units.annual_value} />
+          </div>
+        )}
       </div>
+
+      <Disclosure summary="Full scientific statement" meta="Technical" className="statement">
+        <p className="statement-lead">{discoveryHeadline(analysis)} <span className="statement-note">{verdict.note}</span></p>
+        <ul className="summary-lines">
+          {lines.map((l) => <li key={l}>{l}</li>)}
+        </ul>
+        <dl className="statement-facts">
+          {t?.slope != null && <div><dt>Per decade</dt><dd className="mono">{signed(perDecade(t.slope), 3)} {decadeUnits(t.slope_units ?? null)}</dd></div>}
+          {change && <div><dt>Along the fitted line</dt><dd><span className="mono">{signed(change.value, 3)}</span> {analysis.units.annual_value} from {change.from} to {change.to}</dd></div>}
+          <div><dt>Inference</dt><dd>{verdict.inference} · {t?.result_level_label ?? "No trend computed"}</dd></div>
+          {t?.confidence_interval && <div><dt>95% slope interval</dt><dd className="mono">{signed(t.confidence_interval[0], 3)} … {signed(t.confidence_interval[1], 3)} {slopeUnits}</dd></div>}
+          {months.expected > 0 && <div><dt>Monthly completeness</dt><dd>{months.valid} of {months.expected} months valid ({Math.round((months.valid / months.expected) * 100)}%)</dd></div>}
+          {sd && <div><dt>Year-to-year dependence</dt><dd>lag-1 residual ρ {sd.lag1_spearman_rho === null ? "—" : fmt(sd.lag1_spearman_rho, 2)} · {sd.status.replace(/_/g, " ")}</dd></div>}
+        </dl>
+        {change && <p className="layer-note">The fitted-line change is slope × years between the first and last eligible years. It is not the observed difference between those two years’ values.</p>}
+        {reading && <p className="layer-note">{reading}</p>}
+        <p className="support-note">Values describe a {inSentence(s.description)} ({s.resolution}), not the exact point. Source: {analysis.dataset.source} · {analysis.dataset.title ?? analysis.dataset.id}.</p>
+      </Disclosure>
     </section>
   );
 }
 
-/** Layer 5: what the result does not support. Built from the result and the backend's own caveats. */
-export function Cautions({ analysis }: { analysis: Analysis }) {
-  const v = trendVerdict(analysis);
-  const s = analysis.spatial_support;
-  const excluded = analysis.coverage.years_requested - analysis.coverage.eligible_years;
-  const items: { title: string; body: string }[] = [
-    { title: "A trend is not a cause.", body: analysis.caveats[1] ?? "The slope describes change over the eligible years only. It is not a forecast and does not identify a cause." },
-  ];
-  if (v.kind === "not_detected") items.push({ title: "“No trend detected” is not “no change”.", body: "The test could not distinguish a monotonic trend from year-to-year variability. The data are consistent with no trend, and also with a modest trend this record is too short or noisy to detect." });
-  if (v.kind === "increasing" || v.kind === "decreasing") items.push({ title: "Significant is indicative, not certain.", body: analysis.caveats[0] ?? "Autocorrelated years can inflate false positives." });
-  if (v.kind === "descriptive") items.push({ title: "No significance test was reported.", body: analysis.trend?.significance_unavailable_reason ?? "The slope is a description of the eligible years, not a tested trend." });
-  if (v.kind === "unavailable") items.push({ title: "Absence of a result is not absence of change.", body: "Too few years met the completeness rules to estimate a slope. Annual values remain visible as description." });
-  items.push({ title: "This is an area, not an address.", body: `Values represent a ${inSentence(s.description)} (${s.resolution}). Local conditions at a specific site can differ.` });
-  items.push({ title: "Know what kind of data this is.", body: `${analysis.dataset.source}: ${analysis.dataset.provenance.replace(/_/g, " ")}. Model estimates and satellite retrievals are not ground-station measurements.` });
-  const step = stepWarning(analysis);
-  if (step) items.push({ title: "A sudden step is not a gradual trend.", body: step });
-  if (isSeasonal(analysis) && analysis.trend?.slope != null) items.push({ title: "Only some months are used.", body: `The trend compares ${monthsUsed(analysis)} with the same months in other years. The other months had too little usable data, so the result says nothing about them.` });
-  if (excluded > 0 && !isSeasonal(analysis)) items.push({ title: "Not every year counted.", body: `${excluded} of ${analysis.coverage.years_requested} requested years were excluded by the completeness rules and are shown only as context.` });
-  return (
-    <section className="cautions" aria-labelledby="layer-5">
-      <h3 id="layer-5" className="layer-title"><span className="layer-num" aria-hidden>05</span>What should you not conclude?</h3>
-      <ul className="caution-list">
-        {items.map((i) => <li key={i.title}><strong>{i.title}</strong> {i.body}</li>)}
-      </ul>
-    </section>
-  );
+/** Experience C (kept under its original name for existing callers). */
+export function Cautions({ analysis, onShowEvidence }: { analysis: Analysis; onShowEvidence?: (stage: StageId) => void }) {
+  return <ScientificGuardrails analysis={analysis} onShowEvidence={onShowEvidence} />;
 }
 
 export function ProvenanceCard({ analysis }: { analysis: Analysis }) {
@@ -261,19 +216,9 @@ export function ProvenanceCard({ analysis }: { analysis: Analysis }) {
   );
 }
 
+/** Methodology explorer (kept under its original name for existing callers). */
 export function MethodNotes({ analysis }: { analysis: Analysis }) {
-  const tm = analysis.methodology.trend_method ?? {};
-  const src = analysis.methodology.source;
-  const srcEntries = src && typeof src === "object" ? Object.entries(src as Record<string, unknown>).filter(([, v]) => typeof v === "string") : [];
-  return (
-    <Disclosure summary="Methods and caveats" meta={`${Object.keys(tm).length + srcEntries.length} notes`}>
-      <dl className="method-grid">
-        {srcEntries.map(([k, v]) => (<div className="method-item" key={`s-${k}`}><dt>{pretty(k)}</dt><dd>{String(v)}</dd></div>))}
-        {Object.entries(tm).map(([k, v]) => (<div className="method-item" key={k}><dt>{pretty(k)}</dt><dd>{v}</dd></div>))}
-      </dl>
-      {analysis.caveats.length > 1 && <div className="method-caveats"><p className="trace-label">Additional scientific notes</p>{analysis.caveats.slice(1).map((c) => <p key={c}>{c}</p>)}</div>}
-    </Disclosure>
-  );
+  return <MethodExplorer analysis={analysis} />;
 }
 
 export function Loading({ label }: { label: string }) {

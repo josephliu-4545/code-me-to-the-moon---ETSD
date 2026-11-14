@@ -98,6 +98,15 @@ def test_temperature_comparison_runs_each_dataset_independently(client) -> None:
     assert len(body["comparison"]["pairs"]) == 3
     assert body["comparison"]["all_numerically_comparable"] is True
     assert client.calls[0]["variable"] == "temperature"
+    assert body["evaluation"]["datasets"]["nasa_power_t2m"]["resolution"] == "annual"
+    assert body["evaluation"]["datasets"]["gldas_2_1_tair"]["resolution"] == "monthly"
+    assert body["evaluation"]["datasets"]["gldas_2_1_tair"]["completeness"]["expected_within_supported_coverage"] == 120
+    assert body["evaluation"]["pairs"] == body["comparison"]["pairs"]
+    assert "does not establish accuracy" in " ".join(body["evaluation"]["cautions"])
+    # Legacy response contract remains intact.
+    assert body["datasets_are_merged"] is False
+    assert body["results"]["nasa_power_t2m"]["analysis"]["trend"]
+    assert body["comparison"]["common_eligible_years_all"] == list(range(2015, 2025))
 
 
 def test_partial_failure_keeps_successful_datasets(client) -> None:
@@ -106,6 +115,13 @@ def test_partial_failure_keeps_successful_datasets(client) -> None:
     assert body["results"]["chirps_v2_daily"]["outcome"] == "unsupported_location"
     assert body["results"]["gpm_imerg_v07"]["analysis"] is not None
     assert body["comparison"] is None and "fewer than two" in body["comparison_unavailable_reason"]
+    failed = body["evaluation"]["datasets"]["chirps_v2_daily"]
+    assert failed["resolution"] == "annual"
+    assert set(cell["status"] for cell in failed["cells"]) == {"unavailable"}
+    assert failed["completeness"]["status"] == "unavailable"
+    assert failed["completeness"]["percentage"] is None
+    assert "Unsupported location" in failed["completeness"]["unavailable_reason"]
+    assert body["evaluation"]["datasets"]["gpm_imerg_v07"]["counts"]["valid"] == 10
 
 
 def test_region_mode_marks_point_only_datasets_unsupported(client) -> None:
@@ -125,12 +141,21 @@ def test_provider_errors_are_reported_per_dataset(monkeypatch, client) -> None:
     assert body["results"]["gpm_imerg_v07"]["outcome"] == "provider_error"
     assert body["results"]["gpm_imerg_v07"]["http_status"] == 503
     assert body["results"]["era5_land_tp"]["analysis"] is not None
+    failed = body["evaluation"]["datasets"]["gpm_imerg_v07"]
+    assert failed["completeness"]["status"] == "unavailable"
+    assert failed["completeness"]["percentage"] is None
+    assert "Provider retrieval failed" in failed["completeness"]["unavailable_reason"]
 
 
 def test_outside_record(client) -> None:
     body = client.get("/api/v2/compare", params={**Q, "variable": "temperature", "start_date": "1990-01-01",
                                                   "end_date": "1995-01-01", "datasets": "nasa_power_t2m,gldas_2_1_tair"}).json()
     assert body["results"]["gldas_2_1_tair"]["outcome"] == "outside_record"
+    coverage = body["evaluation"]["datasets"]["gldas_2_1_tair"]
+    assert set(cell["status"] for cell in coverage["cells"]) == {"outside_coverage"}
+    assert coverage["completeness"]["expected_within_supported_coverage"] == 0
+    assert coverage["completeness"]["percentage"] is None
+    assert coverage["completeness"]["status"] == "unavailable"
 
 
 def test_no_data_outcome(client) -> None:
@@ -139,6 +164,9 @@ def test_no_data_outcome(client) -> None:
     client.app.state.comparison_provider = EEMonthlyProvider(FakeManager(), loader=empty)
     body = client.get("/api/v2/compare", params={**Q, "variable": "temperature", "datasets": "nasa_power_t2m,era5_land_t2m"}).json()
     assert body["results"]["era5_land_t2m"]["outcome"] == "no_data"
+    empty_coverage = body["evaluation"]["datasets"]["era5_land_t2m"]["completeness"]
+    assert empty_coverage["status"] == "observed"
+    assert empty_coverage["percentage"] == 0.0
 
 
 @pytest.mark.parametrize(

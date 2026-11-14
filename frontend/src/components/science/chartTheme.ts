@@ -9,6 +9,7 @@ export const CHART = {
   axis: "var(--chart-axis)",
   tick: "var(--chart-tick)",
   band: "var(--chart-band)",
+  focus: "var(--chart-focus, #80e3ef)", // year selected in the evidence explorer
   step: "var(--warning)", // detected sudden step (data break), dashed vertical marker
   font: "'IBM Plex Mono', ui-monospace, monospace",
 } as const;

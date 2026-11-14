@@ -26,6 +26,8 @@ from app.api.routes.soil_moisture import descriptor_payload
 from app.api.scientific_notes import (
     DESCRIPTIVE_SLOPE_NOTE, INFERENCE_CAVEAT, SEASONAL_DESCRIPTIVE_SLOPE_NOTE, SEASONAL_TREND_METHOD, TREND_METHOD,
 )
+from app.api.methods_lab import build_methods_lab
+from app.core.outbound_throttle import OutboundThrottle, ThrottleBusy
 from app.statistics.change_point import detect_step
 from app.statistics.policies import TrendPolicy
 from app.statistics.seasonal import LIMITATION as SEASONAL_LIMITATION, seasonal_trend
@@ -369,6 +371,9 @@ def normalise(variable: str, body: dict[str, Any], lat: float, lon: float, mode:
         trend = _seasonal_ndvi(body, slope_units, policy)
     elif trend is not None:
         add_change_point(trend, annual)
+    monthly_for_lab = ({(s["year"], m): v for s in body["annual_summaries"] for m, v in _monthly_pairs(s.get("monthly_values"))}
+                       if variable == "ndvi" else None)
+    methods_lab = build_methods_lab(variable, annual, trend, monthly_for_lab)
     return {
         "variable": {"id": variable, "name": meta["name"], "description": meta["description"],
                      "annual_value_definition": meta["annual_value"]},
@@ -397,6 +402,7 @@ def normalise(variable: str, body: dict[str, Any], lat: float, lon: float, mode:
             + (", ".join(calendar.month_abbr[m] for m in trend["months_used"]) or "none") + ".",
         ] if variable == "ndvi" else []),
         "extra": extra,
+        "methods_lab": methods_lab,
         "data_status": "live_nasa_retrieval",
     }
 
@@ -612,18 +618,23 @@ async def relationships(
 
 
 _GEOCODE_CACHE: OrderedDict[str, tuple[float, list[dict[str, Any]]]] = OrderedDict()
+_GEOCODE_INFLIGHT: dict[str, "asyncio.Future[list[dict[str, Any]]]"] = {}
+_GEOCODE_TTL_SECONDS = 86400
+# Nominatim usage policy: at most 1 request/second, identifying User-Agent, cache results.
+# https://operations.osmfoundation.org/policies/nominatim/ (one process; see outbound_throttle.py)
+NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
+NOMINATIM_USER_AGENT = "EarthSystemTrendDetective/0.3 (+https://github.com/josephliu-4545/code-me-to-the-moon---ETSD)"
+_NOMINATIM_THROTTLE = OutboundThrottle(min_interval_seconds=1.0, max_wait_seconds=5.0)
 
 
-@router.get("/geocode")
-async def geocode(q: Annotated[str, Query(min_length=2, max_length=120)]) -> dict[str, Any]:
-    key = q.strip().lower()
-    hit = _GEOCODE_CACHE.get(key)
-    if hit and time.monotonic() - hit[0] < 86400:
-        return {"query": q, "results": hit[1], "source": "OpenStreetMap Nominatim (cached)", "attribution": "© OpenStreetMap contributors"}
+async def _nominatim_search(q: str) -> list[dict[str, Any]]:
     try:
-        async with httpx.AsyncClient(timeout=10, headers={"User-Agent": "EarthSystemTrendDetective/0.2 (hackathon demo)"}) as client:
-            r = await client.get("https://nominatim.openstreetmap.org/search",
-                                 params={"q": q, "format": "jsonv2", "limit": 6})
+        await _NOMINATIM_THROTTLE.acquire()
+    except ThrottleBusy as exc:
+        raise HTTPException(503, "place search is busy; try again in a few seconds, or enter coordinates") from exc
+    try:
+        async with httpx.AsyncClient(timeout=10, headers={"User-Agent": NOMINATIM_USER_AGENT}) as client:
+            r = await client.get(NOMINATIM_URL, params={"q": q, "format": "jsonv2", "limit": 6})
         r.raise_for_status()
         raw = r.json()
     except (httpx.HTTPError, ValueError) as exc:
@@ -637,8 +648,33 @@ async def geocode(q: Annotated[str, Query(min_length=2, max_length=120)]) -> dic
         if math.isfinite(lat) and math.isfinite(lon):
             results.append({"name": item.get("display_name", ""), "latitude": lat, "longitude": lon,
                             "type": item.get("type")})
-    _GEOCODE_CACHE[key] = (time.monotonic(), results)
-    while len(_GEOCODE_CACHE) > 256:
-        _GEOCODE_CACHE.popitem(last=False)
+    return results
+
+
+@router.get("/geocode")
+async def geocode(q: Annotated[str, Query(min_length=2, max_length=120)]) -> dict[str, Any]:
+    key = " ".join(q.strip().lower().split())
+    hit = _GEOCODE_CACHE.get(key)
+    if hit and time.monotonic() - hit[0] < _GEOCODE_TTL_SECONDS:
+        return {"query": q, "results": hit[1], "source": "OpenStreetMap Nominatim (cached)",
+                "attribution": "© OpenStreetMap contributors"}
+    pending = _GEOCODE_INFLIGHT.get(key)
+    if pending is not None:  # an identical search is already running: share its result
+        results = await asyncio.shield(pending)
+    else:
+        future: asyncio.Future[list[dict[str, Any]]] = asyncio.get_running_loop().create_future()
+        _GEOCODE_INFLIGHT[key] = future
+        try:
+            results = await _nominatim_search(q)
+            future.set_result(results)
+        except BaseException as exc:
+            future.set_exception(exc)
+            future.exception()  # mark retrieved when nobody else is waiting
+            raise
+        finally:
+            _GEOCODE_INFLIGHT.pop(key, None)
+        _GEOCODE_CACHE[key] = (time.monotonic(), results)
+        while len(_GEOCODE_CACHE) > 256:
+            _GEOCODE_CACHE.popitem(last=False)
     return {"query": q, "results": results, "source": "OpenStreetMap Nominatim",
             "attribution": "© OpenStreetMap contributors"}

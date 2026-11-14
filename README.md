@@ -319,19 +319,13 @@ npm run dev -- --host 127.0.0.1
 
 ### Single-origin build (one server)
 
-The backend can also serve the built frontend at `/app/`:
+The backend can also build and serve the frontend at `/app/`:
 
 ```powershell
 .\scripts\build-single-origin.ps1
 ```
 
-The script prints the full path of `frontend\dist`. Add it to `backend\.env`:
-
-```
-FRONTEND_DIST_DIR=<full path printed by the script>
-```
-
-Then start the backend and open **http://127.0.0.1:8000/app/**.
+The script builds `frontend\dist`, passes it to the backend through `FRONTEND_DIST_DIR`, starts the backend, and opens **http://127.0.0.1:8000/app/**.
 
 ### Shared backend (optional)
 
@@ -339,13 +333,16 @@ A single shared backend can serve a whole team, so teammates don't each need Ear
 
 | Setting (backend `.env` or host secrets) | Purpose |
 |---|---|
-| `EE_SERVICE_ACCOUNT_KEY_FILE` | Path to a Google Cloud **service-account JSON key**, stored **outside the repository** (for example a mounted secret). The backend then authenticates to Earth Engine itself. Grant the service account only the Earth Engine roles from Google's current service-account guide, and never commit the key. |
+| `EE_USE_APPLICATION_DEFAULT_CREDENTIALS` | Keyless Earth Engine login through Google Application Default Credentials, for example the service account attached to a Cloud Run service. Recommended for hosting; no key file exists. |
+| `EE_SERVICE_ACCOUNT_KEY_FILE` | Path to a Google Cloud **service-account JSON key**, stored **outside the repository** (for example a mounted secret), for hosts without keyless identity. Grant the service account only the Earth Engine roles from Google's current service-account guide, and never commit the key. Setting both credential options is rejected. |
 | `API_KEYS` | Comma-separated team access keys. When set, `/api/*` requests (except `/api/v2/status`) need an `X-API-Key` header. The frontend asks for the key once and stores it only in the browser. |
 | `RATE_LIMIT_PER_MINUTE` | Per-client token bucket (comparisons cost 3). Exceeding it returns HTTP 429 with `Retry-After`. |
-| `TRUST_PROXY_HEADERS` | Use `X-Forwarded-For` only behind a trusted reverse proxy. |
+| `TRUST_PROXY_HEADERS`, `TRUSTED_PROXY_IPS`, `TRUSTED_PROXY_HOPS` | Off by default. `X-Forwarded-For` is used for rate limiting only when trust is on **and** the direct peer is a listed proxy; the client address is the entry written by the outermost trusted proxy. Misconfiguration is reported in `/api/v2/status` and the header is ignored. |
 | `CORS_ALLOW_ORIGINS` | Frontend origins allowed to call the API. |
 
-`GET /api/v2/status` reports the authentication mode, whether keys and rate limits are on, and configuration warnings, without returning any secret. Generate access keys with `python -c "import secrets; print(secrets.token_urlsafe(24))"`, and share them privately.
+`GET /api/v2/status` reports the authentication mode, whether keys and rate limits are on, how clients are identified, and configuration warnings, without returning any secret.
+
+**Production container and hosting:** the [`Dockerfile`](Dockerfile) builds one image that serves the API and the app at `/app/` (`docker build -t estd .`, then `docker run --rm -p 8080:8080 estd` and open http://127.0.0.1:8080/app/). [`scripts/container-smoke-test.sh`](scripts/container-smoke-test.sh) checks it without credentials. Every backend setting is documented in [`backend/.env.example`](backend/.env.example), and [`DEPLOYMENT.md`](DEPLOYMENT.md) is the Google Cloud Run guide (not yet deployed). Generate access keys with `python -c "import secrets; print(secrets.token_urlsafe(24))"`, and share them privately.
 
 ---
 

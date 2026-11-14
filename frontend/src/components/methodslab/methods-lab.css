@@ -1,0 +1,30 @@
+/* Statistical Methods Lab — uses the Cosmic Expedition tokens (styles/tokens.css), both themes. */
+.eval-views { display: inline-grid; grid-auto-flow: column; gap: 4px; padding: 4px; margin: 0 0 var(--s5); border-radius: 999px; background: var(--surface-sunken); border: 1px solid var(--border); }
+.eval-views button { min-height: 38px; padding: 0 18px; border: 0; border-radius: 999px; background: transparent; color: var(--text-secondary); font-family: var(--font-brand); font-size: var(--fs-sm); cursor: pointer; }
+.eval-views button.active { background: var(--accent); color: var(--text-on-accent); font-weight: 600; }
+.methods-lab { display: grid; gap: var(--s4); }
+.lab-tabs { display: flex; flex-wrap: wrap; gap: 6px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+.lab-tabs button { background: none; border: 1px solid transparent; color: var(--text-secondary); padding: 6px 14px; border-radius: 999px; font-size: var(--fs-sm); cursor: pointer; }
+.lab-tabs button.active { background: var(--accent-soft); border-color: var(--accent-line); color: var(--text-primary); font-weight: 600; }
+.lab-tabs button:hover:not(.active) { border-color: var(--border-strong); color: var(--text-primary); }
+.lab-panel { display: grid; gap: var(--s4); padding: var(--s4) 0; }
+.lab-panel:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; border-radius: var(--r-sm); }
+.lab-panel-title { font-family: var(--font-display); font-weight: 400; font-size: 1.4rem; color: var(--text-primary); }
+.lab-unavailable { border-left: 3px solid var(--unavailable); padding: 8px 12px; background: var(--surface-hover); border-radius: var(--r-sm); color: var(--text-secondary); }
+.lab-points { display: grid; gap: 6px; padding-left: 1.1rem; color: var(--text-secondary); }
+.lab-figure { margin: 0; background: var(--chart-surface); border: 1px solid var(--border); border-radius: var(--r-md); padding: 12px; min-width: 0; overflow: hidden; }
+.lab-table-alt { margin-top: var(--s3); }
+.method-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; list-style: none; padding: 0; }
+.method-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); padding: 12px 14px; color: var(--text-primary); }
+.method-card p { margin-top: 6px; color: var(--text-secondary); font-size: var(--fs-sm); }
+.assumption-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.assumption-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); padding: 14px 16px; }
+.assumption-card h3 { font-family: var(--font-brand); font-size: var(--fs-md); color: var(--accent); margin-bottom: 6px; }
+.assumption-card ul { padding-left: 1.1rem; display: grid; gap: 4px; color: var(--text-secondary); font-size: var(--fs-sm); }
+.sim-panel { display: grid; gap: var(--s3); border: 1px dashed var(--warning); border-radius: var(--r-md); padding: var(--s4); }
+.sim-badge { background: var(--warning-soft); color: var(--text-primary); border-radius: var(--r-sm); padding: 8px 12px; }
+.sim-controls { display: flex; flex-wrap: wrap; gap: var(--s4); align-items: end; }
+.sim-controls label { display: grid; gap: 4px; min-width: 200px; }
+.sim-controls select, .sim-controls input[type="range"] { accent-color: var(--accent); }
+.sim-controls select { background: var(--surface-sunken); color: var(--text-primary); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 6px 8px; }
+@media (max-width: 640px) { .eval-views { display: grid; grid-auto-flow: row; border-radius: var(--r-md); width: 100%; } .eval-views button { border-radius: var(--r-sm); } }

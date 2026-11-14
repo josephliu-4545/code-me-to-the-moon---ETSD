@@ -1,3 +1,4 @@
+import type { MethodsLab } from "./methodsLabTypes";
 export type VariableId =
   | "temperature"
   | "relative_humidity"
@@ -100,11 +101,15 @@ export interface MannKendall {
   alpha: number;
   is_statistically_significant: boolean;
   direction: string;
+  z?: number;
+  variance?: number;
+  alternative?: string;
 }
 
 export interface SerialDependence {
   adjacent_pair_count: number;
   lag1_spearman_rho: number | null;
+  diagnostic_p_value?: number | null;
   status: string;
   caveat: string;
   supported_for_standard_inference: boolean;
@@ -185,6 +190,8 @@ export interface Analysis {
   methodology: { source: unknown; trend_method: Record<string, string> };
   caveats: string[];
   limitations: string[];
+  /** Statistical Methods Lab: OLS vs Theil–Sen and diagnostics on the same eligible observations. */
+  methods_lab?: MethodsLab;
   extra: Record<string, unknown>;
   data_status: "live_nasa_retrieval" | "cached_nasa_retrieval" | "saved_snapshot";
   cache?: CacheInfo;

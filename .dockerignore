@@ -1,0 +1,32 @@
+# Allow-list: send only what the image needs to the build context.
+# Everything else (backend/.env, credentials, keys, virtual environments, node_modules,
+# docs/, tests, caches, local build output) never reaches the Docker daemon.
+*
+
+!Dockerfile
+!backend/app/
+!backend/requirements.lock
+
+!frontend/package.json
+!frontend/package-lock.json
+!frontend/index.html
+!frontend/eslint.config.js
+!frontend/tsconfig.json
+!frontend/tsconfig.app.json
+!frontend/tsconfig.node.json
+!frontend/vite.config.ts
+!frontend/src/
+!frontend/public/
+
+# Re-exclude anything sensitive or generated inside the allowed folders.
+**/__pycache__/
+**/*.py[cod]
+**/.env
+**/.env.*
+**/*.pem
+**/*.key
+**/*.p12
+**/*credentials*.json
+**/*service-account*.json
+**/node_modules/
+**/dist/

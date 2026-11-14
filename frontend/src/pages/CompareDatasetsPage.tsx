@@ -4,6 +4,7 @@ import { compareApi, type CompareRequest } from "../api/compareClient";
 import type { CompareResponse, DatasetInfo, VariableDatasets } from "../api/compareTypes";
 import { AgreementBanner, DatasetStatusCards, PairTable, ProvenanceTable, SummaryTable } from "../components/compare/ComparisonPanels";
 import OverlayChart from "../components/compare/OverlayChart";
+import EvaluationLab from "../components/evaluation/EvaluationLab";
 import { ErrorBox, Limitations, Loading, ProvenanceCard, ResultSummary } from "../components/ResultPanels";
 import SeriesChart from "../components/SeriesChart";
 import TrendChart from "../components/TrendChart";
@@ -49,6 +50,7 @@ export default function CompareDatasetsPage({ selection }: { selection: Selectio
   const [chosen, setChosen] = useState<Record<string, string[]>>({});
   const [submitted, setSubmitted] = useState<CompareRequest | null>(null);
   const [view, setView] = useState<string>("comparison");
+  const [resultView, setResultView] = useState<"comparison" | "evaluation">("comparison");
 
   const info: VariableDatasets | undefined = catalog.data?.variables.find((v) => v.variable === variable);
   const datasets = info?.datasets ?? [];
@@ -62,7 +64,16 @@ export default function CompareDatasetsPage({ selection }: { selection: Selectio
     queryFn: ({ signal }) => compareApi.compare(submitted!, signal),
     enabled: submitted !== null,
   });
-  const data: CompareResponse | undefined = query.data;
+  const currentDatasets = datasets.filter((d) => selected.includes(d.key)).map((d) => d.key);
+  const submittedIsCurrent = submitted !== null
+    && submitted.variable === variable
+    && submitted.datasets.join(",") === currentDatasets.join(",")
+    && submitted.latitude === Number(selection.latitude.toFixed(4))
+    && submitted.longitude === Number(selection.longitude.toFixed(4))
+    && submitted.startYear === selection.startYear
+    && submitted.endYear === selection.endYearInclusive + 1;
+  const currentRequestIsFetching = submittedIsCurrent && query.isFetching;
+  const data: CompareResponse | undefined = submittedIsCurrent ? query.data : undefined;
   const order = useMemo(() => (data ? data.datasets_requested : []), [data]);
   const succeeded = data ? order.filter((k) => data.results[k]?.analysis) : [];
   const resultsOk = data ? succeeded.map((k) => data.results[k]!) : [];
@@ -74,9 +85,10 @@ export default function CompareDatasetsPage({ selection }: { selection: Selectio
 
   function run() {
     setView("comparison");
+    setResultView("comparison");
     setSubmitted({
       variable,
-      datasets: datasets.filter((d) => selected.includes(d.key)).map((d) => d.key),
+      datasets: currentDatasets,
       latitude: Number(selection.latitude.toFixed(4)),
       longitude: Number(selection.longitude.toFixed(4)),
       startYear: selection.startYear,
@@ -146,28 +158,33 @@ export default function CompareDatasetsPage({ selection }: { selection: Selectio
           )}
           {warnings.map((w) => <p key={w} className="warn-text">{w}</p>)}
           {problem && <p className="error-text" role="alert">{problem}</p>}
-          <button type="button" className="btn btn-primary cmp-run" onClick={run} disabled={!!problem || query.isFetching}>
-            {query.isFetching ? "Analysing each dataset…" : "Compare datasets"}
+          <button type="button" className="btn btn-primary cmp-run" onClick={run} disabled={!!problem || currentRequestIsFetching}>
+            {currentRequestIsFetching ? "Analysing each dataset…" : "Compare datasets"}
           </button>
         </section>
       )}
 
-      {query.isFetching && <Loading label="Retrieving and analysing each dataset independently…" />}
-      {query.isError && <ErrorBox error={query.error} onRetry={() => query.refetch()} />}
+      {submittedIsCurrent && query.isFetching && <Loading label="Retrieving and analysing each dataset independently…" />}
+      {submittedIsCurrent && query.isError && <ErrorBox error={query.error} onRetry={() => query.refetch()} />}
 
       {data && !query.isFetching && (
         <>
           <AgreementBanner data={data} />
           <DatasetStatusCards data={data} order={order} />
-          <div className="cmp-tabs" role="tablist" aria-label="Result view">
-            <button role="tab" aria-selected={view === "comparison"} className={view === "comparison" ? "active" : ""} onClick={() => setView("comparison")}>Comparison</button>
+          <div className="cmp-tabs cmp-result-tabs" role="tablist" aria-label="Result view">
+            <button role="tab" aria-selected={resultView === "comparison"} className={resultView === "comparison" ? "active" : ""} onClick={() => setResultView("comparison")}>Comparison</button>
+            <button role="tab" aria-selected={resultView === "evaluation"} className={resultView === "evaluation" ? "active" : ""} onClick={() => setResultView("evaluation")}>Evaluation Lab</button>
+          </div>
+
+          {resultView === "evaluation" ? <EvaluationLab data={data} /> : <>
+          <div className="cmp-tabs cmp-detail-tabs" role="tablist" aria-label="Comparison dataset view">
+            <button role="tab" aria-selected={view === "comparison"} className={view === "comparison" ? "active" : ""} onClick={() => setView("comparison")}>All datasets</button>
             {succeeded.map((k) => (
               <button key={k} role="tab" aria-selected={view === k} className={view === k ? "active" : ""} onClick={() => setView(k)}>
                 {data.results[k]!.entry.name}
               </button>
             ))}
           </div>
-
           {view === "comparison" ? (
             <>
               {resultsOk.length > 0 && (data.comparison?.all_numerically_comparable || resultsOk.length === 1 ? (
@@ -211,6 +228,7 @@ export default function CompareDatasetsPage({ selection }: { selection: Selectio
               </div>
             )
           )}
+          </>}
         </>
       )}
       </div>

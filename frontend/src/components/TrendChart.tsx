@@ -64,7 +64,7 @@ const ExcludedDot = (p: unknown) => {
   return <circle cx={cx} cy={cy} r={5} fill={CHART.surface} stroke={CHART.excluded} strokeWidth={2} />;
 };
 
-export default function TrendChart({ analysis }: { analysis: Analysis }) {
+export default function TrendChart({ analysis, focusYear = null, onSelectYear }: { analysis: Analysis; focusYear?: number | null; onSelectYear?: (year: number) => void }) {
   const rows = buildRows(analysis);
   const units = analysis.units.annual_value;
   const hasTrend = rows.some((r) => r.trend !== null);
@@ -85,16 +85,23 @@ export default function TrendChart({ analysis }: { analysis: Analysis }) {
           {hasExcluded && <li><span className="key key-ring" style={{ borderColor: CHART.excluded }} />Excluded year (descriptive)</li>}
           {hasTrend && <li><span className="key key-line" style={{ background: CHART.trend }} />{trendName}</li>}
           {stepAt !== null && <li><span className="key key-line key-step" style={{ borderColor: CHART.step }} />Sudden step {cp?.last_year_before}–{cp?.first_year_after}</li>}
+          {focusYear !== null && <li><span className="key key-focus" />Inspecting {focusYear}</li>}
         </ul>
       </div>
       <div className="chart-plot" aria-hidden>
         <ResponsiveContainer width="100%" height={300}>
-          <ComposedChart data={rows} margin={{ top: 12, right: 12, bottom: 4, left: 0 }}>
+          <ComposedChart
+            data={rows}
+            margin={{ top: 12, right: 12, bottom: 4, left: 0 }}
+            onClick={onSelectYear ? (state: { activeLabel?: string | number } | null) => { const y = Number(state?.activeLabel); if (Number.isFinite(y)) onSelectYear(y); } : undefined}
+            style={onSelectYear ? { cursor: "pointer" } : undefined}
+          >
             <CartesianGrid stroke={CHART.grid} vertical={false} />
             <XAxis dataKey="year" type="number" domain={["dataMin", "dataMax"]} padding={{ left: 16, right: 16 }} allowDecimals={false} ticks={yearTicks(rows)} tick={tickStyle} stroke={CHART.axis} tickLine={false} />
             <YAxis domain={["auto", "auto"]} tick={tickStyle} stroke={CHART.axis} axisLine={false} tickLine={false} width={58} tickFormatter={(v: number) => fmt(v, 2)} />
             <Tooltip content={<TooltipBody units={units} />} cursor={{ stroke: CHART.axis, strokeDasharray: "2 3" }} />
             {stepAt !== null && <ReferenceLine x={stepAt} stroke={CHART.step} strokeDasharray="5 4" strokeWidth={1.5} ifOverflow="extendDomain" />}
+            {focusYear !== null && <ReferenceLine x={focusYear} stroke={CHART.focus} strokeWidth={14} strokeOpacity={0.18} ifOverflow="hidden" />}
             <Line name={trendName} dataKey="trend" stroke={CHART.trend} strokeWidth={2.5} dot={false} activeDot={false} connectNulls isAnimationActive={false} />
             <Scatter name="Eligible annual value" dataKey="eligible" shape={EligibleDot} isAnimationActive={false} />
             <Scatter name="Excluded year (descriptive)" dataKey="excluded" shape={ExcludedDot} isAnimationActive={false} />
@@ -105,6 +112,7 @@ export default function TrendChart({ analysis }: { analysis: Analysis }) {
         {seasonal
           ? "The trend comes from monthly values compared month by month, so it does not depend on complete years. Annual means are shown for context only; hollow rings are years missing months."
           : "The trend line spans eligible years only. Hollow rings are years shown for context but excluded by the completeness rules."}
+        {onSelectYear && " Select a point to inspect that year in the evidence explorer below."}
         {stepAt !== null && " The dashed line marks a sudden step: values jump once and stay at the new level, which often means a change in the data rather than gradual change."}
       </figcaption>
       <Disclosure summary="Annual data table" meta={`${rows.length} years`} className="chart-table">
