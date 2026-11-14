@@ -77,6 +77,7 @@ export default function RelationshipsPage({ variables, selection }: { variables:
     && submitted.from === selection.startYear
     && submitted.to === selection.endYearInclusive + 1
     && submitted.ds === selection.dataset;
+  const currentRequestIsFetching = submittedIsCurrent && q.isFetching;
   const data = submittedIsCurrent ? q.data : undefined;
   const va = data?.variables[0];
   const vb = data?.variables[1];
@@ -116,7 +117,7 @@ export default function RelationshipsPage({ variables, selection }: { variables:
           <button
             type="button"
             className="btn btn-primary"
-            disabled={a === b || tooLong || q.isFetching}
+            disabled={a === b || tooLong || currentRequestIsFetching}
             onClick={() => setSubmitted({ a, b, lat: Number(selection.latitude.toFixed(4)), lon: Number(selection.longitude.toFixed(4)), from: selection.startYear, to: selection.endYearInclusive + 1, ds: selection.dataset })}
           >
             Compare annual values

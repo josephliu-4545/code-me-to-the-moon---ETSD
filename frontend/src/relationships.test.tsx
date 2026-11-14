@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Analysis, RelationshipsResponse, VariableId, VariableInfo } from "./api/types";
@@ -65,5 +65,39 @@ describe("Relationships page", () => {
     await userEvent.click(within(screen.getByRole("group", { name: /Variable A/ })).getByRole("radio", { name: "precipitation" }));
 
     expect(screen.queryByText("Descriptive association")).not.toBeInTheDocument();
+  });
+
+  it("allows a replacement relationship request while the obsolete request is still fetching", async () => {
+    let resolveFirst!: (value: Response) => void;
+    let firstSignal: AbortSignal | undefined;
+    let calls = 0;
+    vi.stubGlobal("fetch", vi.fn((_url: string, init?: RequestInit) => {
+      calls += 1;
+      if (calls === 1) {
+        firstSignal = init?.signal ?? undefined;
+        return new Promise<Response>((resolve) => { resolveFirst = resolve; });
+      }
+      return Promise.resolve(new Response(JSON.stringify({
+        ...response,
+        variables: ["extreme_heat", "relative_humidity"],
+        results: { extreme_heat: analysis("extreme_heat", "%"), relative_humidity: analysis("relative_humidity", "%") },
+        interpretation: "Current replacement response.",
+      }), { status: 200 }));
+    }));
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(<QueryClientProvider client={client}><RelationshipsPage variables={variables} selection={DEFAULT_SELECTION} /></QueryClientProvider>);
+
+    await userEvent.click(screen.getByRole("button", { name: "Compare annual values" }));
+    await userEvent.click(within(screen.getByRole("group", { name: /Variable A/ })).getByRole("radio", { name: "extreme heat" }));
+
+    const replacement = screen.getByRole("button", { name: "Compare annual values" });
+    expect(replacement).toBeEnabled();
+    await userEvent.click(replacement);
+    expect(firstSignal?.aborted).toBe(true);
+    expect(await screen.findByText("Current replacement response.")).toBeInTheDocument();
+
+    resolveFirst(new Response(JSON.stringify({ ...response, interpretation: "Obsolete response." }), { status: 200 }));
+    await waitFor(() => expect(screen.queryByText("Obsolete response.")).not.toBeInTheDocument());
+    expect(screen.getByText("Current replacement response.")).toBeInTheDocument();
   });
 });

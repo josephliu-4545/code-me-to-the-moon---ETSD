@@ -70,6 +70,7 @@ export default function CompareDatasetsPage({ selection }: { selection: Selectio
     && submitted.longitude === Number(selection.longitude.toFixed(4))
     && submitted.startYear === selection.startYear
     && submitted.endYear === selection.endYearInclusive + 1;
+  const currentRequestIsFetching = submittedIsCurrent && query.isFetching;
   const data: CompareResponse | undefined = submittedIsCurrent ? query.data : undefined;
   const order = useMemo(() => (data ? data.datasets_requested : []), [data]);
   const succeeded = data ? order.filter((k) => data.results[k]?.analysis) : [];
@@ -154,8 +155,8 @@ export default function CompareDatasetsPage({ selection }: { selection: Selectio
           )}
           {warnings.map((w) => <p key={w} className="warn-text">{w}</p>)}
           {problem && <p className="error-text" role="alert">{problem}</p>}
-          <button type="button" className="btn btn-primary cmp-run" onClick={run} disabled={!!problem || query.isFetching}>
-            {query.isFetching ? "Analysing each dataset…" : "Compare datasets"}
+          <button type="button" className="btn btn-primary cmp-run" onClick={run} disabled={!!problem || currentRequestIsFetching}>
+            {currentRequestIsFetching ? "Analysing each dataset…" : "Compare datasets"}
           </button>
         </section>
       )}
