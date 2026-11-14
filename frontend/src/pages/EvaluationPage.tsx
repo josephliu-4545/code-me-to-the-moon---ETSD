@@ -8,6 +8,7 @@ import CiRuler from "../components/science/CiRuler";
 import EvidenceChain from "../components/science/EvidenceChain";
 import MonthMatrix from "../components/science/MonthMatrix";
 import YearStrip from "../components/science/YearStrip";
+import MethodsLab from "../components/methodslab/MethodsLab";
 import Disclosure from "../components/ui/Disclosure";
 import EmptyState from "../components/ui/EmptyState";
 import PageHero from "../components/ui/PageHero";
@@ -136,6 +137,7 @@ const LabArt = () => (
 
 export default function EvaluationPage({ submitted }: { submitted: AnalysisRequest | null }) {
   const query = useAnalysis(submitted);
+  const [view, setView] = useState<"evaluation" | "lab">("evaluation");
   if (!submitted)
     return (
       <div className="page page-control">
@@ -182,6 +184,11 @@ export default function EvaluationPage({ submitted }: { submitted: AnalysisReque
       </PageHero>
 
       <div className="page-body lab">
+        <div className="eval-views" role="group" aria-label="Evaluation view">
+          <button type="button" aria-pressed={view === "evaluation"} className={view === "evaluation" ? "active" : ""} onClick={() => setView("evaluation")}>Scientific Evaluation</button>
+          <button type="button" aria-pressed={view === "lab"} className={view === "lab" ? "active" : ""} onClick={() => setView("lab")}>Statistical Methods Lab</button>
+        </div>
+        {view === "lab" ? <MethodsLab analysis={a} /> : (<>
         <section className="lab-section" aria-labelledby="chain-h">
           <div className="lab-section-head">
             <p className="kicker">00 · Evidence chain</p>
@@ -298,6 +305,7 @@ export default function EvaluationPage({ submitted }: { submitted: AnalysisReque
           </Disclosure>
           <Limitations analysis={a} />
         </section>
+        </>)}
       </div>
     </div>
   );
