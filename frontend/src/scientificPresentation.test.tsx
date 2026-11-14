@@ -170,3 +170,31 @@ describe("B · dataset agreement presentation", () => {
     expect(text).toMatch(/shared inputs|not independent/);
   });
 });
+
+describe("B · partial pair coverage (PR #9 review)", () => {
+  it("the banner says only some pairs were compared and never generalises", () => {
+    render(<AgreementBanner data={response("partially_assessable", { direction_coverage: "partial", pairs_total: 3, pairs_with_direction: 1 })} />);
+    const banner = screen.getByRole("status");
+    expect(banner).toHaveTextContent(/Partially assessable/);
+    expect(banner).toHaveTextContent(/1 of 3 dataset pairs/);
+    expect(banner).toHaveTextContent(/pair table/);
+    expect(banner).not.toHaveTextContent(/Opposite descriptive|Same descriptive|Mixed/);
+  });
+
+  it("the Detective keeps pairwise findings but states the headline is partial", () => {
+    const inv = toInvestigation({ variable: "temperature", latitude: 16.8661, longitude: 96.1951, startYear: 2015, endYear: 2025, mode: "point" }, "Air temperature (2 m)", "Yangon");
+    const key = ["compare", { variable: "temperature", datasets: ["a", "b"], latitude: 16.8661, longitude: 96.1951, startYear: 2015, endYear: 2025 }] as const;
+    const resp = response("partially_assessable", { label: "Partially assessable: 1 of 3 pairs compared", direction_coverage: "partial", pairs_total: 3, pairs_with_direction: 1 });
+    const c = comparisonFromCache([[key, resp]], inv);
+    const e = buildEvidence(temperature(), inv);
+    const text = answerQuestion(classify("Why do the datasets disagree?", null), e, { comparison: c, relationships: [] }).sections.flatMap((s) => s.lines).join("\n");
+    expect(text).toMatch(/Partially assessable: 1 of 3 pairs compared/);
+    expect(text).toMatch(/Only 1 of 3 dataset pairs could be compared/);
+    expect(text).toMatch(/Dataset A vs Dataset B: partially related; 10 common eligible years; opposite \(descriptive\) over common years/);
+  });
+
+  it("falls back to a cautious label for partial coverage from older responses", () => {
+    render(<AgreementBanner data={response("partially_assessable")} />);
+    expect(screen.getByRole("status")).toHaveTextContent(/Partially assessable/);
+  });
+});

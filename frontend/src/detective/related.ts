@@ -19,6 +19,10 @@ export interface ComparisonEvidence {
   /** Plain-language, descriptive-or-indicative label for the level. */
   agreementLabel: string | null;
   directionEvidence: "descriptive" | "indicative" | "unavailable" | null;
+  /** Whether the headline covers every pair, only some pairs, or none. */
+  directionCoverage: "complete" | "partial" | "none" | null;
+  pairsTotal: number | null;
+  pairsWithDirection: number | null;
   independenceNote: string | null;
   comparabilityNote: string | null;
   explanation: string | null;
@@ -90,6 +94,9 @@ export function comparisonFromCache(entries: [readonly unknown[], unknown][], in
       agreementLevel: res.comparison?.agreement.level ?? null,
       agreementLabel: res.comparison ? agreementLabel(res.comparison.agreement) : null,
       directionEvidence: res.comparison?.agreement.direction_evidence ?? null,
+      directionCoverage: res.comparison?.agreement.direction_coverage ?? null,
+      pairsTotal: res.comparison?.agreement.pairs_total ?? null,
+      pairsWithDirection: res.comparison?.agreement.pairs_with_direction ?? null,
       independenceNote: res.comparison?.agreement.independence_note
         ?? ((res.comparison?.pairs ?? []).some((p) => p.lineage !== "independent")
           ? "Some datasets share inputs or lineage (not independent), so their agreement is not an independent confirmation."

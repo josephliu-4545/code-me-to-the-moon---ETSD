@@ -13,7 +13,7 @@ const FALLBACK_LABELS: Record<string, string> = {
   same_direction_covariation_not_assessable: "Same descriptive direction; co-variation not assessable",
   conflicting_trend_direction: "Opposite descriptive slope directions",
   mixed: "Mixed descriptive directions",
-  partially_assessable: "Directions not assessable over common years",
+  partially_assessable: "Partially assessable: some dataset pairs could not be compared",
   not_assessable: "Not assessable",
 };
 

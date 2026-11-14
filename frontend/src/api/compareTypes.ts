@@ -178,8 +178,16 @@ export interface CompareResponse {
       label?: string;
       basis?: string;
       direction_evidence?: "descriptive" | "indicative" | "unavailable";
+      /** Whether every pair, only some, or no pair had a common-period direction. */
+      direction_coverage?: "complete" | "partial" | "none";
+      /** Whether every pair, only some, or no pair had a correlation (needs 8 common years). */
+      covariation_coverage?: "complete" | "partial" | "none";
+      pairs_total?: number;
       pairs_with_direction?: number;
       pairs_without_direction?: number;
+      pairs_with_correlation?: number;
+      /** Each pair's own finding, kept even when no overall conclusion is drawn. */
+      pair_findings?: { datasets: string[]; direction_evidence: DirectionEvidence; spearman_rho: number | null; common_eligible_years: number }[];
       /** Common-period direction agreement across all assessed pairs. */
       slope_sign_agreement_all: boolean | null;
       min_spearman_rho: number | null;

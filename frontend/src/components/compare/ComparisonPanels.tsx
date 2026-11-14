@@ -69,6 +69,9 @@ export function AgreementBanner({ data }: { data: CompareResponse }) {
       <strong>Agreement: {agreementLabel(ag)}.</strong> {ag.explanation}
       <div className="note">
         Directions are compared using slopes over each pair&apos;s common eligible years only{ag.direction_evidence === "indicative" ? "." : " (descriptive: no significance test on that sample)."}
+        {ag.direction_coverage === "partial" && ag.pairs_total !== undefined
+          ? ` Only ${ag.pairs_with_direction ?? 0} of ${ag.pairs_total} dataset pairs could be compared, so no overall conclusion is drawn; see the pair table for each available pair.`
+          : ""}
         {ag.comparability_note ? ` ${ag.comparability_note}` : ""}
         {ag.independence_note ? ` ${ag.independence_note}` : ""}
       </div>

@@ -200,17 +200,17 @@ LEVEL_LABELS = {
     "same_direction_covariation_not_assessable": "Same {kind} direction; co-variation not assessable",
     "conflicting_trend_direction": "Opposite {kind} slope directions",
     "mixed": "Mixed {kind} directions",
-    "partially_assessable": "Directions not assessable over common years",
+    "partially_assessable": "Partially assessable: {assessed} of {total} pairs compared",
     "not_assessable": "Not assessable",
 }
 
 LEVEL_EXPLANATIONS = {
-    "consistent": "Over common eligible years, every pair's slopes point the same way and annual values co-vary strongly (Spearman ρ ≥ 0.7).",
-    "same_direction_weak_covariation": "Over common eligible years, every pair's slopes point the same way, but annual values co-vary only weakly (Spearman ρ < 0.7).",
-    "same_direction_covariation_not_assessable": "Over common eligible years, every pair's slopes point the same way. Co-variation is not assessed: correlation needs at least 8 common eligible years.",
+    "consistent": "Over common eligible years, every pair's slopes point the same way and every pair's annual values co-vary strongly (Spearman ρ ≥ 0.7).",
+    "same_direction_weak_covariation": "Over common eligible years, every pair's slopes point the same way, but at least one pair's annual values co-vary only weakly (Spearman ρ < 0.7).",
+    "same_direction_covariation_not_assessable": "Over common eligible years, every pair's slopes point the same way. Co-variation is not assessed for every pair: correlation needs at least 8 common eligible years.",
     "conflicting_trend_direction": "Over common eligible years, the slopes of every pair point in opposite directions.",
     "mixed": "Over common eligible years, some pairs' slopes point the same way and others in opposite directions.",
-    "partially_assessable": "Slope directions cannot be compared over common eligible years (fewer than 3 shared years), although annual values co-vary.",
+    "partially_assessable": "Slope directions over common eligible years could be compared for only some dataset pairs. No overall conclusion is drawn; the available pairwise findings are listed.",
     "not_assessable": "Too few successful datasets or common eligible years to compare slope directions or co-variation.",
 }
 
@@ -249,28 +249,54 @@ def _direction_evidence(out: dict[str, Any], ta: dict[str, Any], tb: dict[str, A
     return f"{kind}_{'same' if agree else 'opposite'}_direction"
 
 
-def agreement_summary(pairs: list[dict[str, Any]]) -> dict[str, Any]:
+def _pair_name(p: dict[str, Any], names: dict[str, str] | None) -> str:
+    keys = p.get("datasets") or ["?", "?"]
+    return " vs ".join((names or {}).get(k, k) for k in keys)
+
+
+def _direction_word(evidence: str) -> str:
+    return {
+        "descriptive_same_direction": "same direction (descriptive)",
+        "indicative_same_direction": "same direction (indicative)",
+        "descriptive_opposite_direction": "opposite directions (descriptive)",
+        "indicative_opposite_direction": "opposite directions (indicative)",
+        "descriptive_no_direction": "no direction (a slope is exactly zero)",
+    }.get(evidence, "not assessable (fewer than 3 common eligible years)")
+
+
+def agreement_summary(pairs: list[dict[str, Any]], names: dict[str, str] | None = None) -> dict[str, Any]:
     """Headline agreement from matched (common-period) evidence only.
 
-    Level identifiers are kept for API compatibility; their meaning is descriptive (see `label`,
-    `explanation` and `direction_evidence`). Full-request slope signs are never used here.
+    The headline describes all pairs only when every pair was assessed. If only some pairs have a
+    common-period direction, the level is `partially_assessable` and no overall direction is claimed;
+    the available pairwise findings are kept in `pair_findings`. Co-variation (strong/weak) is
+    summarised only when every pair has a correlation, and the weakest pair is named. Level
+    identifiers are kept for API compatibility; their meaning is descriptive. Full-request slope
+    signs are never used here.
     """
-    def evidence(p: dict[str, Any]) -> str | None:
+    def evidence(p: dict[str, Any]) -> str:
         if "direction_evidence" in p:
             return p["direction_evidence"]
         legacy = p.get("common_period_slope_sign_agreement")  # summaries built from minimal dicts
-        return None if legacy is None else ("descriptive_same_direction" if legacy else "descriptive_opposite_direction")
+        return "unavailable" if legacy is None else ("descriptive_same_direction" if legacy else "descriptive_opposite_direction")
 
     kinds = [evidence(p) for p in pairs]
-    assessed = [k for k in kinds if k in DIRECTION_SIGN]
+    total = len(pairs)
+    assessed_idx = [i for i, k in enumerate(kinds) if k in DIRECTION_SIGN]
+    assessed = [kinds[i] for i in assessed_idx]
     signs = [DIRECTION_SIGN[k] for k in assessed]
-    rhos = [p["spearman_rho"] for p in pairs if p.get("spearman_rho") is not None]
-    if not pairs:
+    rho_pairs = [(p, p["spearman_rho"]) for p in pairs if p.get("spearman_rho") is not None]
+    rhos = [r for _, r in rho_pairs]
+
+    direction_coverage = "none" if not assessed else ("complete" if len(assessed) == total else "partial")
+    covariation_coverage = "none" if not rho_pairs else ("complete" if len(rho_pairs) == total else "partial")
+
+    if not pairs or direction_coverage == "none":
         level = "not_assessable"
-    elif not signs:
-        level = "partially_assessable" if rhos else "not_assessable"
+    elif direction_coverage == "partial":
+        level = "partially_assessable"
     elif all(signs):
-        if rhos:
+        if covariation_coverage == "complete":
             level = "consistent" if min(rhos) >= 0.7 else "same_direction_weak_covariation"
         else:
             level = "same_direction_covariation_not_assessable"
@@ -278,27 +304,50 @@ def agreement_summary(pairs: list[dict[str, Any]]) -> dict[str, Any]:
         level = "conflicting_trend_direction"
     else:
         level = "mixed"
+
     if assessed and all(k.startswith("indicative") for k in assessed):
         direction_kind = "indicative"
     else:
         direction_kind = "descriptive" if assessed else "unavailable"
+
     explanation = LEVEL_EXPLANATIONS[level]
+    if level == "partially_assessable":
+        listed = "; ".join(f"{_pair_name(p, names)}: {_direction_word(k)}" for p, k in zip(pairs, kinds))
+        explanation += f" Directions were compared for {len(assessed)} of {total} pairs ({listed})."
     if assessed:
         explanation += INDICATIVE_NOTE if direction_kind == "indicative" else DESCRIPTIVE_NOTE
-    unassessed = len(pairs) - len(assessed)
-    if assessed and unassessed:
-        explanation += f" {unassessed} pair(s) had too few common eligible years (or a zero slope) for a direction comparison."
+    if rho_pairs:
+        weakest_pair, weakest = min(rho_pairs, key=lambda item: item[1])
+        if covariation_coverage == "complete":
+            explanation += (f" Spearman ρ is available for all {total} pair(s); the lowest is "
+                            f"{weakest:.2f} ({_pair_name(weakest_pair, names)}).")
+        else:
+            listed_rho = "; ".join(f"{_pair_name(p, names)} ρ = {r:.2f}" for p, r in rho_pairs)
+            explanation += (f" Spearman ρ is available for only {len(rho_pairs)} of {total} pairs ({listed_rho}), "
+                            "so co-variation is not summarised across all pairs.")
+
     not_comparable = any(p.get("numerically_comparable") is False for p in pairs)
     shared = any(p.get("lineage") in {"same_lineage", "partially_related"} for p in pairs)
+    label_kind = "indicative" if direction_kind == "indicative" else "descriptive"
     return {
         "level": level,
-        "label": LEVEL_LABELS[level].format(kind="indicative" if direction_kind == "indicative" else "descriptive"),
+        "label": LEVEL_LABELS[level].format(kind=label_kind, assessed=len(assessed), total=total),
         "basis": "common_period_descriptive_slopes",
         "direction_evidence": direction_kind,
+        "direction_coverage": direction_coverage,
+        "covariation_coverage": covariation_coverage,
+        "pairs_total": total,
         "pairs_with_direction": len(assessed),
-        "pairs_without_direction": unassessed,
-        # Computed from common-period directions (previously full-request slopes on different samples).
-        "slope_sign_agreement_all": (all(signs) if signs else None),
+        "pairs_without_direction": total - len(assessed),
+        "pairs_with_correlation": len(rho_pairs),
+        "pair_findings": [
+            {"datasets": list(p.get("datasets") or []), "direction_evidence": k,
+             "spearman_rho": p.get("spearman_rho"), "common_eligible_years": len(p.get("common_eligible_years") or [])}
+            for p, k in zip(pairs, kinds)
+        ],
+        # True/False only when every pair was assessed (never an "all pairs" claim from a subset).
+        "slope_sign_agreement_all": (all(signs) if direction_coverage == "complete" else None),
+        # Lowest rho among the pairs that have one; see pairs_with_correlation and covariation_coverage.
         "min_spearman_rho": min(rhos) if rhos else None,
         "explanation": explanation,
         "comparability_note": (
@@ -321,7 +370,7 @@ def compare(results: list[tuple[DatasetEntry, dict[str, Any]]]) -> dict[str, Any
         "pairs": pairs,
         "all_numerically_comparable": len(quantities) == 1 and len({r["units"]["annual_value"] for _, r in results}) == 1,
         "common_eligible_years_all": sorted(set.intersection(*years)) if years else [],
-        "agreement": agreement_summary(pairs),
+        "agreement": agreement_summary(pairs, {e.key: e.name for e, _ in results}),
         "method": {
             "pairing": "only calendar years eligible in both datasets are paired",
             "common_period_slope": "Theil–Sen slope of each dataset over the common eligible years only (descriptive, no inference)",

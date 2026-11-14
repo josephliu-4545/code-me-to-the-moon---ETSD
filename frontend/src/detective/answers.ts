@@ -524,6 +524,9 @@ const BUILDERS: Record<Exclude<Intent, "injection" | "secrets" | "getting_starte
       { kind: "finding", lines: [
         `Compare Datasets analysed ${c.datasets.length} datasets for this place and period: ${c.datasets.map((d) => `${d.name} (${d.outcome.replace(/_/g, " ")})`).join("; ")}.`,
         c.agreementLabel ? `Agreement level reported: ${c.agreementLabel}. ${c.explanation ?? ""}` : `No comparison was produced: ${c.unavailableReason ?? "reason not given"}.`,
+        c.directionCoverage === "partial" && c.pairsTotal !== null
+          ? `Only ${c.pairsWithDirection ?? 0} of ${c.pairsTotal} dataset pairs could be compared over common years, so no overall conclusion is drawn; each available pair is listed below.`
+          : "",
         c.agreementLabel && c.directionEvidence !== "indicative" && !(c.explanation ?? "").includes("not an established")
           ? "Directions come from descriptive slopes over each pair's common eligible years, so this is not an established agreement or conflict."
           : "",
