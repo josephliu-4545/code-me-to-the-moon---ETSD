@@ -30,6 +30,7 @@ export interface Verdict {
 }
 
 export function trendVerdict(a: Analysis): Verdict {
+  if (a.discovery) return a.discovery.findings;
   const t = a.trend;
   if (a.spatial_support.cell_status === "no_valid_land_values" || !t || t.result_level === "annual_summaries_only" || t.slope === null) {
     return {
@@ -94,6 +95,7 @@ export function inSentence(name: string): string {
  * and always carry their qualification.
  */
 export function discoveryHeadline(a: Analysis): string {
+  if (a.discovery) return a.discovery.findings.headline;
   const v = trendVerdict(a);
   const name = inSentence(a.variable.name);
   const slope = a.trend?.slope ?? 0;

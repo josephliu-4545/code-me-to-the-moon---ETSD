@@ -150,6 +150,7 @@ export interface CacheInfo {
 }
 
 export interface Analysis {
+  discovery?: DiscoveryContract;
   variable: { id: VariableId; name: string; description: string; annual_value_definition: string };
   dataset: {
     source: string;
@@ -250,4 +251,53 @@ export class ApiError extends Error {
 export function isUnreachable(err: unknown): boolean {
   if (!(err instanceof ApiError)) return false;
   return err.status === 0 || (!err.hasJsonBody && (err.status === 404 || err.status >= 500));
+}
+
+export interface DiscoveryObservation {
+  date: string;
+  value: number | null;
+  eligible: boolean;
+  status: string;
+  reasons: string[];
+  coverage_percentage?: number | null;
+}
+export interface DiscoveryContract {
+  analysis_id: string;
+  contract_version: string;
+  history: {
+    annual: DiscoveryObservation[];
+    monthly: DiscoveryObservation[];
+    annual_units: string;
+    monthly_units: string;
+    monthly_available: boolean;
+    interpolated: false;
+    end_exclusive: string;
+  };
+  findings: {
+    kind: "increasing" | "decreasing" | "not_detected" | "descriptive" | "unavailable";
+    label: string; inference: string; note: string; headline: string;
+    slope: number | null; slope_units: string;
+    per_decade: number | null; per_decade_units: string;
+    fitted_change: number | null; slope_method: string; test_method: string;
+    tested_null: string; test_reported: boolean; test: MannKendall | null;
+    confidence_interval: [number, number] | null;
+    eligible_years: number[]; serial_dependence: SerialDependence | null;
+    limitations: string[];
+  };
+}
+export interface ComparisonWindow {
+  first_start_year: number; first_end_year: number;
+  second_start_year: number; second_end_year: number;
+}
+export interface PeriodSummary {
+  start_year: number; end_year_inclusive: number; expected_years: number;
+  eligible_years: number[]; count: number; mean: number | null;
+  excluded_years: { year: number; reasons: string[] }[];
+}
+export interface PeriodComparison {
+  analysis_id: string; first: PeriodSummary; second: PeriodSummary;
+  status: "available" | "unavailable"; difference: number | null;
+  units: string; annual_units: string; statistic: string;
+  annual_value_definition: string; warnings: string[];
+  data_status: Analysis["data_status"]; cache: CacheInfo;
 }

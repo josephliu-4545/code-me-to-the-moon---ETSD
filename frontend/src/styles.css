@@ -4,3 +4,10 @@
 @import "./styles/layout.css";
 @import "./styles/explore.css";
 @import "./styles/pages.css";
+
+@import "./styles/history.css";
+
+@import "./styles/observatory.css";
+/* Observatory stylesheet ready. */
+@import "./styles/evidence-light.css";
+@import "./styles/space-pages.css";

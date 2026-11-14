@@ -32,7 +32,7 @@ function Layer({ n, title, children, className = "" }: { n: number; title: strin
 }
 
 /** Layers 1–3 of the discovery reveal: what we found, how much it changed, how strong the evidence is. */
-export function ResultSummary({ analysis, place }: { analysis: Analysis; place?: string }) {
+export function ResultSummary({ analysis, place, historyPage = false }: { analysis: Analysis; place?: string; historyPage?: boolean }) {
   const t = analysis.trend;
   const verdict = trendVerdict(analysis);
   const lines = summarize(analysis);
@@ -44,6 +44,7 @@ export function ResultSummary({ analysis, place }: { analysis: Analysis; place?:
   const sd = t?.serial_dependence;
   const step = stepWarning(analysis);
   const seasonal = isSeasonal(analysis);
+  const serverFindings = analysis.discovery?.findings;
   return (
     <section className="discovery" aria-labelledby="finding-title">
       <header className="discovery-head">
@@ -60,6 +61,7 @@ export function ResultSummary({ analysis, place }: { analysis: Analysis; place?:
           <span className="mono">{periodLabel(analysis)}</span>
         </p>
         <h2 id="finding-title" className="discovery-headline">{discoveryHeadline(analysis)}</h2>
+        {analysis.discovery && <p className="note mono">Evidence ID: {analysis.discovery.analysis_id.slice(0, 16)} · contract {analysis.discovery.contract_version}</p>}
         <div className="verdict-row">
           <span className={`verdict-pill verdict-${verdict.kind}`}><span className="verdict-mark" aria-hidden />{verdict.label}</span>
           <p className="finding-note">{verdict.note}</p>
@@ -68,6 +70,22 @@ export function ResultSummary({ analysis, place }: { analysis: Analysis; place?:
         <p className="support-note">
           Values describe a {inSentence(s.description)} ({s.resolution}), not the exact point. Source: {analysis.dataset.source} · {analysis.dataset.title ?? analysis.dataset.id}.
         </p>
+        <div className="row-gap">
+          <a className="btn btn-ghost" href={historyPage ? "#history" : "#historical-discovery"} onClick={(e) => { if (historyPage) return; e.preventDefault(); const el = document.getElementById("historical-discovery"); el?.scrollIntoView?.({ block: "start" }); el?.focus({ preventScroll: true }); }}>Explore the supporting observations</a>
+          <a className="text-link" href="#evaluation">Inspect data quality and methods</a>
+        </div>
+        <Disclosure summary="Why do we say this?" meta="Calculation evidence">
+          <p className="note">This explanation uses the returned calculation, not an AI-generated statistic.</p>
+          <dl className="kv">
+            <dt>Estimated direction</dt><dd>{t?.slope == null ? "No slope available" : `${t.slope > 0 ? "Positive" : t.slope < 0 ? "Negative" : "Zero"} slope: ${signed(t.slope, 4)} ${slopeUnits}`}. {verdict.label}.</dd>
+            <dt>Estimator</dt><dd>{slopeName(analysis)}. {seasonal ? `Compares the same calendar months across years: ${monthsUsed(analysis)}.` : "Median of pairwise slopes on the eligible calendar years."}</dd>
+            <dt>Tested hypothesis</dt><dd>No monotonic trend. {t?.result_level === "statistical_inference" && t.mann_kendall ? `${testName(analysis)}: ${pText(t.mann_kendall.p_value)}, alpha = ${t.mann_kendall.alpha}; ${t.mann_kendall.is_statistically_significant ? "rejected under the reported test policy" : "not rejected"}.` : `Test not reported: ${t?.significance_unavailable_reason ?? "Insufficient support for inference"}.`}</dd>
+            <dt>Temporal support</dt><dd>{t?.eligible_years.length ? t.eligible_years.join(", ") : "No eligible trend years reported"}. Requested period: {analysis.period.start} to {analysis.period.end_exclusive} (end exclusive).</dd>
+            <dt>Dependence</dt><dd>{sd ? `${sd.status.replace(/_/g, " ")}. ${sd.caveat}` : "No serial-dependence diagnostic supplied; independence is not established."}</dd>
+            <dt>Uncertainty</dt><dd>{t?.confidence_interval ? `95% slope interval: ${signed(t.confidence_interval[0], 4)} to ${signed(t.confidence_interval[1], 4)} ${slopeUnits}. This is not a prediction interval.` : t?.confidence_interval_unavailable_reason ?? "No justified slope interval was supplied."}</dd>
+            <dt>Source record</dt><dd>{analysis.dataset.id}, version {analysis.dataset.version}. {analysis.snapshot ? `Saved snapshot captured ${analysis.snapshot.captured_at}.` : analysis.cache ? `Retrieved ${analysis.cache.retrieved_at}.` : "Retrieval timestamp not supplied."}</dd>
+          </dl>
+        </Disclosure>
       </header>
 
       <div className="layers">
@@ -81,8 +99,8 @@ export function ResultSummary({ analysis, place }: { analysis: Analysis; place?:
             {t?.slope != null && (
               <div className="change-side">
                 <span className="figure-label">Per decade</span>
-                <span className="change-value mono">{signed(perDecade(t.slope), 3)}</span>
-                <span className="figure-unit">{decadeUnits(t.slope_units ?? null)}</span>
+                <span className="change-value mono">{signed(serverFindings?.per_decade ?? perDecade(t.slope), 3)}</span>
+                <span className="figure-unit">{serverFindings?.per_decade_units ?? decadeUnits(t.slope_units ?? null)}</span>
               </div>
             )}
             {change && (
@@ -170,7 +188,7 @@ export function Cautions({ analysis }: { analysis: Analysis }) {
   const s = analysis.spatial_support;
   const excluded = analysis.coverage.years_requested - analysis.coverage.eligible_years;
   const items: { title: string; body: string }[] = [
-    { title: "A trend is not a cause.", body: analysis.caveats[1] ?? "The slope describes change over the eligible years only. It is not a forecast and does not identify a cause." },
+    { title: "A trend is not a cause.", body: "The slope describes the analysed record only. It is not a forecast, does not identify a cause, and does not establish future conditions." },
   ];
   if (v.kind === "not_detected") items.push({ title: "“No trend detected” is not “no change”.", body: "The test could not distinguish a monotonic trend from year-to-year variability. The data are consistent with no trend, and also with a modest trend this record is too short or noisy to detect." });
   if (v.kind === "increasing" || v.kind === "decreasing") items.push({ title: "Significant is indicative, not certain.", body: analysis.caveats[0] ?? "Autocorrelated years can inflate false positives." });
@@ -262,6 +280,8 @@ export function ErrorBox({ error, onRetry, extra }: { error: unknown; onRetry?: 
   let hint = e?.message ?? String(error);
   if (isUnreachable(e)) {
     title = "Analysis service not reachable";
+  } else if (e?.status === 409) {
+    title = "Investigation evidence changed";
   } else if (e?.status === 422) {
     title = e.reason === "outside_dataset_coverage" || e.reason === "unsupported_land_cover_region" ? "Not available at this location" : "This request is not supported";
   } else if (e?.status === 401) {

@@ -64,7 +64,7 @@ const ExcludedDot = (p: unknown) => {
   return <circle cx={cx} cy={cy} r={5} fill={CHART.surface} stroke={CHART.excluded} strokeWidth={2} />;
 };
 
-export default function TrendChart({ analysis }: { analysis: Analysis }) {
+export default function TrendChart({ analysis, onSelect, selectedDate }: { analysis: Analysis; onSelect?: (date: string) => void; selectedDate?: string }) {
   const rows = buildRows(analysis);
   const units = analysis.units.annual_value;
   const hasTrend = rows.some((r) => r.trend !== null);
@@ -89,8 +89,9 @@ export default function TrendChart({ analysis }: { analysis: Analysis }) {
       </div>
       <div className="chart-plot" aria-hidden>
         <ResponsiveContainer width="100%" height={300}>
-          <ComposedChart data={rows} margin={{ top: 12, right: 12, bottom: 4, left: 0 }}>
+          <ComposedChart onClick={(state) => { const label = (state as unknown as { activeLabel?: string | number }).activeLabel; if (label != null) onSelect?.(String(label)); }} data={rows} margin={{ top: 12, right: 12, bottom: 4, left: 0 }}>
             <CartesianGrid stroke={CHART.grid} vertical={false} />
+            {selectedDate && <ReferenceLine x={Number(selectedDate)} stroke={CHART.obs} strokeDasharray="2 4" />}
             <XAxis dataKey="year" type="number" domain={["dataMin", "dataMax"]} padding={{ left: 16, right: 16 }} allowDecimals={false} ticks={yearTicks(rows)} tick={tickStyle} stroke={CHART.axis} tickLine={false} />
             <YAxis domain={["auto", "auto"]} tick={tickStyle} stroke={CHART.axis} axisLine={false} tickLine={false} width={58} tickFormatter={(v: number) => fmt(v, 2)} />
             <Tooltip content={<TooltipBody units={units} />} cursor={{ stroke: CHART.axis, strokeDasharray: "2 3" }} />
@@ -115,7 +116,7 @@ export default function TrendChart({ analysis }: { analysis: Analysis }) {
             <tbody>
               {rows.map((r) => (
                 <tr key={r.year} className={r.eligible === null ? "row-excluded" : ""}>
-                  <th scope="row" className="mono">{r.year}</th>
+                  <th scope="row" className="mono">{onSelect ? <button type="button" className="history-date" onClick={() => onSelect(String(r.year))}>{r.year}</button> : r.year}</th>
                   <td className="mono">{fmt(r.eligible ?? r.excluded, 3)}</td>
                   <td className="mono">{fmt(r.trend, 3)}</td>
                   <td>{r.eligible !== null ? "Eligible" : r.reasons.length ? r.reasons.map(reasonLabel).join("; ") : "No value"}</td>

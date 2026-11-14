@@ -122,7 +122,7 @@ main > .view { flex: 1; display: flex; flex-direction: column; }
   .nav a, .nav-planned { padding: 10px 8px; font-size: 0.82rem; }
   .soon-chip { display: none; }
 }
-@media (max-width: 1080px) {
+@media (max-width: 1280px) {
   /* Collapse into a menu */
   .menu-button { display: inline-flex; }
   .nav { position: fixed; top: var(--topbar-h); left: 0; right: 0; flex-direction: column; align-items: stretch; gap: 0; padding: var(--s4) clamp(var(--s4), 2.5vw, var(--s6)) var(--s5); background: var(--surface-solid); border-bottom: 1px solid var(--border); box-shadow: var(--shadow-float); transform: translateY(-8px); opacity: 0; visibility: hidden; transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease), visibility 0s linear var(--dur); }

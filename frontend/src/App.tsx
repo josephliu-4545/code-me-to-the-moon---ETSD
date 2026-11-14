@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import type { AnalysisRequest } from "./api/types";
+import type { Analysis, AnalysisRequest } from "./api/types";
 import SiteHeader, { type NavItem } from "./components/layout/SiteHeader";
 import Wordmark from "./components/layout/Wordmark";
 import Starfield from "./components/layout/Starfield";
+import SpaceBackdrop from "./components/layout/SpaceBackdrop";
 import { ErrorBox, Loading } from "./components/ResultPanels";
 import CompareDatasetsPage from "./pages/CompareDatasetsPage";
+import InvestigationPage from "./pages/InvestigationPage";
 import DetectivePage from "./pages/DetectivePage";
 import EvaluationPage from "./pages/EvaluationPage";
 import ExplorePage from "./pages/ExplorePage";
@@ -17,6 +19,8 @@ import { useVariables } from "./state/useAnalysis";
 
 const TABS = [
   { id: "explore", label: "Explore Earth", short: "Explore Earth" },
+  { id: "history", label: "Historical Discovery", short: "Historical Discovery" },
+  { id: "findings", label: "Mission Findings", short: "Mission Findings" },
   { id: "evaluation", label: "Scientific Evaluation", short: "Evaluation" },
   { id: "compare", label: "Compare Datasets", short: "Compare" },
   { id: "relationships", label: "Earth System Relationships", short: "Relationships" },
@@ -25,7 +29,9 @@ const TABS = [
   { id: "science", label: "Scientific Information", short: "Field Guide" },
 ] as const satisfies readonly NavItem[];
 type Tab = Exclude<(typeof TABS)[number]["id"], "living">;
-const ROUTES: Tab[] = ["explore", "evaluation", "compare", "relationships", "detective", "science"];
+const ROUTES: Tab[] = ["explore", "history", "findings", "evaluation", "compare", "relationships", "detective", "science"];
+
+const SPACE_TABS: Tab[] = ["evaluation", "compare", "relationships", "detective", "science"];
 
 function currentTab(): Tab {
   const h = window.location.hash.replace("#", "") as Tab;
@@ -38,9 +44,11 @@ export default function App() {
   const [tab, setTab] = useState<Tab>(currentTab);
   const [selection, update] = useSelection();
   const [submitted, setSubmitted] = useState<AnalysisRequest | null>(null);
+  const [snapshot, setSnapshot] = useState<Analysis | null>(null);
   const [submittedPlace, setSubmittedPlace] = useState("");
   const conversations = useConversationStore();
   const variables = useVariables();
+  function startInvestigation(request: AnalysisRequest) { setSnapshot(null); setSubmitted(request); }
   const [theme, , toggleTheme] = useTheme();
 
   useEffect(() => {
@@ -85,17 +93,21 @@ export default function App() {
           </div>
         )}
         {variables.data && (
-          <div className="view" key={tab}>
+          <div className={SPACE_TABS.includes(tab) ? "view view-space" : "view"} key={tab}>
+            {SPACE_TABS.includes(tab) && <SpaceBackdrop tone={tab} />}
             {tab === "explore" && (
               <ExplorePage
                 variables={variables.data.variables}
                 selection={selection}
                 onChange={update}
                 submitted={submitted}
-                onSubmit={() => { setSubmitted(toRequest(selection)); setSubmittedPlace(selection.placeName); }}
+                onSubmit={() => { startInvestigation(toRequest(selection)); setSubmittedPlace(selection.placeName); }}
+                sharedSnapshot={snapshot}
+                onSnapshot={setSnapshot}
                 theme={theme}
               />
             )}
+            {(tab === "history" || tab === "findings") && <InvestigationPage section={tab} submitted={submitted} selection={selection} onChange={update} snapshot={snapshot} onStart={startInvestigation} onSnapshot={setSnapshot} />}
             {tab === "evaluation" && <EvaluationPage submitted={submitted} />}
             {tab === "compare" && <CompareDatasetsPage selection={selection} />}
             {tab === "relationships" && <RelationshipsPage variables={variables.data.variables} selection={selection} />}

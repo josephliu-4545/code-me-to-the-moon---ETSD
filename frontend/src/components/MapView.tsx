@@ -55,11 +55,11 @@ const STYLE: StyleSpecification = {
 /** Theme treatments for the same NASA imagery: Orbit (night-side atmosphere) and Mission Briefing (daylit, paper space). */
 const THEMES = {
   dark: {
-    background: "#13233D",
-    brightnessMax: 0.9,
-    saturation: -0.12,
-    features: 0.5,
-    sky: { "sky-color": "#101D35", "horizon-color": "#4f7fb0", "fog-color": "#070D1B", "atmosphere-blend": ["interpolate", ["linear"], ["zoom"], 0, 0.9, 5, 0.45, 7, 0] },
+    background: "#0a1826",
+    brightnessMax: 1,
+    saturation: 0.08,
+    features: 0.18,
+    sky: { "sky-color": "#02050a", "horizon-color": "#4899db", "fog-color": "#02050a", "atmosphere-blend": ["interpolate", ["linear"], ["zoom"], 0, 0.9, 5, 0.45, 7, 0] },
   },
   light: {
     background: "#C9D4DE",
@@ -114,7 +114,7 @@ function footprintGeoJSON(f: Footprint | null): FeatureCollection {
 /** Map padding so the selected point sits in the visible area beside the floating dossier on wide screens. */
 function mapPadding(el: HTMLElement | null) {
   const wide = !!el && el.clientWidth >= 960;
-  return { top: wide ? 40 : 10, bottom: wide ? 40 : 10, right: wide ? 40 : 10, left: wide ? Math.min(460, el!.clientWidth * 0.36) : 10 };
+  return { top: wide ? 160 : 10, bottom: wide ? 40 : 10, right: wide ? 380 : 10, left: wide ? 190 : 10 };
 }
 
 function markerElement(): HTMLElement {
@@ -133,6 +133,7 @@ export default function MapView({ latitude, longitude, footprint, onSelect, them
   const onSelectRef = useRef(onSelect);
   const footprintRef = useRef(footprint);
   const [failed, setFailed] = useState(false);
+  const [projection, setProjection] = useState<"globe" | "mercator">("globe");
 
   useEffect(() => {
     onSelectRef.current = onSelect;
@@ -146,7 +147,7 @@ export default function MapView({ latitude, longitude, footprint, onSelect, them
         container: container.current,
         style: STYLE,
         center: [longitude, latitude],
-        zoom: container.current.clientWidth < 640 ? 1.35 : 2.3,
+        zoom: container.current.clientWidth < 640 ? 0.85 : 1.65,
         attributionControl: { compact: true },
       });
     } catch {
@@ -199,7 +200,7 @@ export default function MapView({ latitude, longitude, footprint, onSelect, them
     }
     const m = map.current;
     if (m) {
-      const zoom = Math.max(m.getZoom(), 3.2);
+      const zoom = m.getZoom();
       const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
       m.easeTo({ center: [longitude, latitude], zoom, duration: reduce ? 0 : 1100, padding: mapPadding(container.current) });
     }
@@ -217,11 +218,19 @@ export default function MapView({ latitude, longitude, footprint, onSelect, them
     src?.setData(footprintGeoJSON(footprint));
   }, [footprint]);
 
+  function changeProjection(type: "globe" | "mercator") {
+    const m = map.current;
+    if (!m?.isStyleLoaded()) return;
+    m.setProjection({ type });
+    setProjection(type);
+  }
+
   if (failed) return <MapUnavailable />;
 
   return (
     <div className="map-wrap">
       <div ref={container} className="map" role="application" aria-label="World map. Click anywhere to choose a location. Coordinates can also be entered in the investigation panel." />
+      <div className="earth-view-switch" role="group" aria-label="Earth view"><button type="button" aria-pressed={projection === "globe"} onClick={() => changeProjection("globe")}>3D Earth</button><button type="button" aria-pressed={projection === "mercator"} onClick={() => changeProjection("mercator")}>2D Map</button></div>
       <p className="map-hint">
         <span>Click or tap anywhere on Earth to choose a location.</span>
         {footprint && <span className="map-hint-fp"><span className="fp-key" aria-hidden /> {footprint.label}</span>}

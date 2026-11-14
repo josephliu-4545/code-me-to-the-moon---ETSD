@@ -1,6 +1,8 @@
 import {
   ApiError,
   type Analysis,
+  type ComparisonWindow,
+  type PeriodComparison,
   type AnalysisRequest,
   type GeocodeResult,
   type RelationshipsResponse,
@@ -52,12 +54,8 @@ export async function getJson<T>(path: string, params: Record<string, string | n
   return body as T;
 }
 
-export const api = {
-  variables: (signal?: AbortSignal) => getJson<VariablesResponse>("/api/v2/variables", {}, signal),
-  analysis: (r: AnalysisRequest, signal?: AbortSignal) =>
-    getJson<Analysis>(
-      "/api/v2/analysis",
-      {
+export function analysisParams(r: AnalysisRequest) {
+  return {
         variable: r.variable,
         latitude: r.latitude,
         longitude: r.longitude,
@@ -67,7 +65,17 @@ export const api = {
         radius_km: r.variable === "ndvi" && r.mode === "region" ? r.radiusKm : undefined,
         dataset: r.variable === "soil_moisture" ? r.dataset : undefined,
         bbox: r.bbox ? r.bbox.map((v) => v.toFixed(4)).join(",") : undefined,
-      },
+      };
+}
+
+export const api = {
+  periodComparison: (r: AnalysisRequest, analysisId: string, windows: ComparisonWindow, signal?: AbortSignal) =>
+    getJson<PeriodComparison>("/api/v2/period-comparison", { ...analysisParams(r), analysis_id: analysisId, ...windows }, signal),
+  variables: (signal?: AbortSignal) => getJson<VariablesResponse>("/api/v2/variables", {}, signal),
+  analysis: (r: AnalysisRequest, signal?: AbortSignal) =>
+    getJson<Analysis>(
+      "/api/v2/analysis",
+      analysisParams(r),
       signal,
     ),
   relationships: (

@@ -5,8 +5,7 @@ import AnalysisControls from "../components/AnalysisControls";
 import LocationPanel from "../components/LocationPanel";
 import type { Footprint } from "../components/MapView";
 import { Cautions, ErrorBox, Limitations, Loading, MethodNotes, ProvenanceCard, ResultSummary } from "../components/ResultPanels";
-import SeriesChart from "../components/SeriesChart";
-import TrendChart from "../components/TrendChart";
+import HistoricalDiscovery from "../components/HistoricalDiscovery";
 import MapBoundary from "../components/explore/MapBoundary";
 import Starfield from "../components/layout/Starfield";
 import SeasonalChart from "../components/science/SeasonalChart";
@@ -26,6 +25,8 @@ interface Props {
   submitted: AnalysisRequest | null;
   onSubmit: () => void;
   theme?: Theme;
+  sharedSnapshot?: Analysis | null;
+  onSnapshot?: (snapshot: Analysis | null) => void;
 }
 
 export function footprintFor(selection: Selection, analysis: Analysis | undefined): Footprint | null {
@@ -56,12 +57,12 @@ function scrollToEl(el: HTMLElement | null) {
   el?.scrollIntoView?.({ behavior: reduce ? "auto" : "smooth", block: "start" });
 }
 
-export default function ExplorePage({ variables, selection, onChange, submitted, onSubmit, theme = "dark" }: Props) {
-  const query = useAnalysis(submitted);
-  const [snapshot, setSnapshot] = useState<Analysis | null>(null);
+export default function ExplorePage({ variables, selection, onChange, submitted, onSubmit, theme = "dark", sharedSnapshot = null, onSnapshot }: Props) {
+  const query = useAnalysis(sharedSnapshot ? null : submitted);
+  const [snapshot, setSnapshot] = useState<Analysis | null>(sharedSnapshot);
   const [snapshotMissing, setSnapshotMissing] = useState(false);
-  const [submittedPlace, setSubmittedPlace] = useState(selection.placeName);
-  const analysis = query.data ?? (query.isError ? snapshot ?? undefined : undefined);
+  const [submittedPlace, setSubmittedPlace] = useState(sharedSnapshot ? "" : selection.placeName);
+  const analysis = query.data ?? snapshot ?? undefined;
   const sameAsSubmitted =
     submitted && Math.abs(submitted.latitude - selection.latitude) < 1e-4 && Math.abs(submitted.longitude - selection.longitude) < 1e-4;
   const footprint = useMemo(() => footprintFor(selection, sameAsSubmitted ? analysis : undefined), [selection, analysis, sameAsSubmitted]);
@@ -79,6 +80,7 @@ export default function ExplorePage({ variables, selection, onChange, submitted,
     if (!submitted) return;
     const s = await findSnapshot(submitted);
     setSnapshot(s);
+    onSnapshot?.(s);
     setSnapshotMissing(!s);
   }
 
@@ -87,6 +89,13 @@ export default function ExplorePage({ variables, selection, onChange, submitted,
     e.preventDefault();
     scrollToEl(resultsRef.current);
     resultsRef.current?.focus({ preventScroll: true });
+  }
+
+  const selectedVariable = variables.find((v) => v.id === selection.variable);
+  function goToHistory() {
+    const el = document.getElementById("historical-discovery") ?? resultsRef.current;
+    scrollToEl(el);
+    el?.focus({ preventScroll: true });
   }
 
   const verdict = analysis && !query.isFetching ? trendVerdict(analysis) : null;
@@ -103,10 +112,6 @@ export default function ExplorePage({ variables, selection, onChange, submitted,
       <section className="stage" aria-label="Earth from orbit and investigation controls">
         <div className="stage-map">
           <Starfield className="stage-stars" />
-          <svg className="stage-orbits" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice" aria-hidden>
-            <ellipse cx="650" cy="330" rx="470" ry="150" transform="rotate(-14 650 330)" />
-            <ellipse cx="650" cy="330" rx="560" ry="200" transform="rotate(-14 650 330)" className="orbit-far" />
-          </svg>
           <MapBoundary>
             <Suspense fallback={<div className="map-wrap map-loading"><span className="orbit-loader" aria-hidden><span /></span><span>Bringing Earth into view…</span></div>}>
               <MapView
@@ -119,14 +124,16 @@ export default function ExplorePage({ variables, selection, onChange, submitted,
             </Suspense>
           </MapBoundary>
         </div>
-        <div className="stage-caption" aria-hidden>
-          <p className="kicker">Mission 01 · Explore Earth</p>
-          <p className="stage-title">Discover the signals<br />of a changing planet.</p>
+        <div className="stage-caption">
+          <p className="kicker">THE ORBITAL OBSERVATORY</p>
+          <p className="stage-title">One planet.<br /><em>Countless stories.</em></p><p className="stage-description">Follow the signals of a changing Earth.<br />An investigation grounded in NASA data.</p>
         </div>
+        <div className="observatory-rail" aria-label="Investigation shortcuts"><span className="rail-coordinate">EARTH / OBSERVATION DECK</span><button type="button" onClick={goToHistory} aria-label="Open historical discovery"><span aria-hidden>03</span><span>Historical<br />Discovery</span></button><button type="button" onClick={() => { scrollToEl(resultsRef.current); resultsRef.current?.focus({ preventScroll: true }); }} aria-label="Open mission findings"><span aria-hidden>04</span><span>Mission<br />Findings</span></button></div>
+        <div className="orbit-readout"><div><span className="kicker">Selected coordinates</span><p className="mono">{selection.latitude.toFixed(4)}° / {selection.longitude.toFixed(4)}°</p></div><div><span className="kicker">Active signal</span><p>{selectedVariable?.short_name ?? selection.variable}</p></div><div><span className="kicker">Observation window</span><p className="mono">{selection.startYear} — {selection.endYearInclusive}</p></div><button type="button" className="record-link" onClick={goToHistory}>Explore the record <span aria-hidden>↗</span></button></div>
         <aside className="dossier" aria-label="Investigation">
           <header className="dossier-head">
             <p className="kicker">Investigation brief</p>
-            <p className="dossier-title">What has changed here?</p>
+            <p className="dossier-title">Your investigation.</p>
           </header>
           <LocationPanel
             latitude={selection.latitude}
@@ -202,14 +209,8 @@ export default function ExplorePage({ variables, selection, onChange, submitted,
                 </p>
               )}
               <ResultSummary analysis={analysis} place={submittedPlace} />
-              <section className="layer layer-data" aria-labelledby="layer-4">
-                <h3 id="layer-4" className="layer-title"><span className="layer-num" aria-hidden>04</span>What does the data look like?</h3>
-                <div className="charts">
-                  <TrendChart analysis={analysis} />
-                  <SeriesChart analysis={analysis} />
-                  <SeasonalChart analysis={analysis} />
-                </div>
-              </section>
+              <HistoricalDiscovery key={JSON.stringify(submitted)} analysis={analysis} request={submitted ?? undefined} />
+              <SeasonalChart analysis={analysis} />
               <Cautions analysis={analysis} />
               <div className="dossier-foot">
                 <ProvenanceCard analysis={analysis} />
