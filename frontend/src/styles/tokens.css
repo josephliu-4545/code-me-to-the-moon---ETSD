@@ -1,0 +1,144 @@
+/* ───────────────────── Cosmic Expedition tokens ─────────────────────
+   Orbit (dark, default) and Mission Briefing (light) are designed separately,
+   from the same roles. Components use semantic tokens only. */
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #070D1B;
+  --bg-deep: #050A15;
+  --surface: #101D35;
+  --surface-raised: #1C304C;
+  --surface-glass: rgba(12, 22, 42, 0.84);
+  --surface-solid: #0C1730;
+  --surface-sunken: #0A1428;
+  --surface-hover: rgba(169, 184, 206, 0.07);
+  --overlay: rgba(5, 10, 21, 0.72);
+
+  --text-primary: #F6F0E6;
+  --text-secondary: #A9B8CE;
+  --text-muted: #8798B0;
+  --text-on-accent: #101625;
+
+  --accent: #E7AE68;
+  --accent-hover: #F0C38A;
+  --accent-soft: rgba(231, 174, 104, 0.12);
+  --accent-line: rgba(231, 174, 104, 0.45);
+  --focus: #F0C38A;
+
+  --border: rgba(169, 184, 206, 0.16);
+  --border-strong: rgba(169, 184, 206, 0.3);
+
+  --data-primary: #74B7E7;
+  --data-secondary: #B3A0E8;
+  --trend: #E7AE68;
+  --valid: #78C5A6;
+  --warning: #E49A75;
+  --unavailable: #99A9BB;
+  --warning-soft: rgba(228, 154, 117, 0.12);
+
+  /* Charts: validated pairs (see components/science/chartTheme.ts) */
+  --chart-surface: #0D1930;
+  --chart-obs: #3E97DD;
+  --chart-trend: #C9822D;
+  --chart-excluded: #8E9DB2;
+  --chart-grid: rgba(169, 184, 206, 0.1);
+  --chart-axis: rgba(169, 184, 206, 0.32);
+  --chart-tick: #A9B8CE;
+  --chart-band: rgba(116, 183, 231, 0.1);
+  --chart-gap: rgba(169, 184, 206, 0.05);
+  --chart-gap-line: rgba(169, 184, 206, 0.2);
+
+  --map-control-bg: rgba(7, 13, 27, 0.84);
+  --map-space: #070D1B;
+  --stars-opacity: 1;
+  --shadow-float: 0 30px 70px -30px rgba(0, 0, 0, 0.85);
+  --shadow-soft: 0 12px 30px -18px rgba(0, 0, 0, 0.7);
+  --glow-accent: 0 0 0 1px rgba(231, 174, 104, 0.35), 0 10px 36px -8px rgba(231, 174, 104, 0.45);
+
+  --logo-ring: #E7AE68;
+  --logo-planet: #101D35;
+  --logo-signal: #74B7E7;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg: #F7F4EC;
+  --bg-deep: #EFEBE0;
+  --surface: #FFFFFF;
+  --surface-raised: #E4E8EC;
+  --surface-glass: rgba(255, 255, 255, 0.92);
+  --surface-solid: #FFFFFF;
+  --surface-sunken: #F1EEE5;
+  --surface-hover: rgba(23, 36, 59, 0.05);
+  --overlay: rgba(247, 244, 236, 0.8);
+
+  --text-primary: #17243B;
+  --text-secondary: #596A7D;
+  --text-muted: #5F6F82;
+  --text-on-accent: #FFFFFF;
+
+  --accent: #99612E;
+  --accent-hover: #7E4E22;
+  --accent-soft: rgba(153, 97, 46, 0.09);
+  --accent-line: rgba(153, 97, 46, 0.4);
+  --focus: #99612E;
+
+  --border: #D4DCE4;
+  --border-strong: #B9C4CF;
+
+  --data-primary: #236A96;
+  --data-secondary: #68539D;
+  --trend: #99612E;
+  --valid: #236F55;
+  --warning: #A14D32;
+  --unavailable: #647386;
+  --warning-soft: rgba(161, 77, 50, 0.08);
+
+  --chart-surface: #FFFFFF;
+  --chart-obs: #1A6AAA;
+  --chart-trend: #A85C1C;
+  --chart-excluded: #6E7C8D;
+  --chart-grid: rgba(23, 36, 59, 0.08);
+  --chart-axis: rgba(23, 36, 59, 0.28);
+  --chart-tick: #596A7D;
+  --chart-band: rgba(26, 106, 170, 0.08);
+  --chart-gap: rgba(23, 36, 59, 0.03);
+  --chart-gap-line: rgba(23, 36, 59, 0.15);
+
+  --map-control-bg: rgba(255, 255, 255, 0.9);
+  --map-space: #EDEAE0;
+  --stars-opacity: 0;
+  --shadow-float: 0 30px 60px -34px rgba(23, 36, 59, 0.35);
+  --shadow-soft: 0 10px 26px -18px rgba(23, 36, 59, 0.3);
+  --glow-accent: 0 0 0 1px rgba(153, 97, 46, 0.3), 0 10px 30px -12px rgba(153, 97, 46, 0.35);
+
+  --logo-ring: #99612E;
+  --logo-planet: #FFFFFF;
+  --logo-signal: #236A96;
+}
+
+:root {
+  --font-display: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --font-brand: "Space Grotesk Variable", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "DM Sans Variable", "DM Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.125rem;
+  --fs-xl: clamp(1.55rem, 1.15rem + 1.4vw, 2.1rem);
+  --fs-display: clamp(2.5rem, 1.4rem + 3.8vw, 4.6rem);
+
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px; --s8: 72px;
+  --r-sm: 6px; --r-md: 12px; --r-lg: 20px;
+  --topbar-h: 68px;
+  --page-max: 1240px;
+
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur: 220ms;
+  --dur-slow: 560ms;
+}

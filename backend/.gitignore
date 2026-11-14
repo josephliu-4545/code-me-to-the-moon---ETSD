@@ -1,0 +1,14 @@
+.env
+.env.*
+!.env.example
+.venv/
+.tmp/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+credentials.json
+service-account*.json
+*service-account*.json
+

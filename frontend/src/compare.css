@@ -1,0 +1,44 @@
+/* Compare datasets page. Uses the design tokens from styles/tokens.css (works in both themes). */
+.compare-page .block { display: block; }
+.cmp-variables { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
+.cmp-variables .variable-chip:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+.cmp-dataset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.cmp-dataset { display: flex; gap: 10px; align-items: flex-start; background: var(--surface-hover); border: 1px solid var(--border); border-radius: var(--r-md); padding: 12px 14px; cursor: pointer; transition: border-color var(--dur) var(--ease); }
+.cmp-dataset:hover { border-color: var(--border-strong); }
+.cmp-dataset.on { border-color: var(--accent-line); background: var(--accent-soft); }
+.cmp-dataset input { margin-top: 4px; accent-color: var(--accent); }
+.cmp-dataset .note { margin-top: 2px; }
+.cmp-tag { margin-left: 6px; font-size: var(--fs-xs); padding: 1px 7px; border-radius: 999px; border: 1px solid var(--accent-line); color: var(--accent); vertical-align: middle; }
+.cmp-run { margin-top: 4px; justify-self: start; }
+.cmp-banner { border-radius: var(--r-md); padding: 14px 16px; border: 1px solid var(--border); background: var(--surface); margin-top: var(--s5); }
+.cmp-banner .note { margin-top: 6px; }
+.cmp-good { border-color: color-mix(in srgb, var(--valid) 55%, transparent); }
+.cmp-info { border-color: color-mix(in srgb, var(--data-primary) 55%, transparent); }
+.cmp-warn { border-color: color-mix(in srgb, var(--warning) 60%, transparent); }
+.cmp-bad { border-color: color-mix(in srgb, var(--warning) 90%, transparent); }
+.cmp-banner.cmp-good { background: color-mix(in srgb, var(--valid) 8%, var(--surface)); }
+.cmp-banner.cmp-warn, .cmp-banner.cmp-bad { background: var(--warning-soft); }
+.cmp-status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; margin-top: var(--s4); }
+.cmp-status { background: var(--surface); border: 1px solid var(--border); border-left-width: 4px; border-radius: var(--r-md); padding: 12px 14px; }
+.cmp-status header { display: flex; gap: 8px; align-items: center; color: var(--text-primary); }
+.cmp-status p { margin: 4px 0 0; }
+.cmp-outcome { font-weight: 600; font-size: var(--fs-sm); color: var(--text-primary); }
+.cmp-swatch { width: 12px; height: 12px; border-radius: 3px; flex: none; }
+.cmp-pill { font-size: var(--fs-xs); padding: 2px 8px; border-radius: 999px; border: 1px solid; white-space: nowrap; }
+.cmp-pill.cmp-good { color: var(--valid); }
+.cmp-pill.cmp-info { color: var(--data-primary); }
+.cmp-pill.cmp-warn, .cmp-pill.cmp-bad { color: var(--warning); }
+.cmp-tabs { display: flex; gap: 6px; flex-wrap: wrap; border-bottom: 1px solid var(--border); padding: var(--s4) 0 8px; }
+.cmp-tabs button { background: none; border: 1px solid transparent; color: var(--text-secondary); padding: 6px 14px; border-radius: 999px; cursor: pointer; font-size: var(--fs-sm); }
+.cmp-tabs button.active { background: var(--accent); color: var(--text-on-accent); font-weight: 600; }
+.cmp-tabs button:hover:not(.active) { border-color: var(--border-strong); color: var(--text-primary); }
+.cmp-small-multiples > * + * { margin-top: var(--s4); }
+.cmp-notes li { margin: 4px 0; }
+.cmp-prov th[scope="row"] { color: var(--text-muted); font-weight: 600; white-space: nowrap; }
+.cmp-prov td { min-width: 180px; }
+.cmp-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s4); align-items: start; }
+.compare-page .chart-figure { margin: var(--s4) 0 0; min-width: 0; overflow: hidden; background: var(--chart-surface); border: 1px solid var(--border); border-radius: var(--r-md); padding: 12px; }
+.compare-page .recharts-responsive-container { max-width: 100%; }
+@media (max-width: 760px) { .cmp-two-col { grid-template-columns: 1fr; } }
+.cmp-meta { font-size: var(--fs-xs); color: var(--text-secondary); margin-top: 2px; }
+.cmp-meta.muted { color: var(--text-muted); }

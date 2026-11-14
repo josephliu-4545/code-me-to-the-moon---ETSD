@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Explore long-term environmental trends anywhere on Earth using NASA data, with transparent statistics and limitations." />
+    <meta name="theme-color" content="#070D1B" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#F7F4EC" media="(prefers-color-scheme: light)" />
+    <script>
+      // Apply the saved or system theme before first paint (avoids a flash); mirrors src/state/theme.ts.
+      (function () {
+        var t = null;
+        try { t = localStorage.getItem("estd-theme"); } catch (e) {}
+        if (t !== "dark" && t !== "light") t = window.matchMedia && matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+        document.documentElement.dataset.theme = t;
+        document.documentElement.style.colorScheme = t;
+      })();
+    </script>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>Earth System Trend Detective</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

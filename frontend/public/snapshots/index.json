@@ -1,0 +1,78 @@
+{
+ "captured_at": "2026-11-13",
+ "note": "Saved outputs of live NASA retrievals through this application's API. Shown only when the backend is unreachable and clearly labelled; not a fresh query.",
+ "entries": [
+  {
+   "variable": "temperature",
+   "latitude": 16.8661,
+   "longitude": 96.1951,
+   "startYear": 2015,
+   "endYear": 2025,
+   "mode": "point",
+   "file": "yangon-2015-2024-temperature.json",
+   "retrieved_at": "2026-11-13T07:10:02+00:00"
+  },
+  {
+   "variable": "relative_humidity",
+   "latitude": 16.8661,
+   "longitude": 96.1951,
+   "startYear": 2015,
+   "endYear": 2025,
+   "mode": "point",
+   "file": "yangon-2015-2024-relative_humidity.json",
+   "retrieved_at": "2026-11-13T07:11:02+00:00"
+  },
+  {
+   "variable": "extreme_heat",
+   "latitude": 16.8661,
+   "longitude": 96.1951,
+   "startYear": 2015,
+   "endYear": 2025,
+   "mode": "point",
+   "file": "yangon-2015-2024-extreme_heat.json",
+   "retrieved_at": "2026-11-13T07:11:09+00:00"
+  },
+  {
+   "variable": "precipitation",
+   "latitude": 16.8661,
+   "longitude": 96.1951,
+   "startYear": 2015,
+   "endYear": 2025,
+   "mode": "point",
+   "file": "yangon-2015-2024-precipitation.json",
+   "retrieved_at": "2026-11-13T07:11:19+00:00"
+  },
+  {
+   "variable": "ndvi",
+   "latitude": 16.8661,
+   "longitude": 96.1951,
+   "startYear": 2015,
+   "endYear": 2025,
+   "mode": "point",
+   "file": "yangon-2015-2024-ndvi.json",
+   "retrieved_at": "2026-11-13T07:11:24+00:00"
+  },
+  {
+   "variable": "soil_moisture",
+   "latitude": 16.8661,
+   "longitude": 96.1951,
+   "startYear": 2015,
+   "endYear": 2025,
+   "mode": "point",
+   "file": "yangon-2015-2024-soil_moisture-gldas_2_1_noah_0_10cm.json",
+   "retrieved_at": "2026-11-13T07:11:35+00:00",
+   "dataset": "gldas_2_1_noah_0_10cm"
+  },
+  {
+   "variable": "soil_moisture",
+   "latitude": 16.8661,
+   "longitude": 96.1951,
+   "startYear": 2015,
+   "endYear": 2025,
+   "mode": "point",
+   "file": "yangon-2015-2024-soil_moisture-smap_l3e_v006_am.json",
+   "retrieved_at": "2026-11-13T07:11:49+00:00",
+   "dataset": "smap_l3e_v006_am"
+  }
+ ]
+}

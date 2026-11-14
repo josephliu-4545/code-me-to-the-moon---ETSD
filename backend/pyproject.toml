@@ -1,0 +1,7 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "integration: requires live Google Earth Engine credentials and network access",
+    "power_integration: requires live access to the public NASA POWER API",
+]
+
