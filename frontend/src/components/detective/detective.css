@@ -1,0 +1,53 @@
+/* AI Earth Detective — Cosmic Expedition tokens (styles/tokens.css), both themes. */
+.page-detective { background: var(--bg); }
+.dt-body { display: grid; gap: var(--s5); max-width: 920px; }
+.dt-how { border: 1px solid var(--border); border-left: 3px solid var(--accent); background: var(--surface); border-radius: var(--r-md); padding: var(--s3) var(--s4); color: var(--text-secondary); font-size: var(--fs-sm); }
+.dt-how-title { font-family: var(--font-brand); font-size: var(--fs-sm); color: var(--text-primary); margin-bottom: 4px; }
+.dt-active { border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface); padding: var(--s4); display: grid; gap: 6px; }
+.dt-active-line { font-family: var(--font-brand); color: var(--text-primary); overflow-wrap: anywhere; }
+.dt-active-status { color: var(--text-secondary); font-size: var(--fs-sm); }
+.dt-evidence summary, .dt-sources summary, .dt-earlier summary { cursor: pointer; color: var(--text-primary); font-family: var(--font-brand); font-size: var(--fs-sm); }
+.dt-evidence summary:focus-visible, .dt-sources summary:focus-visible, .dt-earlier summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: var(--r-sm); }
+.dt-evidence dl { display: grid; gap: 6px; margin-top: var(--s3); }
+.dt-evidence dl > div { display: grid; grid-template-columns: minmax(120px, 180px) 1fr; gap: var(--s3); font-size: var(--fs-sm); }
+.dt-evidence dt { color: var(--text-muted); }
+.dt-evidence dd { color: var(--text-primary); overflow-wrap: anywhere; }
+.dt-chat { display: grid; gap: var(--s4); }
+.dt-log { display: grid; gap: var(--s4); min-height: 120px; }
+.dt-empty { color: var(--text-muted); }
+.dt-turn { display: grid; }
+.dt-user { justify-self: end; max-width: 85%; background: var(--accent-soft); border: 1px solid var(--accent-line); color: var(--text-primary); border-radius: var(--r-md) var(--r-md) 4px var(--r-md); padding: 10px 14px; overflow-wrap: anywhere; }
+.dt-assistant { max-width: 100%; }
+.dt-answer { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--s4); display: grid; gap: var(--s3); min-width: 0; }
+.dt-answer-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--s2); align-items: baseline; }
+.dt-topic { font-family: var(--font-brand); font-size: var(--fs-md); color: var(--text-primary); }
+.dt-status { font-size: var(--fs-xs); padding: 3px 10px; border-radius: 999px; border: 1px solid var(--border-strong); color: var(--text-secondary); }
+.status-indicative .dt-status { border-color: var(--accent-line); color: var(--accent); }
+.status-needs_analysis .dt-status, .status-not_answerable .dt-status { border-color: var(--warning); color: var(--text-primary); background: var(--warning-soft); }
+.dt-section { display: grid; gap: 4px; }
+.dt-section-title { font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); font-weight: 600; }
+.dt-section p, .dt-section li { color: var(--text-secondary); overflow-wrap: anywhere; }
+.dt-section ul { padding-left: 1.1rem; display: grid; gap: 4px; }
+.dt-finding p, .dt-statistics p { color: var(--text-primary); }
+.dt-background, .dt-hypothesis { border-left: 3px dashed var(--border-strong); padding-left: var(--s3); }
+.dt-notice { border-left: 3px solid var(--warning); padding-left: var(--s3); }
+.dt-sources ul { list-style: none; padding: 0; margin-top: var(--s2); display: grid; gap: 8px; }
+.dt-sources li { display: grid; gap: 2px; font-size: var(--fs-sm); }
+.dt-sources a { color: var(--accent); }
+.dt-source-detail { color: var(--text-muted); overflow-wrap: anywhere; }
+.dt-suggestions { display: flex; flex-wrap: wrap; gap: 8px; }
+.dt-chip { background: var(--surface-sunken); border: 1px solid var(--border-strong); color: var(--text-primary); border-radius: 999px; padding: 8px 14px; font-size: var(--fs-sm); cursor: pointer; min-height: 40px; text-align: left; }
+.dt-chip:hover { border-color: var(--accent); color: var(--accent); }
+.dt-chip:focus-visible, .dt-form input:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.dt-form { display: grid; grid-template-columns: 1fr auto auto; gap: var(--s2); align-items: center; }
+.dt-form input { min-height: 44px; width: 100%; background: var(--surface-sunken); border: 1px solid var(--border-strong); border-radius: var(--r-sm); padding: 0 var(--s3); color: var(--text-primary); font-size: var(--fs-md); }
+.dt-hint { grid-column: 1 / -1; color: var(--text-muted); font-size: var(--fs-xs); }
+.dt-earlier { border-top: 1px solid var(--border); padding-top: var(--s4); }
+.dt-earlier-item { display: grid; gap: var(--s3); margin-top: var(--s4); opacity: 0.85; }
+.dt-earlier-label { font-family: var(--font-brand); font-size: var(--fs-sm); color: var(--warning); }
+@media (max-width: 640px) {
+  .dt-form { grid-template-columns: 1fr 1fr; }
+  .dt-form input { grid-column: 1 / -1; }
+  .dt-user { max-width: 100%; }
+  .dt-evidence dl > div { grid-template-columns: 1fr; gap: 0; }
+}
