@@ -16,6 +16,7 @@ from app.api.routes import unified
 from app.api.scientific_notes import DESCRIPTIVE_SLOPE_NOTE, INFERENCE_CAVEAT, TREND_METHOD
 from app.comparison import engine
 from app.comparison.catalog import CATALOG, NOT_YET_COMPARABLE, DatasetEntry, entries, find, relationship
+from app.comparison.evaluation import evaluate_dataset
 from app.comparison.providers import ComparisonRetrievalError, EEMonthlyProvider, analyze_months, normalise_monthly
 from app.core.earth_engine import EarthEngineError
 from app.core.operation_runner import OperationBusyError, OperationTimeoutError
@@ -186,6 +187,11 @@ async def compare(
                    ee_lock if _uses_earth_engine(e) else None) for e in selected]
     results = await asyncio.gather(*tasks)
     succeeded = [(e, r["analysis"]) for e, r in zip(selected, results) if r["analysis"] is not None]
+    comparison = engine.compare(succeeded) if len(succeeded) >= 2 else None
+    dataset_evaluations = {
+        e.key: evaluate_dataset(e, result["analysis"], start_date, end_date)
+        for e, result in zip(selected, results)
+    }
     return {
         "variable": variable,
         "location": {"latitude": latitude, "longitude": longitude, "mode": mode},
@@ -194,8 +200,17 @@ async def compare(
         "datasets_are_merged": False,
         "results": {e.key: r for e, r in zip(selected, results)},
         "succeeded": [e.key for e, _ in succeeded],
-        "comparison": engine.compare(succeeded) if len(succeeded) >= 2 else None,
+        "comparison": comparison,
         "comparison_unavailable_reason": None if len(succeeded) >= 2 else "fewer than two datasets returned results",
+        "evaluation": {
+            "datasets": dataset_evaluations,
+            "pairs": comparison["pairs"] if comparison else [],
+            "cautions": [
+                "Agreement between products does not establish accuracy, measurement truth, or causation.",
+                "Difference metrics describe product-to-product differences; no selected dataset is an independent validation reference.",
+                "Spatial footprints, native resolution, inputs, and quality-control rules can differ even when units match.",
+            ],
+        },
         "caveats": [
             "Each dataset is analysed independently with its own quality rules; datasets are never merged, averaged or gap-filled.",
             "Agreement does not prove accuracy, and no dataset is treated as ground truth.",
