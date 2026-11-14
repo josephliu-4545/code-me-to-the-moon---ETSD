@@ -151,7 +151,7 @@ def test_region_with_low_coverage_month_makes_year_ineligible() -> None:
         ({"east": 102.0}, "at most 5"),
         ({"east": 96.05}, "at least 0.1"),
         ({"start_date": "2025-01-01"}, "before"),
-        ({"start_date": "2005-01-01"}, "exceeds"),
+        ({"start_date": "1990-01-01"}, "exceeds"),
     ],
 )
 def test_region_route_validation(patch, fragment) -> None:

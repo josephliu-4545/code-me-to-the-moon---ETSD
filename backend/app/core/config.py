@@ -18,8 +18,12 @@ class Settings(BaseSettings):
     ee_service_account_key_file: str | None = None
     ee_max_concurrent_operations: int = Field(default=2, ge=1, le=16)
     ee_request_timeout_seconds: float = Field(default=60.0, gt=0)
+    # Seconds a request waits for a free Earth Engine / NASA POWER slot before 503 "busy".
+    operation_queue_timeout_seconds: float = Field(default=20.0, ge=0)
     ndvi_max_radius_km: float = Field(default=100.0, gt=0)
     ndvi_max_date_range_years: int = Field(default=10, ge=1)
+    # Trend requests are fetched one calendar year at a time, so they can span the whole MODIS record.
+    ndvi_trend_max_date_range_years: int = Field(default=30, ge=1)
     annual_min_represented_months: int = Field(default=9, ge=1, le=12)
     annual_min_valid_coverage: float = Field(default=0.70, ge=0, le=1)
     annual_require_all_quarters: bool = True
@@ -48,7 +52,8 @@ class Settings(BaseSettings):
     heat_maximum_missing_days_per_year: int = Field(default=15, ge=0)
     heat_maximum_missing_days_per_month: int = Field(default=3, ge=0)
     heat_reference_cache_max_entries: int = Field(default=16, ge=1, le=256)
-    precipitation_max_date_range_years: int = Field(default=10, ge=1)
+    # Point and region requests are fetched in precipitation_window_years windows; 25 years took 6-13 s live.
+    precipitation_max_date_range_years: int = Field(default=30, ge=1)
     precipitation_window_years: int = Field(default=5, ge=1, le=10)
     precipitation_min_valid_months: int = Field(default=12, ge=1, le=12)
     precipitation_cache_max_entries: int = Field(default=32, ge=1, le=256)

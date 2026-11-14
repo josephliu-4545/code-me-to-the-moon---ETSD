@@ -64,3 +64,8 @@ export function decadeUnits(slopeUnits: string | null): string {
   if (slopeUnits.endsWith("/year²")) return slopeUnits.replace("/year²", "/year per decade");
   return slopeUnits.replace(/\/year$/, "/decade");
 }
+
+/** "p = 0.031" or "p < 0.0001", so a tiny p-value never reads as exactly zero. */
+export function pText(p: number): string {
+  return p < 1e-4 ? "p < 0.0001" : `p = ${fmt(p, 3)}`;
+}

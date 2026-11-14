@@ -12,8 +12,9 @@ import Disclosure from "../components/ui/Disclosure";
 import EmptyState from "../components/ui/EmptyState";
 import PageHero from "../components/ui/PageHero";
 import VariableGlyph from "../components/ui/VariableGlyph";
-import { fmt, fmtCoord, reasonLabel, signed } from "../lib/format";
-import { intervalReading, monthCompleteness, periodLabel, trendVerdict } from "../lib/verdict";
+import { fmt, fmtCoord, pText, reasonLabel, signed } from "../lib/format";
+import { stepWarning } from "../lib/summary";
+import { intervalReading, isSeasonal, monthCompleteness, monthsUsed, periodLabel, slopeName, testName, trendVerdict } from "../lib/verdict";
 import { useAnalysis } from "../state/useAnalysis";
 
 /** Years sharing the same exclusion reasons are listed together, so repeated reasons do not dominate the page. */
@@ -154,6 +155,8 @@ export default function EvaluationPage({ submitted }: { submitted: AnalysisReque
   if (!a) return null;
   const t = a.trend;
   const sd = t?.serial_dependence;
+  const seasonal = isSeasonal(a);
+  const step = stepWarning(a);
   const verdict = trendVerdict(a);
   const { valid: months, expected: expectedMonths } = monthCompleteness(a);
   const excluded = a.annual.filter((y) => !y.eligible);
@@ -195,7 +198,7 @@ export default function EvaluationPage({ submitted }: { submitted: AnalysisReque
             <p className="section-lede">A year counts only if it meets the completeness rules for this variable — for example enough valid months spread across the year. Excluded years stay visible as context but never influence the slope.</p>
           </div>
           <div className="gauges">
-            <Gauge label="Eligible years" value={a.coverage.eligible_years} total={a.coverage.years_requested} hint="Years meeting the completeness rules used for the trend." />
+            <Gauge label="Eligible years" value={a.coverage.eligible_years} total={a.coverage.years_requested} hint={seasonal ? `Not used for this trend: it compares monthly values (${t?.sample_count ?? 0} from ${monthsUsed(a) || "no qualifying month"}) instead of complete years.` : "Years meeting the completeness rules used for the trend."} />
             {expectedMonths > 0 && <Gauge label="Months with valid data" value={months} total={expectedMonths} hint="Across all requested years; missing months are never filled." />}
           </div>
           <div className="strip-large">
@@ -235,11 +238,11 @@ export default function EvaluationPage({ submitted }: { submitted: AnalysisReque
           <div className="lab-section-head">
             <p className="kicker">03 · Uncertainty</p>
             <h2 id="unc-h" className="section-title">How sure is the slope?</h2>
-            <p className="section-lede">The Theil–Sen slope with its 95% interval, on a ruler centred on zero change.</p>
+            <p className="section-lede">The {slopeName(a)} with its 95% interval, on a ruler centred on zero change.</p>
           </div>
           <div className="uncertainty">
             <div className="unc-figure">
-              <span className="figure-label">Theil–Sen slope</span>
+              <span className="figure-label">{slopeName(a)}</span>
               {t?.slope != null ? (
                 <>
                   <span className="figure-value mono">{signed(t.slope, 4)}</span>
@@ -255,12 +258,15 @@ export default function EvaluationPage({ submitted }: { submitted: AnalysisReque
             <dt>Result level</dt><dd>{t?.result_level_label ?? "—"}</dd>
             <dt>Slope</dt><dd>{a.methodology.trend_method.slope}</dd>
             <dt>Confidence interval</dt><dd>{t?.confidence_interval ? <span className="mono">{signed(t.confidence_interval[0], 4)} to {signed(t.confidence_interval[1], 4)} {t.slope_units}</span> : t?.confidence_interval_unavailable_reason ?? "Not reported"}</dd>
-            <dt>Significance</dt><dd>{t?.mann_kendall ? <span className="mono">Mann–Kendall S = {t.mann_kendall.s}, τ = {fmt(t.mann_kendall.tau, 3)}, p = {fmt(t.mann_kendall.p_value, 4)}</span> : t?.significance_unavailable_reason ?? "Not reported"}</dd>
-            <dt>Dependence screen</dt><dd>{a.methodology.trend_method.serial_dependence_screen}</dd>
+            <dt>Significance</dt><dd>{t?.mann_kendall ? <span className="mono">{testName(a)} S = {t.mann_kendall.s}, τ = {fmt(t.mann_kendall.tau, 3)}, {pText(t.mann_kendall.p_value)}</span> : t?.significance_unavailable_reason ?? "Not reported"}</dd>
+            <dt>Dependence screen</dt><dd>{a.methodology.trend_method.serial_dependence_screen ?? a.methodology.trend_method.not_applied ?? "Not reported"}</dd>
             {sd && (<><dt>Lag-1 residual correlation</dt><dd><span className="mono">{sd.lag1_spearman_rho === null ? "—" : fmt(sd.lag1_spearman_rho, 2)}</span> · {sd.status.replace(/_/g, " ")}. {sd.unavailable_reason ?? ""}</dd></>)}
           </dl>
           {intervalReading(a) && <p className="plain">{intervalReading(a)}</p>}
-          <p className="plain">Only one trend method (Theil–Sen with a screened Mann–Kendall test) is computed by the analysis service; comparisons with other methods are not available, so this page cannot show whether another method would change the interpretation.</p>
+          {step && <p className="step-warning" role="note"><strong>Sudden step in the record.</strong> {step}</p>}
+          <p className="plain">{seasonal
+            ? "This variable uses the Seasonal Kendall test on monthly values: cloud or data gaps leave too few complete years for the annual method (Theil–Sen with a screened Mann–Kendall test) used for the other variables. Comparisons between the two methods are not available here."
+            : "Only one trend method (Theil–Sen with a screened Mann–Kendall test) is computed for this variable; comparisons with other methods are not available, so this page cannot show whether another method would change the interpretation."}</p>
           {a.caveats[0] && <p className="caveat">{a.caveats[0]}</p>}
           {a.caveats[1] && <p className="note">{a.caveats[1]}</p>}
         </section>

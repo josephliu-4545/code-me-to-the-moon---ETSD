@@ -6,7 +6,7 @@ import type { Analysis, VariableInfo } from "./api/types";
 import { validateSelection, yearLimits } from "./components/AnalysisControls";
 import { buildRows } from "./components/TrendChart";
 import { decadeUnits, fmt, reasonLabel, signed } from "./lib/format";
-import { summarize } from "./lib/summary";
+import { stepWarning, summarize } from "./lib/summary";
 import { DEFAULT_SELECTION, parseSelection, serializeSelection, toRequest } from "./state/selection";
 
 vi.mock("./components/MapView", () => ({
@@ -118,6 +118,32 @@ describe("summary and chart rows", () => {
     expect(r2018.eligible).toBeNull();
     expect(r2018.excluded).not.toBeNull();
     expect(rows[0]!.trend).toBeCloseTo(-73.75 + 0.05 * 2015);
+  });
+});
+
+describe("step check", () => {
+  it("warns only when a sudden step was detected", () => {
+    expect(stepWarning(analysis())).toBeNull();
+    const base = analysis();
+    const stepped = analysis({ trend: { ...base.trend!, change_point: { status: "step_detected", last_year_before: 2007, first_year_after: 2008, shift: -1.33 } } });
+    expect(stepWarning(stepped)).toContain("between 2007 and 2008 (−1.33 °C)");
+    const none = analysis({ trend: { ...base.trend!, change_point: { status: "none" } } });
+    expect(stepWarning(none)).toBeNull();
+  });
+});
+
+describe("seasonal NDVI", () => {
+  it("describes the monthly method instead of eligible years", () => {
+    const base = analysis();
+    const ndvi = analysis({
+      coverage: { years_requested: 10, eligible_years: 0, excluded_years: [] },
+      trend: { ...base.trend!, method: "seasonal_kendall", months_used: [1, 2, 3, 4, 11, 12], sample_count: 60, slope: 0.0063, slope_units: "NDVI units/year" },
+    });
+    const text = summarize(ndvi).join(" ");
+    expect(text).toContain("60 monthly values from Jan, Feb, Mar, Apr, Nov, Dec");
+    expect(text).toContain("Seasonal Kendall test");
+    expect(text).not.toContain("excluded from the trend");
+    expect(text).not.toContain("Mann–Kendall");
   });
 });
 

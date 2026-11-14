@@ -26,3 +26,19 @@ TREND_METHOD = {
     "inference_caveat": INFERENCE_CAVEAT,
     "descriptive_slope_note": DESCRIPTIVE_SLOPE_NOTE,
 }
+
+SEASONAL_DESCRIPTIVE_SLOPE_NOTE = (
+    "The seasonal Sen slope is a robust descriptive rate of change, from monthly values in the "
+    "months the trend uses only. It is not a forecast and does not identify a cause."
+)
+
+SEASONAL_TREND_METHOD = {
+    "slope": "seasonal Sen slope: median of within-month pairwise slopes, divided by the real year gap (Hirsch, Slack & Smith 1982)",
+    "significance": "two-sided Seasonal Kendall test: Mann-Kendall S and tie-corrected variance summed over calendar months",
+    "months": "a calendar month is used only if it has values in at least 70% of the requested years",
+    "why": "cloud-masked months (for example the monsoon) rarely leave complete years for the annual method; "
+           "comparing each month only with the same month in other years needs no complete years",
+    "confidence_interval": "rank-based 95% interval for the seasonal Sen slope, reported only when inference is supported",
+    "not_applied": "Hirsch-Slack correction for correlation between adjacent months; the p-value may be optimistic",
+    "descriptive_slope_note": SEASONAL_DESCRIPTIVE_SLOPE_NOTE,
+}

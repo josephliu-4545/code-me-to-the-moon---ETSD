@@ -85,8 +85,11 @@ async def _analyse(request: Request, e: DatasetEntry, lat: float, lon: float, st
     def run():
         result = provider.fetch(e, lat, lon, start, end)
         summaries, trend = analyze_months(e, list(result.months))
-        return normalise_monthly(e, result, summaries, trend, lat, lon, start, end, unified._trend,
-                                 [INFERENCE_CAVEAT, DESCRIPTIVE_SLOPE_NOTE], TREND_METHOD)
+        payload = normalise_monthly(e, result, summaries, trend, lat, lon, start, end, unified._trend,
+                                    [INFERENCE_CAVEAT, DESCRIPTIVE_SLOPE_NOTE], TREND_METHOD)
+        if payload["trend"] is not None:
+            unified.add_change_point(payload["trend"], payload["annual"])
+        return payload
 
     return await request.app.state.operation_runner.run(run, timeout_seconds=settings.soil_moisture_request_timeout_seconds)
 

@@ -1,5 +1,17 @@
 import type { Analysis } from "../api/types";
 
+const MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/**
+ * NDVI trends come from monthly means compared month by month (Seasonal Kendall), because
+ * cloud gaps leave too few complete years for the annual method used by other variables.
+ */
+export const isSeasonal = (a: Analysis): boolean => a.trend?.method === "seasonal_kendall";
+export const testName = (a: Analysis): string => (isSeasonal(a) ? "Seasonal Kendall" : "Mann–Kendall");
+export const slopeName = (a: Analysis): string => (isSeasonal(a) ? "Seasonal Sen slope" : "Theil–Sen slope");
+/** Calendar months the seasonal trend used, e.g. "Jan, Feb, Nov, Dec". */
+export const monthsUsed = (a: Analysis): string => (a.trend?.months_used ?? []).map((m) => MONTH_ABBR[m - 1]).join(", ");
+
 /**
  * Translates the backend's trend result into a cautious headline.
  * It never upgrades a result: a non-significant test is "no trend detected"
@@ -24,7 +36,9 @@ export function trendVerdict(a: Analysis): Verdict {
       kind: "unavailable",
       label: "Trend unavailable",
       inference: "Trend unavailable",
-      note: "Too few eligible years (or no valid values) to estimate a slope. Annual values are shown descriptively where they exist.",
+      note: isSeasonal(a)
+        ? "Too few calendar months have data in enough years to estimate a slope. Monthly and annual values are shown descriptively."
+        : "Too few eligible years (or no valid values) to estimate a slope. Annual values are shown descriptively where they exist.",
     };
   }
   if (t.result_level === "statistical_inference" && t.mann_kendall) {
@@ -34,7 +48,9 @@ export function trendVerdict(a: Analysis): Verdict {
         kind: up ? "increasing" : "decreasing",
         label: up ? "Indicative increase" : "Indicative decrease",
         inference: "Significant*",
-        note: "Mann–Kendall rejects “no monotonic trend”. Indicative only: autocorrelated years can inflate false positives.",
+        note: isSeasonal(a)
+          ? "Seasonal Kendall rejects “no monotonic trend”. Indicative only: correlation between neighbouring months is not corrected for, so the p-value may be too small."
+          : "Mann–Kendall rejects “no monotonic trend”. Indicative only: autocorrelated years can inflate false positives.",
       };
     }
     return {

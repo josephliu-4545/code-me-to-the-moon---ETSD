@@ -34,8 +34,10 @@ GET http://127.0.0.1:8000/api/v1/ndvi?latitude=16.8661&longitude=96.1951&start_d
 GET http://127.0.0.1:8000/api/v1/ndvi/trend?latitude=16.8661&longitude=96.1951&start_date=2015-01-01&end_date=2025-01-01&radius_km=5
 ```
 
-The end date is exclusive. Date ranges are limited to 10 years and radii to
-100 km by default.
+The end date is exclusive. Raw NDVI observations (`/api/v1/ndvi`) are limited to
+10 years; NDVI trends (fetched one calendar year at a time) and precipitation
+are limited to 30 years (`NDVI_TREND_MAX_DATE_RANGE_YEARS`,
+`PRECIPITATION_MAX_DATE_RANGE_YEARS`). Radii are limited to 100 km by default.
 
 ## Annual summaries and trends
 

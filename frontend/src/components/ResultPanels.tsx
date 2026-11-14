@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import AccessKeyForm from "./AccessKeyForm";
 import type { Analysis } from "../api/types";
 import { ApiError, isUnreachable } from "../api/types";
-import { dataStatusLabel, decadeUnits, fmt, fmtCoord, perDecade, signed } from "../lib/format";
-import { summarize } from "../lib/summary";
-import { discoveryHeadline, inSentence, fittedChange, intervalReading, monthCompleteness, periodLabel, trendVerdict } from "../lib/verdict";
+import { dataStatusLabel, decadeUnits, fmt, fmtCoord, perDecade, pText, signed } from "../lib/format";
+import { stepWarning, summarize } from "../lib/summary";
+import { discoveryHeadline, inSentence, fittedChange, intervalReading, isSeasonal, monthCompleteness, monthsUsed, periodLabel, slopeName, testName, trendVerdict } from "../lib/verdict";
 import CiRuler from "./science/CiRuler";
 import YearStrip from "./science/YearStrip";
 import Disclosure from "./ui/Disclosure";
@@ -42,6 +42,8 @@ export function ResultSummary({ analysis, place }: { analysis: Analysis; place?:
   const slopeUnits = t?.slope_units ?? analysis.units.slope;
   const s = analysis.spatial_support;
   const sd = t?.serial_dependence;
+  const step = stepWarning(analysis);
+  const seasonal = isSeasonal(analysis);
   return (
     <section className="discovery" aria-labelledby="finding-title">
       <header className="discovery-head">
@@ -62,6 +64,7 @@ export function ResultSummary({ analysis, place }: { analysis: Analysis; place?:
           <span className={`verdict-pill verdict-${verdict.kind}`}><span className="verdict-mark" aria-hidden />{verdict.label}</span>
           <p className="finding-note">{verdict.note}</p>
         </div>
+        {step && <p className="step-warning" role="note"><strong>Sudden step in the record.</strong> {step}</p>}
         <p className="support-note">
           Values describe a {inSentence(s.description)} ({s.resolution}), not the exact point. Source: {analysis.dataset.source} · {analysis.dataset.title ?? analysis.dataset.id}.
         </p>
@@ -71,7 +74,7 @@ export function ResultSummary({ analysis, place }: { analysis: Analysis; place?:
         <Layer n={2} title="How much did it change?" className="layer-change">
           <div className="change-grid">
             <div className="change-main">
-              <span className="figure-label">Theil–Sen slope</span>
+              <span className="figure-label">{slopeName(analysis)}</span>
               <span className="figure-value mono">{t?.slope != null ? signed(t.slope, 4) : "—"}</span>
               <span className="figure-unit">{t?.slope != null ? slopeUnits : "No slope estimated"}</span>
             </div>
@@ -99,7 +102,7 @@ export function ResultSummary({ analysis, place }: { analysis: Analysis; place?:
               <dt>Inference</dt>
               <dd>
                 <span className={`ev-value level-${verdict.kind}`}>{verdict.inference}</span>
-                <span className="ev-unit">{t?.mann_kendall ? `Mann–Kendall p = ${fmt(t.mann_kendall.p_value, 3)} (α = ${t.mann_kendall.alpha})` : t?.result_level_label ?? ""}</span>
+                <span className="ev-unit">{t?.mann_kendall ? `${testName(analysis)} ${pText(t.mann_kendall.p_value)} (α = ${t.mann_kendall.alpha})` : t?.result_level_label ?? ""}</span>
               </dd>
             </div>
             <div className="ev">
@@ -114,14 +117,24 @@ export function ResultSummary({ analysis, place }: { analysis: Analysis; place?:
                 {t?.slope != null && t.confidence_interval && <CiRuler slope={t.slope} ci={t.confidence_interval} units={slopeUnits} compact />}
               </dd>
             </div>
-            <div className="ev">
-              <dt>Eligible years</dt>
-              <dd>
-                <span className="ev-value mono">{analysis.coverage.eligible_years}/{analysis.coverage.years_requested}</span>
-                <span className="ev-unit">complete-data years</span>
-                <YearStrip annual={analysis.annual} units={analysis.units.annual_value} />
-              </dd>
-            </div>
+            {seasonal ? (
+              <div className="ev">
+                <dt>Monthly values used</dt>
+                <dd>
+                  <span className="ev-value mono">{t?.sample_count ?? 0}</span>
+                  <span className="ev-unit">{monthsUsed(analysis) || "no calendar month qualified"}</span>
+                </dd>
+              </div>
+            ) : (
+              <div className="ev">
+                <dt>Eligible years</dt>
+                <dd>
+                  <span className="ev-value mono">{analysis.coverage.eligible_years}/{analysis.coverage.years_requested}</span>
+                  <span className="ev-unit">complete-data years</span>
+                  <YearStrip annual={analysis.annual} units={analysis.units.annual_value} />
+                </dd>
+              </div>
+            )}
             {months.expected > 0 ? (
               <div className="ev">
                 <dt>Monthly completeness</dt>
@@ -165,7 +178,10 @@ export function Cautions({ analysis }: { analysis: Analysis }) {
   if (v.kind === "unavailable") items.push({ title: "Absence of a result is not absence of change.", body: "Too few years met the completeness rules to estimate a slope. Annual values remain visible as description." });
   items.push({ title: "This is an area, not an address.", body: `Values represent a ${inSentence(s.description)} (${s.resolution}). Local conditions at a specific site can differ.` });
   items.push({ title: "Know what kind of data this is.", body: `${analysis.dataset.source}: ${analysis.dataset.provenance.replace(/_/g, " ")}. Model estimates and satellite retrievals are not ground-station measurements.` });
-  if (excluded > 0) items.push({ title: "Not every year counted.", body: `${excluded} of ${analysis.coverage.years_requested} requested years were excluded by the completeness rules and are shown only as context.` });
+  const step = stepWarning(analysis);
+  if (step) items.push({ title: "A sudden step is not a gradual trend.", body: step });
+  if (isSeasonal(analysis) && analysis.trend?.slope != null) items.push({ title: "Only some months are used.", body: `The trend compares ${monthsUsed(analysis)} with the same months in other years. The other months had too little usable data, so the result says nothing about them.` });
+  if (excluded > 0 && !isSeasonal(analysis)) items.push({ title: "Not every year counted.", body: `${excluded} of ${analysis.coverage.years_requested} requested years were excluded by the completeness rules and are shown only as context.` });
   return (
     <section className="cautions" aria-labelledby="layer-5">
       <h3 id="layer-5" className="layer-title"><span className="layer-num" aria-hidden>05</span>What should you not conclude?</h3>

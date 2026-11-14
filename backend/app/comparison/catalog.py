@@ -144,7 +144,7 @@ _PRECIPITATION = (
         limitations=("Satellite–gauge estimate for a 0.1° cell, not a gauge reading.",),
         citation="Huffman, G. J. et al., GPM IMERG Final Precipitation L3 1 month 0.1 degree V07, GES DISC",
         doi="10.5067/GPM/IMERG/3B-MONTH/07", license="NASA open data policy", comparable_quantity="precipitation_total",
-        is_primary=True, modes=("point", "region"), v1_variable="precipitation", annual_rule="sum", max_years=10,
+        is_primary=True, modes=("point", "region"), v1_variable="precipitation", annual_rule="sum", max_years=30,
     ),
     DatasetEntry(
         key="chirps_v2_daily", variable="precipitation", name="CHIRPS daily precipitation",

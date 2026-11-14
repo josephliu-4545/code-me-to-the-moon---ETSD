@@ -58,3 +58,49 @@ async def test_timeout_retains_capacity_until_worker_finishes() -> None:
         release.set()
         runner.shutdown()
 
+
+
+@pytest.mark.anyio
+async def test_queued_request_waits_for_a_freed_slot() -> None:
+    import asyncio
+
+    release = Event()
+    runner = BoundedOperationRunner(max_concurrent=1, queue_timeout_seconds=2)
+    try:
+        first = asyncio.ensure_future(runner.run(lambda: release.wait(timeout=2) and "first", timeout_seconds=3))
+        await asyncio.sleep(0.05)
+        second = asyncio.ensure_future(runner.run(lambda: "second", timeout_seconds=3))
+        await asyncio.sleep(0.2)
+        assert not second.done()  # waiting in the queue, not rejected
+        release.set()
+        assert await first == "first"
+        assert await second == "second"
+    finally:
+        release.set()
+        runner.shutdown()
+
+
+@pytest.mark.anyio
+async def test_queued_request_gives_up_after_queue_timeout() -> None:
+    import asyncio
+    import time
+
+    release = Event()
+    runner = BoundedOperationRunner(max_concurrent=1, queue_timeout_seconds=0.3)
+    try:
+        first = asyncio.ensure_future(runner.run(lambda: release.wait(timeout=2), timeout_seconds=3))
+        await asyncio.sleep(0.05)
+        started = time.monotonic()
+        with pytest.raises(OperationBusyError):
+            await runner.run(lambda: "late", timeout_seconds=3)
+        assert 0.25 <= time.monotonic() - started < 1.5
+        release.set()
+        await first
+    finally:
+        release.set()
+        runner.shutdown()
+
+
+def test_negative_queue_timeout_is_rejected() -> None:
+    with pytest.raises(ValueError):
+        BoundedOperationRunner(max_concurrent=1, queue_timeout_seconds=-1)

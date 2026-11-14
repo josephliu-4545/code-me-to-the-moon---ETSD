@@ -37,7 +37,7 @@ const STEPS: { title: string; body: React.ReactNode }[] = [
   { title: "Quality-screen", body: <>each observation using the product’s own quality information. Missing values stay missing: they are never set to zero or interpolated, and never filled from another dataset or version.</> },
   { title: "Summarise each year", body: <>with variable-specific rules, such as monthly means for temperature or twelve monthly accumulations for precipitation. Years that fail completeness rules are shown but excluded from the trend.</> },
   { title: "Estimate the slope", body: <>with Theil–Sen (the median of all pairwise slopes), which is robust to outliers. At least 3 eligible years are required.</> },
-  { title: "Test significance", body: <>with a two-sided Mann–Kendall test, only with at least 8 eligible years and after a lag-1 serial-dependence screen. Otherwise the slope is reported as descriptive only.</> },
+  { title: "Test significance", body: <>with a two-sided Mann–Kendall test, only with at least 8 eligible years and after a lag-1 serial-dependence screen. Otherwise the slope is reported as descriptive only. NDVI is the exception: cloud gaps leave few complete years, so each month is compared only with the same month in other years (seasonal Sen slope and Seasonal Kendall test).</> },
 ];
 
 function jump(e: React.MouseEvent<HTMLAnchorElement>, id: string) {
@@ -143,6 +143,7 @@ export default function SciencePage({ variables, caveats }: { variables: Variabl
               <li><strong>An honest interval.</strong> The 95% interval shows the range of slopes consistent with the data. If it includes zero, no change is also consistent with the data.</li>
               <li><strong>Independence between years.</strong> A lag-1 serial-dependence screen runs before any significance test; strongly autocorrelated records are reported descriptively.</li>
               <li><strong>“No trend detected” is not “unchanged”.</strong> A non-significant test means the data are consistent with no monotonic trend; it is not proof of no change. When too few years qualify, the result is “trend unavailable”.</li>
+              <li><strong>Sudden steps are flagged.</strong> A Pettitt test checks the yearly values for a single jump that stays at the new level, and reports it only when two flat levels fit better than a straight line. Such a step often means a change in the data source, so a slope across it should not be read as gradual change.</li>
               <li><strong>Missing data stay missing.</strong> Charts leave gaps for missing or unusable months instead of drawing lines across them.</li>
             </ul>
           </section>

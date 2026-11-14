@@ -34,7 +34,7 @@ async def get_ndvi_trend(
 ) -> NDVITrendResponse:
     if start_date >= end_date:
         raise HTTPException(status_code=422, detail="start_date must be before end_date")
-    if end_date > _latest_allowed_end(start_date, settings.ndvi_max_date_range_years):
+    if end_date > _latest_allowed_end(start_date, settings.ndvi_trend_max_date_range_years):
         raise HTTPException(status_code=422, detail="date range exceeds maximum")
     if radius_km > settings.ndvi_max_radius_km:
         raise HTTPException(status_code=422, detail="radius_km exceeds maximum")

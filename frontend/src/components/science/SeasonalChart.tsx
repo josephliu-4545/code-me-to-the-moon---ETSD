@@ -2,6 +2,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import type { Analysis } from "../../api/types";
 import { fmt } from "../../lib/format";
 import { calendarSeries, seasonalCycle, type SeasonalPoint } from "../../lib/series";
+import { isSeasonal, monthsUsed } from "../../lib/verdict";
 import Disclosure from "../ui/Disclosure";
 import { CHART, tickStyle } from "./chartTheme";
 
@@ -50,7 +51,10 @@ export default function SeasonalChart({ analysis }: { analysis: Analysis }) {
         </ResponsiveContainer>
       </div>
       <figcaption className="chart-caption">
-        Descriptive context only; not used in the trend test. Each bar averages {minN === maxN ? `${minN}` : `${minN}–${maxN}`} valid months. Months without valid data have no bar.
+        {isSeasonal(analysis) && analysis.trend?.slope != null
+          ? `The trend test uses these monthly values, comparing each of ${monthsUsed(analysis)} only with the same month in other years. `
+          : "Descriptive context only; not used in the trend test. "}
+        Each bar averages {minN === maxN ? `${minN}` : `${minN}–${maxN}`} valid months. Months without valid data have no bar.
       </figcaption>
       <Disclosure summary="Seasonal data table" meta="12 months" className="chart-table">
         <div className="table-wrap">

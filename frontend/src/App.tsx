@@ -24,7 +24,6 @@ const TABS = [
 type Tab = Exclude<(typeof TABS)[number]["id"], "living">;
 const ROUTES: Tab[] = ["explore", "evaluation", "compare", "relationships", "science"];
 
-
 function currentTab(): Tab {
   const h = window.location.hash.replace("#", "") as Tab;
   return ROUTES.includes(h) ? h : "explore";

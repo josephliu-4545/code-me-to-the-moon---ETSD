@@ -46,7 +46,7 @@ async def test_precipitation_validation_and_no_radius_contract() -> None:
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
         invalid = await client.get("/api/v1/precipitation", params={"latitude": 0, "longitude": 0, "start_date": "2021-01-01", "end_date": "2020-01-01"})
-        too_long = await client.get("/api/v1/precipitation", params={"latitude": 0, "longitude": 0, "start_date": "2000-01-01", "end_date": "2020-01-01"})
+        too_long = await client.get("/api/v1/precipitation", params={"latitude": 0, "longitude": 0, "start_date": "2000-01-01", "end_date": "2040-01-01"})
     assert invalid.status_code == 422
     assert too_long.status_code == 422
     parameters = app.openapi()["paths"]["/api/v1/precipitation"]["get"]["parameters"]

@@ -265,6 +265,8 @@ def test_non_comparable_quantities_are_not_differenced() -> None:
 def test_agreement_levels() -> None:
     assert agreement_summary([])["level"] == "not_assessable"
     assert agreement_summary([{"slope_sign_agreement": True, "spearman_rho": 0.9}])["level"] == "consistent"
+    weak = agreement_summary([{"slope_sign_agreement": True, "spearman_rho": 0.49}])
+    assert weak["level"] == "same_direction_weak_covariation" and "agree" in weak["explanation"]
     assert agreement_summary([{"slope_sign_agreement": False, "spearman_rho": 0.9}])["level"] == "conflicting_trend_direction"
     assert agreement_summary([{"slope_sign_agreement": True, "spearman_rho": 0.9},
                               {"slope_sign_agreement": False, "spearman_rho": 0.3}])["level"] == "mixed"

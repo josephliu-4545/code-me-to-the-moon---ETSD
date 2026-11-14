@@ -24,6 +24,7 @@ from app.core.operation_runner import (
     OperationTimeoutError,
 )
 from app.services.modis_service import ModisService
+from app.services.ndvi_chunked import YearChunkedNDVIProvider
 from app.services.ndvi_trend_service import NDVITrendService
 from app.power.client import PowerClient
 from app.services.relative_humidity_service import RelativeHumidityPolicy, RelativeHumidityService
@@ -58,10 +59,11 @@ def create_app(
     )
     resolved_service = modis_service or ModisService(resolved_manager)
     resolved_runner = operation_runner or BoundedOperationRunner(
-        resolved_settings.ee_max_concurrent_operations
+        resolved_settings.ee_max_concurrent_operations,
+        queue_timeout_seconds=resolved_settings.operation_queue_timeout_seconds,
     )
     resolved_trend_service = ndvi_trend_service or NDVITrendService(
-        resolved_service, resolved_settings
+        YearChunkedNDVIProvider(resolved_service), resolved_settings
     )
     resolved_power_service = relative_humidity_service or RelativeHumidityService(
         PowerClient(
@@ -78,6 +80,7 @@ def create_app(
         resolved_settings.power_max_concurrent_operations,
         operation_name="NASA POWER",
         thread_name_prefix="nasa-power",
+        queue_timeout_seconds=resolved_settings.operation_queue_timeout_seconds,
     )
     resolved_temperature_service = temperature_service or TemperatureService(PowerClient(base_url=resolved_settings.power_base_url,timeout_seconds=resolved_settings.power_http_timeout_seconds,window_years=resolved_settings.power_window_years))
     resolved_extreme_heat_service = extreme_heat_service or ExtremeHeatService(

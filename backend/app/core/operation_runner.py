@@ -22,9 +22,15 @@ class BoundedOperationRunner:
         max_concurrent: int,
         operation_name: str = "Earth Engine",
         thread_name_prefix: str = "earth-engine",
+        queue_timeout_seconds: float = 0.0,
     ) -> None:
+        """`queue_timeout_seconds`: how long a request waits for a free slot before
+        OperationBusyError (0 = reject immediately when all slots are busy)."""
         if max_concurrent < 1:
             raise ValueError("max_concurrent must be positive")
+        if queue_timeout_seconds < 0:
+            raise ValueError("queue_timeout_seconds must not be negative")
+        self._queue_timeout_seconds = queue_timeout_seconds
         self._capacity = BoundedSemaphore(max_concurrent)
         self._operation_name = operation_name
         self._executor = ThreadPoolExecutor(
@@ -41,7 +47,7 @@ class BoundedOperationRunner:
         operation: Callable[[], ResultT],
         timeout_seconds: float,
     ) -> ResultT:
-        if not self._capacity.acquire(blocking=False):
+        if not await self._acquire_slot():
             raise OperationBusyError(f"{self._operation_name} operation capacity is exhausted")
 
         self._mark_started()
@@ -62,6 +68,17 @@ class BoundedOperationRunner:
                 )
             await asyncio.sleep(min(0.01, remaining))
         return future.result()
+
+    async def _acquire_slot(self) -> bool:
+        # shortcut: polling, so waiting requests are not served strictly first-come-first-served;
+        # use an asyncio queue if fairness matters under heavy load.
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + self._queue_timeout_seconds
+        while not self._capacity.acquire(blocking=False):
+            if loop.time() >= deadline:
+                return False
+            await asyncio.sleep(0.05)
+        return True
 
     def _mark_started(self) -> None:
         with self._active_lock:

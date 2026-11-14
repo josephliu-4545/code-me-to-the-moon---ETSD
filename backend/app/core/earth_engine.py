@@ -1,5 +1,7 @@
 from enum import StrEnum
-from threading import Lock
+import socket
+from threading import Event, Lock, Thread
+import time
 from types import ModuleType
 from typing import Protocol
 
@@ -33,12 +35,23 @@ class EarthEngineManager:
         self,
         project_id: str | None,
         ee_module: EarthEngineModule | ModuleType = ee,
+        network_timeout_seconds: float = 30.0,
+        retry_after_seconds: float = 60.0,
+        startup_timeout_seconds: float = 45.0,
+        request_deadline_seconds: float = 180.0,
+        clock=time.monotonic,
     ) -> None:
         self._project_id = project_id
         self.ee = ee_module
         self._status = EarthEngineStatus.UNINITIALIZED
         self._error: EarthEngineError | None = None
         self._lock = Lock()
+        self._network_timeout_seconds = network_timeout_seconds
+        self._retry_after_seconds = retry_after_seconds
+        self._startup_timeout_seconds = startup_timeout_seconds
+        self._request_deadline_seconds = request_deadline_seconds
+        self._clock = clock
+        self._failed_at = 0.0
 
     @property
     def status(self) -> EarthEngineStatus:
@@ -53,7 +66,10 @@ class EarthEngineManager:
                 return
             if self._status is EarthEngineStatus.FAILED:
                 assert self._error is not None
-                raise self._error
+                # A missing project never fixes itself; a network failure may, so retry after a pause.
+                if (isinstance(self._error, EarthEngineConfigurationError)
+                        or self._clock() - self._failed_at < self._retry_after_seconds):
+                    raise self._error
 
             if not self._project_id:
                 self._error = EarthEngineConfigurationError(
@@ -62,14 +78,49 @@ class EarthEngineManager:
                 self._status = EarthEngineStatus.FAILED
                 raise self._error
 
+            # ee.Initialize downloads a dataset catalog with urllib and no timeout; a stalled read
+            # used to hang every Earth Engine request until restart. A default socket timeout bounds
+            # it (the library treats that download as optional). Applied only during start-up.
+            previous_timeout = socket.getdefaulttimeout()
+            if previous_timeout is None:
+                socket.setdefaulttimeout(self._network_timeout_seconds)
             try:
-                self.ee.Initialize(project=self._project_id)
+                self._initialize_with_timeout()
             except Exception as exc:
                 self._error = EarthEngineInitializationError(
                     "Earth Engine initialization failed"
                 )
                 self._status = EarthEngineStatus.FAILED
+                self._failed_at = self._clock()
                 raise self._error from exc
+            finally:
+                if previous_timeout is None:
+                    socket.setdefaulttimeout(None)
 
+            # Bound every later Earth Engine HTTP call too, so a stalled call frees its slot.
+            data = getattr(self.ee, "data", None)  # test doubles have no ee.data
+            if data is not None:
+                data.setDeadline(int(self._request_deadline_seconds * 1000))
             self._status = EarthEngineStatus.READY
+
+    def _initialize_with_timeout(self) -> None:
+        # ee.Initialize also fetches its API description through requests with no timeout; behind
+        # a proxy that TLS handshake was seen to hang forever. Run it in a daemon thread and give
+        # up after a deadline: start-up then fails and is retried later instead of blocking all requests.
+        done = Event()
+        errors: list[BaseException] = []
+
+        def run() -> None:
+            try:
+                self.ee.Initialize(project=self._project_id)
+            except BaseException as exc:  # re-raised in the caller's thread
+                errors.append(exc)
+            finally:
+                done.set()
+
+        Thread(target=run, name="earth-engine-startup", daemon=True).start()
+        if not done.wait(self._startup_timeout_seconds):
+            raise TimeoutError(f"Earth Engine start-up took longer than {self._startup_timeout_seconds:g} s")
+        if errors:
+            raise errors[0]
 

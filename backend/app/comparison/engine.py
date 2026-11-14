@@ -105,6 +105,8 @@ def agreement_summary(pairs: list[dict[str, Any]]) -> dict[str, Any]:
         level = "conflicting_trend_direction"
     elif signs and not all(signs):
         level = "mixed"
+    elif signs and rhos:
+        level = "same_direction_weak_covariation"
     elif rhos:
         level = "partially_assessable"
     else:
@@ -117,6 +119,7 @@ def agreement_summary(pairs: list[dict[str, Any]]) -> dict[str, Any]:
             "consistent": "Trend directions agree and year-to-year values co-vary strongly (ρ ≥ 0.7) over common years.",
             "mixed": "Some dataset pairs agree on trend direction and others do not.",
             "conflicting_trend_direction": "The datasets disagree on the direction of the trend.",
+            "same_direction_weak_covariation": "Trend directions agree, but year-to-year values co-vary only weakly (ρ < 0.7) over common years.",
             "partially_assessable": "Values co-vary but trend directions cannot all be compared.",
             "not_assessable": "Too few successful datasets or common eligible years to assess agreement.",
         }[level],

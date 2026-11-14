@@ -22,6 +22,7 @@ const LINEAGE_LABEL: Record<PairComparison["lineage"], string> = {
 const AGREEMENT_LABEL: Record<string, string> = {
   consistent: "Consistent",
   mixed: "Mixed",
+  same_direction_weak_covariation: "Same direction, weak year-to-year agreement",
   conflicting_trend_direction: "Conflicting trend direction",
   partially_assessable: "Partially assessable",
   not_assessable: "Not assessable",

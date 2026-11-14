@@ -94,6 +94,18 @@ export interface SerialDependence {
   unavailable_reason: string | null;
 }
 
+export interface ChangePoint {
+  status: "step_detected" | "none" | "not_tested";
+  reason?: string;
+  last_year_before?: number;
+  first_year_after?: number;
+  mean_before?: number;
+  mean_after?: number;
+  shift?: number;
+  pettitt_p_value?: number;
+  step_fits_better_than_line?: boolean;
+}
+
 export interface Trend {
   result_level: "statistical_inference" | "descriptive_slope" | "annual_summaries_only" | string;
   result_level_label: string;
@@ -109,6 +121,12 @@ export interface Trend {
   serial_dependence: SerialDependence | null;
   slope_unavailable_reason: string | null;
   significance_unavailable_reason: string | null;
+  /** Sudden-step check on the yearly values the trend used (Pettitt test + step-vs-line fit). */
+  change_point?: ChangePoint;
+  /** Present for NDVI: trend from monthly means compared month by month (Seasonal Kendall). */
+  method?: "seasonal_kendall";
+  months_used?: number[];
+  sample_count?: number;
 }
 
 export interface SeriesPoint {

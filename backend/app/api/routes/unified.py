@@ -7,7 +7,9 @@ values are never converted into a misleading common quantity. v1 is unchanged.
 
 import asyncio
 from collections import OrderedDict
-from datetime import date, datetime, timezone
+from dataclasses import asdict
+from datetime import date, datetime, timedelta, timezone
+import calendar
 import math
 import time
 from typing import Annotated, Any, Literal
@@ -16,7 +18,12 @@ import httpx
 from fastapi import APIRouter, HTTPException, Query, Request
 from scipy.stats import spearmanr
 
-from app.api.scientific_notes import DESCRIPTIVE_SLOPE_NOTE, INFERENCE_CAVEAT, TREND_METHOD
+from app.api.scientific_notes import (
+    DESCRIPTIVE_SLOPE_NOTE, INFERENCE_CAVEAT, SEASONAL_DESCRIPTIVE_SLOPE_NOTE, SEASONAL_TREND_METHOD, TREND_METHOD,
+)
+from app.statistics.change_point import detect_step
+from app.statistics.policies import TrendPolicy
+from app.statistics.seasonal import LIMITATION as SEASONAL_LIMITATION, seasonal_trend
 
 
 router = APIRouter(prefix="/api/v2", tags=["unified"])
@@ -68,7 +75,7 @@ VARIABLES: dict[str, dict[str, Any]] = {
         "dataset": {"source": "NASA GPM IMERG", "id": "NASA/GPM_L3/IMERG_MONTHLY_V07", "version": "V07 Final (monthly)",
                     "provenance": "satellite–gauge merged estimate", "doi": "10.5067/GPM/IMERG/3B-MONTH/07"},
         "spatial_resolution": "0.1° grid cell (≈11 km)", "temporal_resolution": "monthly → annual",
-        "available_from": "2000-06-01", "max_years": 10, "default_period": [2015, 2025],
+        "available_from": "2000-06-01", "max_years": 30, "default_period": [2015, 2025],
         "modes": {"point": True, "region": True},
         "region_shape": "bbox", "default_region_span_degrees": 1.0, "max_region_span_degrees": 5.0,
         "region_description": "Area-weighted mean over valid 0.1° IMERG pixels inside a latitude–longitude box; months need ≥95% valid area.",
@@ -78,12 +85,12 @@ VARIABLES: dict[str, dict[str, Any]] = {
     "ndvi": {
         "name": "Vegetation greenness (NDVI)", "short_name": "NDVI",
         "description": "Annual mean of quality-filtered MODIS NDVI averaged over a circular area.",
-        "annual_value": "equal-weight mean of monthly means of quality-filtered 16-day composites", "units": "NDVI (unitless)",
+        "annual_value": "equal-weight mean of monthly means of quality-filtered 16-day composites", "units": "NDVI units",
         "slope_units": "NDVI units/year",
         "dataset": {"source": "NASA MODIS", "id": "MODIS/061/MOD13Q1", "version": "Collection 6.1",
                     "provenance": "satellite observation", "doi": "10.5067/MODIS/MOD13Q1.061"},
-        "spatial_resolution": "250 m pixels averaged over a circle (radius_km)", "temporal_resolution": "16-day → monthly → annual",
-        "available_from": "2000-02-18", "max_years": 10, "default_period": [2015, 2025],
+        "spatial_resolution": "250 m pixels averaged over a circle around the point", "temporal_resolution": "16-day → monthly → annual",
+        "available_from": "2000-02-18", "max_years": 30, "default_period": [2015, 2025],
         "modes": {"point": True, "region": True},
         "region_shape": "circle", "default_radius_km": 5, "max_radius_km": 100,
         "region_unsupported_reason": None,
@@ -179,6 +186,13 @@ def _monthly_pairs(raw) -> list[tuple[int, float]]:
     return [(int(m), float(v)) for m, v in raw or []]
 
 
+def add_change_point(trend: dict[str, Any], annual: list[dict[str, Any]]) -> None:
+    """Attach the sudden-step check, run on the eligible annual values."""
+    values = {a["year"]: a["value"] for a in annual}
+    years = [y for y in sorted(trend["eligible_years"]) if values.get(y) is not None]
+    trend["change_point"] = detect_step(years, [values[y] for y in years])
+
+
 def _trend(trend: dict[str, Any] | None) -> dict[str, Any] | None:
     if trend is None:
         return None
@@ -227,6 +241,32 @@ def _monthly_series(items: list[dict[str, Any]], key: str = "monthly_values") ->
         for month, value in _monthly_pairs(s.get(key)):
             series.append({"date": date(s["year"], month, 1).isoformat(), "value": value})
     return series
+
+
+def _seasonal_ndvi(body: dict[str, Any], slope_units: str) -> dict[str, Any]:
+    """NDVI trend from monthly means with the Seasonal Kendall test (see SEASONAL_TREND_METHOD).
+
+    Cloud-masked months rarely leave complete years for the annual method (Yangon 2015-2024:
+    0 of 10 years eligible), but each month can still be compared with the same month in
+    other years.
+    """
+    monthly = {(s["year"], m): v for s in body["annual_summaries"] for m, v in _monthly_pairs(s.get("monthly_values"))}
+    first = date.fromisoformat(str(body["period"]["start"])).year
+    last = (date.fromisoformat(str(body["period"]["end"])) - timedelta(days=1)).year
+    # shortcut: default TrendPolicy (3 / 8 years, alpha 0.05) equals the settings defaults; pass settings if they diverge.
+    result, months = seasonal_trend(monthly, first, last, slope_units.removesuffix("/year"), TrendPolicy())
+    trend = _trend(asdict(result))
+    years = list(result.eligible_years)
+    used = {k: v for k, v in monthly.items() if k[1] in months and k[0] in years}
+    month_mean = {m: sum(v for (_, mm), v in used.items() if mm == m) / sum(1 for k in used if k[1] == m) for m in months}
+    # Step check on each year's mean monthly anomaly, so the seasonal cycle and missing months do not fake a step.
+    anomalies = [
+        sum(v - month_mean[m] for (y, m), v in used.items() if y == year) / sum(1 for k in used if k[0] == year)
+        for year in years
+    ]
+    trend.update(method="seasonal_kendall", months_used=months, sample_count=len(used),
+                 change_point=detect_step(years, anomalies))
+    return trend
 
 
 def normalise(variable: str, body: dict[str, Any], lat: float, lon: float, mode: str = "point") -> dict[str, Any]:
@@ -314,6 +354,11 @@ def normalise(variable: str, body: dict[str, Any], lat: float, lon: float, mode:
                       else "0.1° IMERG pixels, area-weighted over the box")
 
     period = body.get("period", {})
+    trend = _trend(body.get("trend"))
+    if variable == "ndvi":
+        trend = _seasonal_ndvi(body, slope_units)
+    elif trend is not None:
+        add_change_point(trend, annual)
     return {
         "variable": {"id": variable, "name": meta["name"], "description": meta["description"],
                      "annual_value_definition": meta["annual_value"]},
@@ -326,15 +371,20 @@ def normalise(variable: str, body: dict[str, Any], lat: float, lon: float, mode:
         "series_definition": {"temperature": "monthly mean (°C)", "relative_humidity": "monthly mean (%)",
                               "precipitation": "monthly accumulation (mm/month)", "ndvi": "monthly mean NDVI",
                               "soil_moisture": f"monthly mean ({units})", "extreme_heat": None}[variable],
-        "trend": _trend(body.get("trend")),
+        "trend": trend,
         "coverage": {
             "years_requested": len(annual),
             "eligible_years": sum(1 for a in annual if a["eligible"]),
             "excluded_years": [{"year": a["year"], "reasons": a["reasons"]} for a in annual if not a["eligible"]],
         },
-        "methodology": {"source": body.get("methodology"), "trend_method": TREND_METHOD},
-        "caveats": [INFERENCE_CAVEAT, DESCRIPTIVE_SLOPE_NOTE],
-        "limitations": body.get("limitations", []),
+        "methodology": {"source": body.get("methodology"),
+                        "trend_method": SEASONAL_TREND_METHOD if variable == "ndvi" else TREND_METHOD},
+        "caveats": [SEASONAL_LIMITATION, SEASONAL_DESCRIPTIVE_SLOPE_NOTE] if variable == "ndvi" else [INFERENCE_CAVEAT, DESCRIPTIVE_SLOPE_NOTE],
+        "limitations": body.get("limitations", []) + ([
+            SEASONAL_LIMITATION,
+            "The NDVI trend uses only calendar months with data in at least 70% of years: "
+            + (", ".join(calendar.month_abbr[m] for m in trend["months_used"]) or "none") + ".",
+        ] if variable == "ndvi" else []),
         "extra": extra,
         "data_status": "live_nasa_retrieval",
     }
@@ -352,7 +402,7 @@ async def variables(request: Request) -> dict[str, Any]:
         item["id"] = key
         if key == "ndvi":
             item["max_radius_km"] = settings.ndvi_max_radius_km
-            item["max_years"] = settings.ndvi_max_date_range_years
+            item["max_years"] = settings.ndvi_trend_max_date_range_years
         if key == "precipitation":
             item["max_years"] = settings.precipitation_max_date_range_years
         if key == "soil_moisture":

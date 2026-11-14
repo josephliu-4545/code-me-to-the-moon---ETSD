@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import type { Analysis } from "./api/types";
-import { ResultSummary } from "./components/ResultPanels";
+import { Cautions, ResultSummary } from "./components/ResultPanels";
 import CiRuler from "./components/science/CiRuler";
 import MonthMatrix from "./components/science/MonthMatrix";
 import { calendarSeries, gapRuns } from "./lib/series";
@@ -106,5 +106,48 @@ describe("result presentation", () => {
     render(<MonthMatrix annual={annual} />);
     expect(screen.getByText("December 2020: missing")).toBeInTheDocument();
     expect(screen.getByText("11/12")).toBeInTheDocument();
+  });
+});
+
+describe("trend method and step check", () => {
+  const seasonal = (o: Partial<Analysis> = {}) => {
+    const b = base();
+    return base({
+      annual: b.annual.map((y) => ({ ...y, eligible: false, reasons: ["insufficient_represented_months"] })),
+      coverage: { years_requested: 10, eligible_years: 0, excluded_years: [] },
+      trend: { ...b.trend!, method: "seasonal_kendall", months_used: [1, 2, 3, 4, 11, 12], sample_count: 60, slope: 0.0063,
+        mann_kendall: { s: 150, tau: 0.5, p_value: 0.00002, alpha: 0.05, is_statistically_significant: true, direction: "increasing" } },
+      ...o,
+    });
+  };
+
+  it("names the seasonal method and its monthly sample instead of eligible years", () => {
+    render(<ResultSummary analysis={seasonal()} />);
+    expect(screen.getByText("Seasonal Sen slope")).toBeInTheDocument();
+    expect(screen.getByText("Monthly values used")).toBeInTheDocument();
+    expect(screen.getByText("Jan, Feb, Mar, Apr, Nov, Dec")).toBeInTheDocument();
+    expect(screen.getByText(/Seasonal Kendall p < 0\.0001/)).toBeInTheDocument();
+    expect(screen.queryByText("Eligible years")).not.toBeInTheDocument();
+    expect(trendVerdict(seasonal()).note).toMatch(/^Seasonal Kendall rejects/);
+  });
+
+  it("keeps the annual wording for other variables", () => {
+    render(<ResultSummary analysis={base()} />);
+    expect(screen.getByText("Theil–Sen slope")).toBeInTheDocument();
+    expect(screen.getByText("Eligible years")).toBeInTheDocument();
+  });
+
+  it("warns about a sudden step in the summary and the cautions", () => {
+    const b = base();
+    const stepped = base({ trend: { ...b.trend!, change_point: { status: "step_detected", last_year_before: 2007, first_year_after: 2008, shift: -1.33 } } });
+    render(<><ResultSummary analysis={stepped} /><Cautions analysis={stepped} /></>);
+    expect(screen.getByRole("note")).toHaveTextContent(/Sudden step in the record\..*between 2007 and 2008/);
+    expect(screen.getByText("A sudden step is not a gradual trend.")).toBeInTheDocument();
+  });
+
+  it("shows no step warning when none was detected", () => {
+    const b = base();
+    render(<ResultSummary analysis={base({ trend: { ...b.trend!, change_point: { status: "none" } } })} />);
+    expect(screen.queryByText(/Sudden step/)).not.toBeInTheDocument();
   });
 });
