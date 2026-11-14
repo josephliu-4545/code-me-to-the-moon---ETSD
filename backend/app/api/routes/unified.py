@@ -21,6 +21,7 @@ from scipy.stats import spearmanr
 from app.api.scientific_notes import (
     DESCRIPTIVE_SLOPE_NOTE, INFERENCE_CAVEAT, SEASONAL_DESCRIPTIVE_SLOPE_NOTE, SEASONAL_TREND_METHOD, TREND_METHOD,
 )
+from app.api.methods_lab import build_methods_lab
 from app.statistics.change_point import detect_step
 from app.statistics.policies import TrendPolicy
 from app.statistics.seasonal import LIMITATION as SEASONAL_LIMITATION, seasonal_trend
@@ -359,6 +360,9 @@ def normalise(variable: str, body: dict[str, Any], lat: float, lon: float, mode:
         trend = _seasonal_ndvi(body, slope_units)
     elif trend is not None:
         add_change_point(trend, annual)
+    monthly_for_lab = ({(s["year"], m): v for s in body["annual_summaries"] for m, v in _monthly_pairs(s.get("monthly_values"))}
+                       if variable == "ndvi" else None)
+    methods_lab = build_methods_lab(variable, annual, trend, monthly_for_lab)
     return {
         "variable": {"id": variable, "name": meta["name"], "description": meta["description"],
                      "annual_value_definition": meta["annual_value"]},
@@ -386,6 +390,7 @@ def normalise(variable: str, body: dict[str, Any], lat: float, lon: float, mode:
             + (", ".join(calendar.month_abbr[m] for m in trend["months_used"]) or "none") + ".",
         ] if variable == "ndvi" else []),
         "extra": extra,
+        "methods_lab": methods_lab,
         "data_status": "live_nasa_retrieval",
     }
 
