@@ -109,6 +109,7 @@ def compare_pair(a: DatasetEntry, b: DatasetEntry, ra: dict[str, Any], rb: dict[
         out["slope_difference"] = None
         out["common_period_slope_sign_agreement"] = None
         out["unavailable_reasons"].append("fewer_than_3_common_eligible_years")
+    out["direction_evidence"] = _direction_evidence(out, ta, tb, va, vb, common)
 
     if comparable and common:
         diffs = [va[y] - vb[y] for y in common]
@@ -186,36 +187,129 @@ def compare_pair(a: DatasetEntry, b: DatasetEntry, ra: dict[str, Any], rb: dict[
     return out
 
 
+DIRECTION_SIGN = {
+    "descriptive_same_direction": True,
+    "indicative_same_direction": True,
+    "descriptive_opposite_direction": False,
+    "indicative_opposite_direction": False,
+}
+
+LEVEL_LABELS = {
+    "consistent": "Same {kind} direction, strong co-variation",
+    "same_direction_weak_covariation": "Same {kind} direction, weak co-variation",
+    "same_direction_covariation_not_assessable": "Same {kind} direction; co-variation not assessable",
+    "conflicting_trend_direction": "Opposite {kind} slope directions",
+    "mixed": "Mixed {kind} directions",
+    "partially_assessable": "Directions not assessable over common years",
+    "not_assessable": "Not assessable",
+}
+
+LEVEL_EXPLANATIONS = {
+    "consistent": "Over common eligible years, every pair's slopes point the same way and annual values co-vary strongly (Spearman ρ ≥ 0.7).",
+    "same_direction_weak_covariation": "Over common eligible years, every pair's slopes point the same way, but annual values co-vary only weakly (Spearman ρ < 0.7).",
+    "same_direction_covariation_not_assessable": "Over common eligible years, every pair's slopes point the same way. Co-variation is not assessed: correlation needs at least 8 common eligible years.",
+    "conflicting_trend_direction": "Over common eligible years, the slopes of every pair point in opposite directions.",
+    "mixed": "Over common eligible years, some pairs' slopes point the same way and others in opposite directions.",
+    "partially_assessable": "Slope directions cannot be compared over common eligible years (fewer than 3 shared years), although annual values co-vary.",
+    "not_assessable": "Too few successful datasets or common eligible years to compare slope directions or co-variation.",
+}
+
+DESCRIPTIVE_NOTE = (
+    " These are descriptive Theil–Sen slopes over the matched years with no significance test on that sample, "
+    "so this is not an established agreement or conflict; slopes near zero can point either way by chance."
+)
+INDICATIVE_NOTE = (
+    " Each dataset's own significance test covers exactly these common years and indicates a monotonic trend "
+    "(indicative only; autocorrelation can inflate false positives)."
+)
+
+
+def _direction_evidence(out: dict[str, Any], ta: dict[str, Any], tb: dict[str, Any],
+                        va: dict[int, float], vb: dict[int, float], common: list[int]) -> str:
+    """How the pair's slope directions over common eligible years may be read.
+
+    "indicative_*" only when both datasets' own Mann-Kendall tests were run on exactly the common
+    years (their eligible years equal the overlap) and both are significant; full-period results
+    otherwise describe a different sample and are not transferred. Everything else is descriptive.
+    No new test or interval is computed here.
+    """
+    agree = out["common_period_slope_sign_agreement"]
+    slopes = out["common_period_slopes"]
+    if agree is None or not slopes:
+        return "unavailable"
+    if any(v == 0 for v in slopes.values()):
+        return "descriptive_no_direction"
+
+    def tested_on_common_years(trend: dict[str, Any], values: dict[int, float]) -> bool:
+        mk = trend.get("mann_kendall") or {}
+        return (trend.get("result_level") == "statistical_inference"
+                and mk.get("is_statistically_significant") is True and set(values) == set(common))
+
+    kind = "indicative" if tested_on_common_years(ta, va) and tested_on_common_years(tb, vb) else "descriptive"
+    return f"{kind}_{'same' if agree else 'opposite'}_direction"
+
+
 def agreement_summary(pairs: list[dict[str, Any]]) -> dict[str, Any]:
-    signs = [p["slope_sign_agreement"] for p in pairs if p["slope_sign_agreement"] is not None]
-    rhos = [p["spearman_rho"] for p in pairs if p["spearman_rho"] is not None]
+    """Headline agreement from matched (common-period) evidence only.
+
+    Level identifiers are kept for API compatibility; their meaning is descriptive (see `label`,
+    `explanation` and `direction_evidence`). Full-request slope signs are never used here.
+    """
+    def evidence(p: dict[str, Any]) -> str | None:
+        if "direction_evidence" in p:
+            return p["direction_evidence"]
+        legacy = p.get("common_period_slope_sign_agreement")  # summaries built from minimal dicts
+        return None if legacy is None else ("descriptive_same_direction" if legacy else "descriptive_opposite_direction")
+
+    kinds = [evidence(p) for p in pairs]
+    assessed = [k for k in kinds if k in DIRECTION_SIGN]
+    signs = [DIRECTION_SIGN[k] for k in assessed]
+    rhos = [p["spearman_rho"] for p in pairs if p.get("spearman_rho") is not None]
     if not pairs:
         level = "not_assessable"
-    elif signs and all(signs) and rhos and min(rhos) >= 0.7:
-        level = "consistent"
-    elif signs and not any(signs):
+    elif not signs:
+        level = "partially_assessable" if rhos else "not_assessable"
+    elif all(signs):
+        if rhos:
+            level = "consistent" if min(rhos) >= 0.7 else "same_direction_weak_covariation"
+        else:
+            level = "same_direction_covariation_not_assessable"
+    elif not any(signs):
         level = "conflicting_trend_direction"
-    elif signs and not all(signs):
-        level = "mixed"
-    elif signs and rhos:
-        level = "same_direction_weak_covariation"
-    elif rhos:
-        level = "partially_assessable"
     else:
-        level = "not_assessable"
+        level = "mixed"
+    if assessed and all(k.startswith("indicative") for k in assessed):
+        direction_kind = "indicative"
+    else:
+        direction_kind = "descriptive" if assessed else "unavailable"
+    explanation = LEVEL_EXPLANATIONS[level]
+    if assessed:
+        explanation += INDICATIVE_NOTE if direction_kind == "indicative" else DESCRIPTIVE_NOTE
+    unassessed = len(pairs) - len(assessed)
+    if assessed and unassessed:
+        explanation += f" {unassessed} pair(s) had too few common eligible years (or a zero slope) for a direction comparison."
+    not_comparable = any(p.get("numerically_comparable") is False for p in pairs)
+    shared = any(p.get("lineage") in {"same_lineage", "partially_related"} for p in pairs)
     return {
         "level": level,
+        "label": LEVEL_LABELS[level].format(kind="indicative" if direction_kind == "indicative" else "descriptive"),
+        "basis": "common_period_descriptive_slopes",
+        "direction_evidence": direction_kind,
+        "pairs_with_direction": len(assessed),
+        "pairs_without_direction": unassessed,
+        # Computed from common-period directions (previously full-request slopes on different samples).
         "slope_sign_agreement_all": (all(signs) if signs else None),
         "min_spearman_rho": min(rhos) if rhos else None,
-        "explanation": {
-            "consistent": "Trend directions agree and year-to-year values co-vary strongly (ρ ≥ 0.7) over common years.",
-            "mixed": "Some dataset pairs agree on trend direction and others do not.",
-            "conflicting_trend_direction": "The datasets disagree on the direction of the trend.",
-            "same_direction_weak_covariation": "Trend directions agree, but year-to-year values co-vary only weakly (ρ < 0.7) over common years.",
-            "partially_assessable": "Values co-vary but trend directions cannot all be compared.",
-            "not_assessable": "Too few successful datasets or common eligible years to assess agreement.",
-        }[level],
-        "caution": "Agreement between datasets does not prove accuracy, especially when they share inputs; disagreement does not show which dataset is wrong.",
+        "explanation": explanation,
+        "comparability_note": (
+            "Some datasets measure different quantities or units: they are compared by slope direction only, not by magnitude."
+            if not_comparable else None),
+        "independence_note": (
+            "Some datasets share inputs or lineage (not independent), so their agreement is not an independent confirmation."
+            if shared else None),
+        "caution": ("Agreement between datasets does not prove accuracy, especially when they share inputs; disagreement "
+                    "does not show which dataset is wrong. Correlation describes association, can be inflated by shared "
+                    "long-term trends, and is not evidence of causation."),
     }
 
 
@@ -231,7 +325,7 @@ def compare(results: list[tuple[DatasetEntry, dict[str, Any]]]) -> dict[str, Any
         "method": {
             "pairing": "only calendar years eligible in both datasets are paired",
             "common_period_slope": "Theil–Sen slope of each dataset over the common eligible years only (descriptive, no inference)",
-            "direction_metric": "direction agreement in Evaluation Lab uses common-period slopes; legacy full-request direction remains unchanged",
+            "direction_metric": "headline agreement and the Evaluation Lab both use common-period slopes (descriptive unless each dataset's own test covers exactly the common years); the per-pair full-request sign (slope_sign_agreement) is kept only for backward compatibility",
             "correlation": f"Spearman ρ and Pearson r of annual values, and Spearman ρ of year-to-year changes; withheld below {MIN_COMMON_YEARS_FOR_CORRELATION} common years; no p-values",
             "differences": "computed only for datasets measuring the same quantity in the same units",
         },

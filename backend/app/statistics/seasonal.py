@@ -92,7 +92,9 @@ def seasonal_trend(
     slope = median(slopes)
     values = [v for pts in used.values() for _, v in pts]
     mid_year = (years[0] + years[-1]) / 2
-    # Level line through the mean of used monthly values at mid-period (seasonal cycle removed).
+    # Intercept = mean of the raw monthly values used, minus slope x mid-period year. The seasonal
+    # cycle is NOT removed: this level reflects only the qualifying months, so it is not an annual
+    # level and must not be drawn through annual means. Kept unchanged for API compatibility.
     intercept = sum(values) / len(values) - slope * mid_year
     descriptive = TheilSenResult(slope, intercept, f"{units}/year", None, "Inferential confidence interval not supported")
 

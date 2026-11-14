@@ -1,7 +1,7 @@
 import { CartesianGrid, ComposedChart, Line, ReferenceLine, ResponsiveContainer, Scatter, Tooltip, XAxis, YAxis } from "recharts";
 import type { Analysis } from "../api/types";
 import { fmt, reasonLabel } from "../lib/format";
-import { isSeasonal } from "../lib/verdict";
+import { isSeasonal, monthsUsed } from "../lib/verdict";
 import Disclosure from "./ui/Disclosure";
 import { CHART, tickStyle } from "./science/chartTheme";
 
@@ -13,8 +13,13 @@ interface Row {
   reasons: string[];
 }
 
+/**
+ * Annual rows for charts. The fitted line is the backend's annual Theil–Sen line. For the seasonal
+ * method (NDVI) the slope comes from qualifying monthly values compared month by month, a different
+ * sample and aggregation from these annual means, so no line is drawn through them.
+ */
 export function buildRows(a: Analysis): Row[] {
-  const t = a.trend;
+  const t = isSeasonal(a) ? null : a.trend;
   const eligibleYears = t?.eligible_years ?? [];
   const lo = eligibleYears.length ? Math.min(...eligibleYears) : Infinity;
   const hi = eligibleYears.length ? Math.max(...eligibleYears) : -Infinity;
@@ -70,7 +75,8 @@ export default function TrendChart({ analysis, focusYear = null, onSelectYear }:
   const hasTrend = rows.some((r) => r.trend !== null);
   const hasExcluded = rows.some((r) => r.excluded !== null);
   const seasonal = isSeasonal(analysis);
-  const trendName = seasonal ? "Seasonal Sen trend (from monthly values)" : "Theil–Sen trend (eligible years)";
+  const trendName = "Theil–Sen trend (eligible years)";
+  const months = monthsUsed(analysis);
   const cp = analysis.trend?.change_point;
   const stepAt = cp?.status === "step_detected" && cp.first_year_after !== undefined ? cp.first_year_after - 0.5 : null;
   return (
@@ -110,7 +116,7 @@ export default function TrendChart({ analysis, focusYear = null, onSelectYear }:
       </div>
       <figcaption className="chart-caption">
         {seasonal
-          ? "The trend comes from monthly values compared month by month, so it does not depend on complete years. Annual means are shown for context only; hollow rings are years missing months."
+          ? `The Seasonal Sen slope comes from qualifying monthly values (${months || "no qualifying months"}), each compared only with the same month in other years. It is not a fit to these annual means, so it is not drawn on this chart; the slope and its interval are reported in the findings and Scientific Evaluation. Annual means are shown for context only; hollow rings are years missing months.`
           : "The trend line spans eligible years only. Hollow rings are years shown for context but excluded by the completeness rules."}
         {onSelectYear && " Select a point to inspect that year in the evidence explorer below."}
         {stepAt !== null && " The dashed line marks a sudden step: values jump once and stay at the new level, which often means a change in the data rather than gradual change."}
@@ -119,13 +125,13 @@ export default function TrendChart({ analysis, focusYear = null, onSelectYear }:
         <div className="table-wrap">
           <table className="table">
             <caption className="sr-only">Annual {analysis.variable.name} values ({units}) and eligibility</caption>
-            <thead><tr><th scope="col">Year</th><th scope="col">Annual value ({units})</th><th scope="col">Fitted trend</th><th scope="col">Status</th></tr></thead>
+            <thead><tr><th scope="col">Year</th><th scope="col">Annual value ({units})</th>{hasTrend && <th scope="col">Fitted trend</th>}<th scope="col">Status</th></tr></thead>
             <tbody>
               {rows.map((r) => (
                 <tr key={r.year} className={r.eligible === null ? "row-excluded" : ""}>
                   <th scope="row" className="mono">{r.year}</th>
                   <td className="mono">{fmt(r.eligible ?? r.excluded, 3)}</td>
-                  <td className="mono">{fmt(r.trend, 3)}</td>
+                  {hasTrend && <td className="mono">{fmt(r.trend, 3)}</td>}
                   <td>{r.eligible !== null ? "Eligible" : r.reasons.length ? r.reasons.map(reasonLabel).join("; ") : "No value"}</td>
                 </tr>
               ))}

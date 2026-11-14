@@ -145,7 +145,7 @@ The trend endpoint reuses the shared Theil–Sen, Mann–Kendall, tie, confidenc
 Three separate datasets that are never merged or gap-filled from each other. They are listed by `GET /api/v1/soil-moisture/datasets`.
 
 * `GET /api/v1/soil-moisture?dataset=…&latitude=…&longitude=…&start_date=YYYY-MM-01&end_date=YYYY-MM-01` returns monthly records and annual summaries; `/trend` adds the Theil–Sen / Mann–Kendall result. For GLDAS it also adds a derived layer-mean m³ m⁻³ trend.
-* `GET /api/v1/soil-moisture/compare?datasets=a,b[,c]&…` returns a descriptive comparison only: anomaly correlation (needs ≥ 36 common months), mean difference labelled "not error", and slope-sign agreement.
+* `GET /api/v1/soil-moisture/compare?datasets=a,b[,c]&…` returns a descriptive comparison only: anomaly correlation (needs ≥ 36 common months), mean difference labelled "not error", and a descriptive full-period slope-sign agreement (each dataset's own eligible years). The multi-dataset `/api/v2/compare` agreement summary instead uses common-period slopes (`basis`, `label`, `direction_evidence` per pair and summary).
 * Values come from the exact native grid cell containing the point (0.25° GLDAS, 9 km SMAP). A masked or quality-failing cell is reported as `no_valid_land_values`, with no substitution. GLDAS months containing any non-`permanent` catalog image are provisional and excluded from trends. SMAP months need ≥ 8 quality-passing AM days, including one in each third of the month.
 
 # Unified API (v2) and regions
