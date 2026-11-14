@@ -5,12 +5,14 @@ import Wordmark from "./components/layout/Wordmark";
 import Starfield from "./components/layout/Starfield";
 import { ErrorBox, Loading } from "./components/ResultPanels";
 import CompareDatasetsPage from "./pages/CompareDatasetsPage";
+import DetectivePage from "./pages/DetectivePage";
 import EvaluationPage from "./pages/EvaluationPage";
 import ExplorePage from "./pages/ExplorePage";
 import RelationshipsPage from "./pages/RelationshipsPage";
 import SciencePage from "./pages/SciencePage";
 import { toRequest, useSelection } from "./state/selection";
 import { useTheme } from "./state/theme";
+import { useConversationStore } from "./detective/conversation";
 import { useVariables } from "./state/useAnalysis";
 
 const TABS = [
@@ -18,11 +20,12 @@ const TABS = [
   { id: "evaluation", label: "Scientific Evaluation", short: "Evaluation" },
   { id: "compare", label: "Compare Datasets", short: "Compare" },
   { id: "relationships", label: "Earth System Relationships", short: "Relationships" },
+  { id: "detective", label: "AI Earth Detective", short: "Detective" },
   { id: "living", label: "Living Environment", short: "Living Environment", planned: true },
   { id: "science", label: "Scientific Information", short: "Field Guide" },
 ] as const satisfies readonly NavItem[];
 type Tab = Exclude<(typeof TABS)[number]["id"], "living">;
-const ROUTES: Tab[] = ["explore", "evaluation", "compare", "relationships", "science"];
+const ROUTES: Tab[] = ["explore", "evaluation", "compare", "relationships", "detective", "science"];
 
 function currentTab(): Tab {
   const h = window.location.hash.replace("#", "") as Tab;
@@ -35,6 +38,8 @@ export default function App() {
   const [tab, setTab] = useState<Tab>(currentTab);
   const [selection, update] = useSelection();
   const [submitted, setSubmitted] = useState<AnalysisRequest | null>(null);
+  const [submittedPlace, setSubmittedPlace] = useState("");
+  const conversations = useConversationStore();
   const variables = useVariables();
   const [theme, , toggleTheme] = useTheme();
 
@@ -87,13 +92,14 @@ export default function App() {
                 selection={selection}
                 onChange={update}
                 submitted={submitted}
-                onSubmit={() => setSubmitted(toRequest(selection))}
+                onSubmit={() => { setSubmitted(toRequest(selection)); setSubmittedPlace(selection.placeName); }}
                 theme={theme}
               />
             )}
             {tab === "evaluation" && <EvaluationPage submitted={submitted} />}
             {tab === "compare" && <CompareDatasetsPage selection={selection} />}
             {tab === "relationships" && <RelationshipsPage variables={variables.data.variables} selection={selection} />}
+            {tab === "detective" && <DetectivePage submitted={submitted} place={submittedPlace} variables={variables.data.variables} conversations={conversations} />}
             {tab === "science" && <SciencePage variables={variables.data.variables} caveats={variables.data.caveats} />}
           </div>
         )}
