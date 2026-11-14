@@ -245,6 +245,27 @@ def test_pair_differences_correlations_and_common_period() -> None:
     assert p["confidence_intervals_overlap"] is True
     assert p["common_period_slopes"]["nasa_power_t2m"] == pytest.approx(0.1, abs=0.05)
     assert "not an error" in p["difference_label"]
+    assert p["root_mean_square_difference"] == pytest.approx(1.0)
+    assert p["slope_difference"] == pytest.approx(
+        p["common_period_slopes"]["nasa_power_t2m"] - p["common_period_slopes"]["era5_land_t2m"]
+    )
+    assert p["matched_observations"] == {
+        "resolution": "annual",
+        "count": 10,
+        "period": {"start": "2010", "end": "2019"},
+        "labels": [str(y) for y in years],
+        "valid_observations": {
+            "nasa_power_t2m": [str(y) for y in years],
+            "era5_land_t2m": [str(y) for y in years],
+        },
+        "excluded_from_pairing": {"nasa_power_t2m": [], "era5_land_t2m": []},
+        "quality_excluded": {"nasa_power_t2m": [], "era5_land_t2m": []},
+    }
+    rmse = next(m for m in p["metrics"] if m["id"] == "rmse")
+    assert rmse["value"] == pytest.approx(1.0)
+    assert rmse["units"] == "°C" and rmse["matched_observations"] == 10
+    assert "product-to-product" in rmse["interpretation"]
+    assert "ground truth" in rmse["limitations"]
 
 
 def test_pair_withholds_correlation_below_eight_common_years() -> None:
@@ -252,6 +273,10 @@ def test_pair_withholds_correlation_below_eight_common_years() -> None:
     b = analysis({y: 2.0 * y for y in range(2010, 2016)})
     p = compare_pair(find("temperature", "nasa_power_t2m"), T_ERA5, a, b)
     assert p["spearman_rho"] is None and "fewer_than_8_common_eligible_years_for_correlation" in p["unavailable_reasons"]
+    spearman = next(m for m in p["metrics"] if m["id"] == "spearman_rho")
+    assert spearman["value"] is None
+    assert spearman["availability"] == "unavailable"
+    assert "8 common eligible years" in spearman["unavailable_reason"]
 
 
 def test_non_comparable_quantities_are_not_differenced() -> None:
@@ -260,6 +285,23 @@ def test_non_comparable_quantities_are_not_differenced() -> None:
                      analysis({y: 0.2 for y in range(2015, 2025)}, units="m3 m-3"))
     assert not p["numerically_comparable"] and p["mean_difference"] is None and p["annual_differences"] is None
     assert "shown separately" in p["not_comparable_reason"]
+    assert p["root_mean_square_difference"] is None and p["slope_difference"] is None
+    assert all(m["value"] is None for m in p["metrics"] if m["id"] in {"mean_difference", "mae", "rmse", "slope_difference"})
+    assert "different physical quantities" in next(m for m in p["metrics"] if m["id"] == "rmse")["unavailable_reason"]
+
+
+def test_matched_metadata_distinguishes_each_dataset_valid_years_from_pair_overlap() -> None:
+    a = analysis({2018: 1.0, 2019: 2.0, 2020: 3.0, 2021: None})
+    b = analysis({2017: 8.0, 2018: 2.0, 2019: 4.0, 2020: None})
+
+    p = compare_pair(find("temperature", "nasa_power_t2m"), T_ERA5, a, b)
+
+    assert p["matched_observations"]["labels"] == ["2018", "2019"]
+    assert p["matched_observations"]["count"] == 2
+    assert p["matched_observations"]["valid_observations"]["nasa_power_t2m"] == ["2018", "2019", "2020"]
+    assert p["matched_observations"]["valid_observations"]["era5_land_t2m"] == ["2017", "2018", "2019"]
+    assert p["matched_observations"]["excluded_from_pairing"]["nasa_power_t2m"] == ["2020"]
+    assert p["matched_observations"]["excluded_from_pairing"]["era5_land_t2m"] == ["2017"]
 
 
 def test_agreement_levels() -> None:
