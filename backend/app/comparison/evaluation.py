@@ -7,6 +7,7 @@ quality exclusion, provisional data, and time outside a product's record.
 
 from collections import Counter
 from datetime import date, timedelta
+import math
 from typing import Any, Iterable
 
 from app.comparison.catalog import DatasetEntry
@@ -36,8 +37,12 @@ def _period_supported(period_start: date, period_end: date, available_start: dat
 def _monthly_status(row: dict[str, Any] | None) -> tuple[str, list[str], float | None]:
     if row is None:
         return "missing", ["no_monthly_record"], None
-    source_status = str(row.get("status") or "unavailable")
     value = row.get("value")
+    if "status" not in row:
+        if isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value):
+            return "valid", [], float(value)
+        return "missing", ["no_valid_value"], None
+    source_status = str(row.get("status") or "unavailable")
     reasons = list(row.get("reasons") or ([] if source_status == "valid" else [source_status]))
     if source_status == "valid" and row.get("usable", True) and value is not None:
         return "valid", reasons, float(value)

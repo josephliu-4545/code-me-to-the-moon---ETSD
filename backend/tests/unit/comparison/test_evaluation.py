@@ -70,6 +70,21 @@ def test_unavailable_dataset_still_reports_requested_period_without_fabricated_v
     assert result["completeness"]["percentage"] == 0.0
 
 
+def test_primary_monthly_values_without_status_are_valid_evidence() -> None:
+    analysis = {
+        "series": [{"date": "2020-01-01", "value": 27.5}],
+        "annual": [{"year": 2020, "value": 27.5, "eligible": False, "reasons": ["insufficient_represented_months"]}],
+        "coverage": {"eligible_years": 0, "excluded_years": []},
+    }
+
+    result = evaluate_dataset(POWER, analysis, date(2020, 1, 1), date(2020, 3, 1))
+
+    assert result["resolution"] == "monthly"
+    assert [cell["status"] for cell in result["cells"]] == ["valid", "missing"]
+    assert result["cells"][0]["value"] == 27.5
+    assert result["completeness"]["percentage"] == 50.0
+
+
 def test_catalog_end_date_is_inclusive_for_supported_annual_denominator() -> None:
     retired = find("soil_moisture", "smap_l3e_v005_am")
     analysis = {
