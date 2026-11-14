@@ -4,6 +4,7 @@ import { compareApi, type CompareRequest } from "../api/compareClient";
 import type { CompareResponse, DatasetInfo, VariableDatasets } from "../api/compareTypes";
 import { AgreementBanner, DatasetStatusCards, PairTable, ProvenanceTable, SummaryTable } from "../components/compare/ComparisonPanels";
 import OverlayChart from "../components/compare/OverlayChart";
+import EvaluationLab from "../components/evaluation/EvaluationLab";
 import { ErrorBox, Limitations, Loading, ProvenanceCard, ResultSummary } from "../components/ResultPanels";
 import SeriesChart from "../components/SeriesChart";
 import TrendChart from "../components/TrendChart";
@@ -49,6 +50,7 @@ export default function CompareDatasetsPage({ selection }: { selection: Selectio
   const [chosen, setChosen] = useState<Record<string, string[]>>({});
   const [submitted, setSubmitted] = useState<CompareRequest | null>(null);
   const [view, setView] = useState<string>("comparison");
+  const [resultView, setResultView] = useState<"comparison" | "evaluation">("comparison");
 
   const info: VariableDatasets | undefined = catalog.data?.variables.find((v) => v.variable === variable);
   const datasets = info?.datasets ?? [];
@@ -83,6 +85,7 @@ export default function CompareDatasetsPage({ selection }: { selection: Selectio
 
   function run() {
     setView("comparison");
+    setResultView("comparison");
     setSubmitted({
       variable,
       datasets: currentDatasets,
@@ -168,15 +171,20 @@ export default function CompareDatasetsPage({ selection }: { selection: Selectio
         <>
           <AgreementBanner data={data} />
           <DatasetStatusCards data={data} order={order} />
-          <div className="cmp-tabs" role="tablist" aria-label="Result view">
-            <button role="tab" aria-selected={view === "comparison"} className={view === "comparison" ? "active" : ""} onClick={() => setView("comparison")}>Comparison</button>
+          <div className="cmp-tabs cmp-result-tabs" role="tablist" aria-label="Result view">
+            <button role="tab" aria-selected={resultView === "comparison"} className={resultView === "comparison" ? "active" : ""} onClick={() => setResultView("comparison")}>Comparison</button>
+            <button role="tab" aria-selected={resultView === "evaluation"} className={resultView === "evaluation" ? "active" : ""} onClick={() => setResultView("evaluation")}>Evaluation Lab</button>
+          </div>
+
+          {resultView === "evaluation" ? <EvaluationLab data={data} /> : <>
+          <div className="cmp-tabs cmp-detail-tabs" role="tablist" aria-label="Comparison dataset view">
+            <button role="tab" aria-selected={view === "comparison"} className={view === "comparison" ? "active" : ""} onClick={() => setView("comparison")}>All datasets</button>
             {succeeded.map((k) => (
               <button key={k} role="tab" aria-selected={view === k} className={view === k ? "active" : ""} onClick={() => setView(k)}>
                 {data.results[k]!.entry.name}
               </button>
             ))}
           </div>
-
           {view === "comparison" ? (
             <>
               {resultsOk.length > 0 && (data.comparison?.all_numerically_comparable || resultsOk.length === 1 ? (
@@ -220,6 +228,7 @@ export default function CompareDatasetsPage({ selection }: { selection: Selectio
               </div>
             )
           )}
+          </>}
         </>
       )}
       </div>

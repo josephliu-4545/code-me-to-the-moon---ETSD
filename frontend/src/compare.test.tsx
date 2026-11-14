@@ -187,7 +187,7 @@ describe("Compare datasets page", () => {
     expect(String(call[0])).toContain("end_date=2025-01-01");
     expect(screen.getByLabelText(/C: C covers latitudes/)).toBeInTheDocument();
     expect(screen.getByText("Pairwise comparison")).toBeInTheDocument();
-    const tabs = screen.getByRole("tablist");
+    const tabs = screen.getByRole("tablist", { name: "Comparison dataset view" });
     expect(within(tabs).queryByRole("tab", { name: "C" })).not.toBeInTheDocument();
     await userEvent.click(within(tabs).getByRole("tab", { name: "B" }));
     expect(screen.getByText("Data provenance")).toBeInTheDocument();
@@ -255,6 +255,37 @@ describe("Compare datasets page", () => {
     await userEvent.click(await screen.findByRole("button", { name: "Compare datasets" }));
     expect(await screen.findByText(/fewer than two datasets returned results/)).toBeInTheDocument();
     expect(screen.getByText(/each is shown on its own axis/)).toBeInTheDocument();
+  });
+
+  it("adds Comparison and Evaluation Lab result views without replacing comparison details", async () => {
+    renderPage(evaluationResponse());
+    await userEvent.click(await screen.findByRole("button", { name: "Compare datasets" }));
+
+    const resultViews = await screen.findByRole("tablist", { name: "Result view" });
+    expect(within(resultViews).getByRole("tab", { name: "Comparison" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByText("Trend summary")).toBeInTheDocument();
+
+    await userEvent.click(within(resultViews).getByRole("tab", { name: "Evaluation Lab" }));
+    expect(await screen.findByText("Coverage and quality control")).toBeInTheDocument();
+    expect(screen.queryByText("Trend summary")).not.toBeInTheDocument();
+
+    await userEvent.click(within(resultViews).getByRole("tab", { name: "Comparison" }));
+    expect(screen.getByText("Trend summary")).toBeInTheDocument();
+    expect(screen.getByRole("tablist", { name: "Comparison dataset view" })).toBeInTheDocument();
+  });
+
+  it("resets to Comparison for a replacement request and does not retain stale lab evidence", async () => {
+    renderPage(evaluationResponse());
+    await userEvent.click(await screen.findByRole("button", { name: "Compare datasets" }));
+    await userEvent.click(await screen.findByRole("tab", { name: "Evaluation Lab" }));
+    expect(screen.getByText("Coverage and quality control")).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("checkbox", { name: /^C/ }));
+    expect(screen.queryByText("Coverage and quality control")).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Compare datasets" }));
+
+    expect(await screen.findByText("Trend summary")).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Comparison" })).toHaveAttribute("aria-selected", "true");
   });
 });
 
