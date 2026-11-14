@@ -29,7 +29,7 @@ METHODS = {
     },
     "mann_kendall": {
         "name": "Mann–Kendall trend test",
-        "definition": "S = Σ_{i<j} sign(yⱼ − yᵢ); tie-corrected variance; continuity-corrected Z; two-sided p-value; Kendall τ = S / number of pairs.",
+        "definition": "S = Σ_{i<j} sign(yⱼ − yᵢ); tie-corrected variance; continuity-corrected Z; two-sided p-value; Kendall τ = S / √(n₀(n₀ − n₁)), where n₀ = n(n − 1)/2 is the number of pairs and n₁ = Σ t(t − 1)/2 counts pairs tied in value (tie-adjusted τ-b; years never tie).",
         "role": "Tests for evidence of a monotonic trend; reported only after the lag-1 dependence screen and with enough eligible years.",
     },
     "serial_dependence": {
@@ -39,7 +39,7 @@ METHODS = {
     },
     "seasonal_kendall": {
         "name": "Seasonal Kendall test and seasonal Sen slope",
-        "definition": "Mann–Kendall S and variance computed within each calendar month across years and summed; slope = median of all within-month pairwise slopes (Hirsch, Slack & Smith 1982).",
+        "definition": "Mann–Kendall S and variance computed within each calendar month across years and summed; τ = summed S / total number of within-month pairs (no tie adjustment); slope = median of all within-month pairwise slopes (Hirsch, Slack & Smith 1982).",
         "role": "Used for NDVI, where cloud gaps leave few complete years.",
     },
     "deseasonalized_ols": {
@@ -128,8 +128,10 @@ def _seasonal_block(trend: dict[str, Any], monthly: dict[tuple[int, int], float]
         "comparison_note": ("Both slopes use the same monthly observations (months in at least 70% of years). The seasonal Sen "
                             "slope is a median of within-month pairwise slopes; the deseasonalized OLS slope fits monthly anomalies "
                             "by least squares. They are related but not identical estimators, and neither is an annual-value trend. "
-                            "The deseasonalized OLS pools months against decimal year, which can slightly understate the slope "
-                            "(about 2% on perfectly linear test data)."),
+                            "The deseasonalized OLS regresses month-centred values on decimal year without centring the time "
+                            "axis within each month. On one synthetic unit-test fixture (an exactly linear series over 10 "
+                            "years and 5 months) this gave a slope about 2% below the true value; that figure is specific "
+                            "to that fixture, is not an expected bias for other data, and must not be used as a correction."),
         "availability_rule": "A calendar month is used only if it has data in at least 70% of the years (and at least 3 years).",
     }
 

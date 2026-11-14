@@ -221,11 +221,18 @@ describe("Scientific Evaluation integration", () => {
 });
 
 describe("estimator reading", () => {
-  it("judges the OLS slope against the Theil–Sen interval, not a percentage", async () => {
-    const { estimatorReading } = await import("./components/methodslab/MethodsLab");
-    expect(estimatorReading(0.0295, [-0.0718, 0.0978])).toMatch(/inside the Theil–Sen 95% interval/);
-    expect(estimatorReading(0.9, [0.1, 0.3])).toMatch(/falls outside/);
-    expect(estimatorReading(0.03, null)).toMatch(/cannot be judged/);
-    expect(estimatorReading(null, [0, 1])).toBe("");
+  it("reports the slope difference descriptively without claiming agreement or attributing causes", async () => {
+    const { ESTIMATOR_READING } = await import("./components/methodslab/MethodsLab");
+    expect(ESTIMATOR_READING).toMatch(/No formal test of agreement between the estimators was performed/);
+    expect(ESTIMATOR_READING).toMatch(/not in the difference between the two estimators/);
+    expect(ESTIMATOR_READING).not.toMatch(/consistent|agree(?!ment)|outlier|ends of the record|likely/i);
+  });
+
+  it("shows that reading under the slope difference, whatever the interval", () => {
+    render(<MethodsLab analysis={analysis(annualLab())} />);
+    fireEvent.click(screen.getByRole("tab", { name: "OLS vs Theil–Sen" }));
+    const diff = screen.getByTestId("slope-difference");
+    expect(diff).toHaveTextContent("No formal test of agreement");
+    expect(diff).not.toHaveTextContent(/consistent|outlier/i);
   });
 });

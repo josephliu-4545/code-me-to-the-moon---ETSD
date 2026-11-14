@@ -17,14 +17,15 @@ export const LAB_TABS = [
 ] as const;
 type TabId = (typeof LAB_TABS)[number]["id"];
 
-/** Judge the OLS–Theil–Sen difference against the Theil–Sen interval, never against an arbitrary percentage. */
-export function estimatorReading(olsSlope: number | null, ci: [number, number] | null): string {
-  if (olsSlope === null) return "";
-  if (!ci) return "No Theil–Sen interval is available for this result, so the size of the difference cannot be judged against the uncertainty.";
-  return olsSlope >= ci[0] && olsSlope <= ci[1]
-    ? "The OLS slope lies inside the Theil–Sen 95% interval, so the two estimators are consistent given the uncertainty."
-    : "The OLS slope falls outside the Theil–Sen 95% interval: a few years (outliers or the ends of the record) are likely pulling the least-squares line.";
-}
+/**
+ * Descriptive reading of the OLS–Theil–Sen difference. The Theil–Sen interval is an interval for the
+ * Theil–Sen slope only, not for the difference between estimators, so it is never used to judge agreement,
+ * and the difference is never attributed to particular years without evidence.
+ */
+export const ESTIMATOR_READING =
+  "Both slopes are reported descriptively. No formal test of agreement between the estimators was performed: " +
+  "the Theil–Sen 95% interval describes uncertainty in the Theil–Sen slope only, not in the difference between " +
+  "the two estimators, and the difference is not attributed to particular years.";
 
 function Unavailable({ children }: { children: React.ReactNode }) {
   return <p className="lab-unavailable" role="note"><strong>Not available:</strong> {children}</p>;
@@ -118,7 +119,7 @@ function Estimators({ lab, a }: { lab: Lab; a: Analysis }) {
         <>
           <p data-testid="slope-difference">
             OLS minus Theil–Sen: <strong className="mono">{signed(c.slope_difference, 4)} {c.slope_units}</strong> on the same {c.n} eligible years.{" "}
-            {estimatorReading(o.slope, t.confidence_interval)}
+            {ESTIMATOR_READING}
           </p>
           <MethodComparisonChart lab={lab} units={a.units.annual_value} />
           <p className="note">{o.inference_note}</p>

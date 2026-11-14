@@ -177,3 +177,34 @@ def test_normalise_ndvi_returns_seasonal_lab_from_live_fixture() -> None:
     assert lab["applicable"]["seasonal"] is True and lab["comparison"] if "comparison" in lab else True
     assert lab["seasonal"]["months_used"] == out["trend"]["months_used"]
     assert lab["seasonal"]["seasonal_sen_slope"] == out["trend"]["slope"]
+
+
+def test_mann_kendall_tau_definition_matches_the_backend_calculation() -> None:
+    from math import sqrt
+
+    from app.statistics.trend import _mann_kendall
+
+    d = METHODS["mann_kendall"]["definition"]
+    assert "√(n₀(n₀ − n₁))" in d and "tie-adjusted" in d and "S / number of pairs" not in d
+    # Verify the documented formula against the unchanged engine on a series with tied values.
+    values = [1.0, 2.0, 2.0, 3.0, 3.0, 3.0, 5.0, 4.0, 6.0]
+    mk = _mann_kendall(values, 0.05)
+    assert mk is not None
+    n = len(values)
+    s = sum((values[j] > values[i]) - (values[j] < values[i]) for i in range(n) for j in range(i + 1, n))
+    n0 = n * (n - 1) / 2
+    n1 = sum(c * (c - 1) / 2 for c in (values.count(v) for v in set(values)))
+    assert mk.tau == pytest.approx(s / sqrt(n0 * (n0 - n1)))
+    assert mk.tau != pytest.approx(s / n0)
+    assert "no tie adjustment" in METHODS["seasonal_kendall"]["definition"]
+
+
+def test_deseasonalized_note_does_not_present_the_fixture_gap_as_a_general_bias() -> None:
+    monthly = {(y, m): 0.4 + 0.01 * (y - 2015) + 0.05 * m for y in range(2015, 2025) for m in (1, 2, 3, 11, 12)}
+    t = {"method": "seasonal_kendall", "months_used": [1, 2, 3, 11, 12], "eligible_years": list(range(2015, 2025)),
+         "sample_count": 50, "slope": 0.01, "slope_units": "NDVI units/year", "confidence_interval": None,
+         "confidence_interval_unavailable_reason": "n/a", "mann_kendall": None, "serial_dependence": None, "change_point": None}
+    note = build_methods_lab("ndvi", [], t, monthly)["seasonal"]["comparison_note"]
+    assert "synthetic unit-test fixture" in note
+    assert "not an expected bias" in note and "must not be used as a correction" in note
+    assert "perfectly linear test data" not in note
