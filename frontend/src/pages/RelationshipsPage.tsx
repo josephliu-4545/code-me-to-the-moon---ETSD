@@ -69,7 +69,15 @@ export default function RelationshipsPage({ variables, selection }: { variables:
   const maxYears = Math.min(...[a, b].map((id) => variables.find((v) => v.id === id)?.max_years ?? 10));
   const span = selection.endYearInclusive - selection.startYear + 1;
   const tooLong = span > maxYears;
-  const data = q.data;
+  const submittedIsCurrent = submitted !== null
+    && submitted.a === a
+    && submitted.b === b
+    && submitted.lat === Number(selection.latitude.toFixed(4))
+    && submitted.lon === Number(selection.longitude.toFixed(4))
+    && submitted.from === selection.startYear
+    && submitted.to === selection.endYearInclusive + 1
+    && submitted.ds === selection.dataset;
+  const data = submittedIsCurrent ? q.data : undefined;
   const va = data?.variables[0];
   const vb = data?.variables[1];
   const unitsA = va ? data?.results[va]?.units.annual_value : undefined;
@@ -115,7 +123,7 @@ export default function RelationshipsPage({ variables, selection }: { variables:
           </button>
         </div>
 
-        {!submitted && (
+        {!submittedIsCurrent && (
           <div className="reading-guide">
             <h2 className="guide-title">How to read a comparison</h2>
             <div className="guide-grid">
@@ -127,8 +135,8 @@ export default function RelationshipsPage({ variables, selection }: { variables:
           </div>
         )}
 
-        {q.isFetching && <Loading label="Retrieving both variables…" />}
-        {q.isError && <ErrorBox error={q.error} onRetry={() => q.refetch()} />}
+        {submittedIsCurrent && q.isFetching && <Loading label="Retrieving both variables…" />}
+        {submittedIsCurrent && q.isError && <ErrorBox error={q.error} onRetry={() => q.refetch()} />}
         {data && va && vb && !q.isFetching && (
           <>
           <section className="pair-timeline reveal" aria-labelledby="pt-h">

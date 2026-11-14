@@ -150,6 +150,16 @@ describe("Compare datasets page", () => {
     expect(screen.getByRole("button", { name: "Compare datasets" })).toBeDisabled();
   });
 
+  it("does not present submitted comparison results as current after dataset controls change", async () => {
+    renderPage(compareResponse());
+    await userEvent.click(await screen.findByRole("button", { name: "Compare datasets" }));
+    expect(await screen.findByText(/Agreement: Conflicting trend direction/)).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("checkbox", { name: /^C/ }));
+
+    expect(screen.queryByText(/Agreement: Conflicting trend direction/)).not.toBeInTheDocument();
+  });
+
   it("explains when no comparison is possible and shows separate charts for different quantities", async () => {
     const resp = compareResponse({ comparison: null, comparison_unavailable_reason: "fewer than two datasets returned results" });
     renderPage(resp);
