@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     ee_project_id: str | None = None
     # Shared deployments: path to a service-account JSON key kept OUTSIDE the repository.
     ee_service_account_key_file: str | None = None
+    # Keyless alternative (recommended on Cloud Run): use Application Default Credentials, e.g. the
+    # service account attached to the service. Mutually exclusive with EE_SERVICE_ACCOUNT_KEY_FILE.
+    ee_use_application_default_credentials: bool = False
     ee_max_concurrent_operations: int = Field(default=2, ge=1, le=16)
     ee_request_timeout_seconds: float = Field(default=60.0, gt=0)
     # Seconds a request waits for a free Earth Engine / NASA POWER slot before 503 "busy".
@@ -78,7 +81,12 @@ class Settings(BaseSettings):
     # Shared deployments: comma-separated team access keys (X-API-Key) and per-client rate limit.
     api_keys: str | None = None
     rate_limit_per_minute: int = Field(default=0, ge=0, le=10000)
+    # Forwarding headers are client-controlled. They are used only when TRUST_PROXY_HEADERS is on AND the
+    # direct peer is in TRUSTED_PROXY_IPS (comma-separated IPs/CIDRs, or "*" only on platforms whose
+    # ingress always passes through their own proxy). TRUSTED_PROXY_HOPS = trusted proxies that append.
     trust_proxy_headers: bool = False
+    trusted_proxy_ips: str | None = None
+    trusted_proxy_hops: int = Field(default=1, ge=0, le=10)
     unified_cache_max_entries: int = Field(default=128, ge=1, le=2048)
     unified_cache_ttl_seconds: float = Field(default=3600, gt=0)
 

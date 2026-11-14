@@ -7,12 +7,21 @@ Both are off by default, so local development is unchanged:
 
 Keys are compared in constant time and never echoed. Clients are identified by a
 short hash, so keys never appear in logs or memory structures as plain text.
+
+Client addresses for IP-based limits come from the direct TCP peer. Forwarding headers
+(X-Forwarded-For) are client-controlled and are used only when TRUST_PROXY_HEADERS is on
+AND the direct peer is a configured trusted proxy (TRUSTED_PROXY_IPS). The client address is
+then read TRUSTED_PROXY_HOPS entries from the right of the header, i.e. the address written by
+the outermost trusted proxy; anything a client prepends is ignored. Malformed or too-short
+headers fall back to the direct peer, never to the unverified text.
 """
 
 from dataclasses import dataclass, field
 import hashlib
 import hmac
+import ipaddress
 import math
+import re
 import time
 from threading import Lock
 from typing import Callable
@@ -60,23 +69,102 @@ class TokenBucket:
             return (cost - tokens) / rate
 
 
+Network = ipaddress.IPv4Network | ipaddress.IPv6Network
+
+
+@dataclass(frozen=True)
+class ProxyTrust:
+    """Which direct peers may set X-Forwarded-For, and how many trusted proxies append to it."""
+
+    enabled: bool = False
+    networks: tuple[Network, ...] = ()
+    any_peer: bool = False
+    hops: int = 1
+    # Why forwarding headers are ignored despite TRUST_PROXY_HEADERS (a misconfiguration), if so.
+    ignored_reason: str | None = None
+
+    def describe(self) -> dict[str, object]:
+        """Status summary without addresses (no infrastructure details are published)."""
+        if not self.enabled:
+            mode = "direct_peer_only"
+        elif self.any_peer:
+            mode = "platform_proxy_any_peer"
+        else:
+            mode = "trusted_proxy_list"
+        return {"mode": mode, "trusted_proxy_hops": self.hops if self.enabled else None,
+                "trusted_proxy_count": len(self.networks) if self.enabled and not self.any_peer else None}
+
+
+def parse_proxy_trust(trust_headers: bool, trusted_ips: str | None, hops: int = 1) -> ProxyTrust:
+    """Build the trust boundary. Any misconfiguration fails safe: headers are ignored."""
+    if not trust_headers:
+        return ProxyTrust()
+    if hops < 1:
+        return ProxyTrust(ignored_reason="TRUSTED_PROXY_HOPS must be at least 1; forwarding headers are ignored.")
+    entries = [e.strip() for e in (trusted_ips or "").split(",") if e.strip()]
+    if not entries:
+        return ProxyTrust(ignored_reason=(
+            "TRUST_PROXY_HEADERS is on but TRUSTED_PROXY_IPS is empty; forwarding headers are ignored "
+            "and clients are identified by their direct connection address."))
+    if entries == ["*"]:
+        return ProxyTrust(enabled=True, any_peer=True, hops=hops)
+    networks: list[Network] = []
+    for entry in entries:
+        try:
+            networks.append(ipaddress.ip_network(entry, strict=False))
+        except ValueError:
+            return ProxyTrust(ignored_reason="TRUSTED_PROXY_IPS contains an invalid address or network; forwarding headers are ignored.")
+    return ProxyTrust(enabled=True, networks=tuple(networks), hops=hops)
+
+
+_IPV4_WITH_PORT = re.compile(r"^(\d{1,3}(?:\.\d{1,3}){3}):\d{1,5}$")
+_IPV6_BRACKETED = re.compile(r"^\[([0-9A-Fa-f:.]+)\](?::\d{1,5})?$")
+
+
+def _parse_ip(value: str | None) -> ipaddress.IPv4Address | ipaddress.IPv6Address | None:
+    if not value:
+        return None
+    text = value.strip().strip('"')
+    match = _IPV4_WITH_PORT.match(text) or _IPV6_BRACKETED.match(text)
+    if match:
+        text = match.group(1)
+    try:
+        address = ipaddress.ip_address(text)
+    except ValueError:
+        return None
+    # Report IPv4-mapped IPv6 peers as plain IPv4 so one client has one identity.
+    return address.ipv4_mapped or address if isinstance(address, ipaddress.IPv6Address) else address
+
+
+def client_address(peer: str | None, forwarded_for: list[str], trust: ProxyTrust) -> str:
+    """Address used to identify a client for rate limiting (see module docstring)."""
+    peer_ip = _parse_ip(peer)
+    direct = str(peer_ip) if peer_ip else "unknown"
+    if not trust.enabled or not forwarded_for:
+        return direct
+    if not trust.any_peer and (peer_ip is None or not any(peer_ip in net for net in trust.networks)):
+        return direct  # not from a trusted proxy: the header is client-controlled
+    entries = [e.strip() for header in forwarded_for for e in header.split(",")]
+    if len(entries) < trust.hops:
+        return direct
+    candidate = _parse_ip(entries[len(entries) - trust.hops])
+    return str(candidate) if candidate else direct
+
+
 def cost_for(path: str) -> int:
     return next((c for prefix, c in HEAVY_PREFIXES.items() if path.startswith(prefix)), 1)
 
 
 class AccessControlMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app, api_keys: tuple[str, ...], bucket: TokenBucket | None, trust_proxy_headers: bool = False) -> None:
+    def __init__(self, app, api_keys: tuple[str, ...], bucket: TokenBucket | None, proxy_trust: ProxyTrust | None = None) -> None:
         super().__init__(app)
         self._keys = api_keys
         self._bucket = bucket
-        self._trust_proxy = trust_proxy_headers
+        self._proxy_trust = proxy_trust or ProxyTrust()
 
     def _client_ip(self, request: Request) -> str:
-        if self._trust_proxy:
-            forwarded = request.headers.get("x-forwarded-for")
-            if forwarded:
-                return forwarded.split(",")[0].strip()
-        return request.client.host if request.client else "unknown"
+        peer = request.client.host if request.client else None
+        return client_address(peer, request.headers.getlist("x-forwarded-for"), self._proxy_trust)
 
     async def dispatch(self, request: Request, call_next):
         path = request.url.path
