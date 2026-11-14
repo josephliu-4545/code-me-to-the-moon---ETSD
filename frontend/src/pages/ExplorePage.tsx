@@ -32,6 +32,8 @@ interface Props {
   submittedPlace: string;
   snapshot: Analysis | null;
   onSnapshot: (value: Analysis | null) => void;
+  /** Shared loader (App): loads the saved snapshot for the submitted request; resolves false if none exists. */
+  onLoadSnapshot?: () => Promise<boolean>;
 }
 
 export function footprintFor(selection: Selection, analysis: Analysis | undefined): Footprint | null {
@@ -62,7 +64,7 @@ function scrollToEl(el: HTMLElement | null) {
   el?.scrollIntoView?.({ behavior: reduce ? "auto" : "smooth", block: "start" });
 }
 
-export default function ExplorePage({ variables, selection, onChange, submitted, onSubmit, submittedPlace, snapshot, onSnapshot, theme = "dark" }: Props) {
+export default function ExplorePage({ variables, selection, onChange, submitted, onSubmit, submittedPlace, snapshot, onSnapshot, onLoadSnapshot, theme = "dark" }: Props) {
   const queryClient = useQueryClient();
   const [cancelled, setCancelled] = useState(false);
   const query = useAnalysis(submitted);
@@ -97,6 +99,10 @@ export default function ExplorePage({ variables, selection, onChange, submitted,
 
   async function loadSnapshot() {
     if (!submitted) return;
+    if (onLoadSnapshot) {
+      setSnapshotMissing(!(await onLoadSnapshot()));
+      return;
+    }
     const s = await findSnapshot(submitted);
     onSnapshot(s);
     setSnapshotMissing(!s);

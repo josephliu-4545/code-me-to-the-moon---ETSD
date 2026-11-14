@@ -1,1 +1,1165 @@
-{"variable":{"id":"precipitation","name":"Precipitation","description":"Annual total precipitation from twelve monthly accumulations.","annual_value_definition":"sum of 12 monthly accumulations"},"dataset":{"source":"NASA GPM IMERG","id":"NASA/GPM_L3/IMERG_MONTHLY_V07","version":"V07 Final (monthly)","provenance":"satellite–gauge merged estimate","doi":"10.5067/GPM/IMERG/3B-MONTH/07"},"spatial_support":{"mode":"point","type":"native_grid_cell","description":"IMERG native 0.1° grid cell containing the point","native_grid":"0.1°","cell":{"id":"imerg-v07:1068:2761","center":[16.849999999999994,96.15000000000003],"bounds":{"south":16.799999999999994,"north":16.899999999999995,"west":96.10000000000004,"east":96.20000000000003},"approximate":false},"resolution":"0.1° grid cell (≈11 km)","requested":{"latitude":16.8661,"longitude":96.1951}},"period":{"start":"2015-01-01","end_exclusive":"2025-01-01"},"units":{"annual_value":"mm/year","slope":"mm/year²"},"annual":[{"year":2015,"value":3439.320123977959,"eligible":true,"reasons":[],"complete_calendar_year":true,"coverage_percentage":100.0,"represented_months":[1,2,3,4,5,6,7,8,9,10,11,12],"missing_months":[],"extra":{"observed_accumulation_mm":3439.320123977959}},{"year":2016,"value":3469.1762154735625,"eligible":true,"reasons":[],"complete_calendar_year":true,"coverage_percentage":100.0,"represented_months":[1,2,3,4,5,6,7,8,9,10,11,12],"missing_months":[],"extra":{"observed_accumulation_mm":3469.1762154735625}},{"year":2017,"value":3470.6641698405147,"eligible":true,"reasons":[],"complete_calendar_year":true,"coverage_percentage":100.0,"represented_months":[1,2,3,4,5,6,7,8,9,10,11,12],"missing_months":[],"extra":{"observed_accumulation_mm":3470.6641698405147}},{"year":2018,"value":3522.192089645192,"eligible":true,"reasons":[],"complete_calendar_year":true,"coverage_percentage":100.0,"represented_months":[1,2,3,4,5,6,7,8,9,10,11,12],"missing_months":[],"extra":{"observed_accumulation_mm":3522.192089645192}},{"year":2019,"value":3311.2080891039222,"eligible":true,"reasons":[],"complete_calendar_year":true,"coverage_percentage":100.0,"represented_months":[1,2,3,4,5,6,7,8,9,10,11,12],"missing_months":[],"extra":{"observed_accumulation_mm":3311.2080891039222}},{"year":2020,"value":2709.168115952052,"eligible":true,"reasons":[],"complete_calendar_year":true,"coverage_percentage":100.0,"represented_months":[1,2,3,4,5,6,7,8,9,10,11,12],"missing_months":[],"extra":{"observed_accumulation_mm":2709.168115952052}},{"year":2021,"value":3011.6161235673353,"eligible":true,"reasons":[],"complete_calendar_year":true,"coverage_percentage":100.0,"represented_months":[1,2,3,4,5,6,7,8,9,10,11,12],"missing_months":[],"extra":{"observed_accumulation_mm":3011.6161235673353}},{"year":2022,"value":3064.320142015815,"eligible":true,"reasons":[],"complete_calendar_year":true,"coverage_percentage":100.0,"represented_months":[1,2,3,4,5,6,7,8,9,10,11,12],"missing_months":[],"extra":{"observed_accumulation_mm":3064.320142015815}},{"year":2023,"value":3203.16012340039,"eligible":true,"reasons":[],"complete_calendar_year":true,"coverage_percentage":100.0,"represented_months":[1,2,3,4,5,6,7,8,9,10,11,12],"missing_months":[],"extra":{"observed_accumulation_mm":3203.16012340039}},{"year":2024,"value":3376.584203861654,"eligible":true,"reasons":[],"complete_calendar_year":true,"coverage_percentage":100.0,"represented_months":[1,2,3,4,5,6,7,8,9,10,11,12],"missing_months":[],"extra":{"observed_accumulation_mm":3376.584203861654}}],"series":[{"date":"2015-01-01","value":29.016000598669052},{"date":"2015-02-01","value":1.3440000638365746},{"date":"2015-03-01","value":16.36800129711628},{"date":"2015-04-01","value":65.52000403404236},{"date":"2015-05-01","value":330.33602643013},{"date":"2015-06-01","value":766.8000411987305},{"date":"2015-07-01","value":873.456018447876},{"date":"2015-08-01","value":553.5360131263733},{"date":"2015-09-01","value":435.60001373291016},{"date":"2015-10-01","value":302.8080039024353},{"date":"2015-11-01","value":50.40000021457672},{"date":"2015-12-01","value":14.13600093126297},{"date":"2016-01-01","value":50.592002749443054},{"date":"2016-02-01","value":4.872000150382519},{"date":"2016-03-01","value":2.976000141352415},{"date":"2016-04-01","value":46.080002188682556},{"date":"2016-05-01","value":373.48802518844604},{"date":"2016-06-01","value":537.8400278091431},{"date":"2016-07-01","value":762.6000709533691},{"date":"2016-08-01","value":773.0160255432129},{"date":"2016-09-01","value":514.0800333023071},{"date":"2016-10-01","value":345.9600248336792},{"date":"2016-11-01","value":33.12000274658203},{"date":"2016-12-01","value":24.551999866962433},{"date":"2017-01-01","value":4.464000038802624},{"date":"2017-02-01","value":0.6720000319182873},{"date":"2017-03-01","value":2.232000019401312},{"date":"2017-04-01","value":78.48000347614288},{"date":"2017-05-01","value":430.03200674057007},{"date":"2017-06-01","value":703.4400415420532},{"date":"2017-07-01","value":851.1360397338867},{"date":"2017-08-01","value":504.43202447891235},{"date":"2017-09-01","value":428.40002059936523},{"date":"2017-10-01","value":397.29602909088135},{"date":"2017-11-01","value":62.64000356197357},{"date":"2017-12-01","value":7.440000526607037},{"date":"2018-01-01","value":7.440000526607037},{"date":"2018-02-01","value":4.032000035047531},{"date":"2018-03-01","value":1.4880000706762075},{"date":"2018-04-01","value":77.0400059223175},{"date":"2018-05-01","value":299.08800745010376},{"date":"2018-06-01","value":732.9600048065186},{"date":"2018-07-01","value":956.7840099334717},{"date":"2018-08-01","value":679.2720351219177},{"date":"2018-09-01","value":355.6800127029419},{"date":"2018-10-01","value":338.52000975608826},{"date":"2018-11-01","value":46.080002188682556},{"date":"2018-12-01","value":23.80800113081932},{"date":"2019-01-01","value":48.360003769397736},{"date":"2019-02-01","value":2.0160000175237656},{"date":"2019-03-01","value":0.0},{"date":"2019-04-01","value":10.080000311136246},{"date":"2019-05-01","value":228.40800833702087},{"date":"2019-06-01","value":492.4800109863281},{"date":"2019-07-01","value":708.2880163192749},{"date":"2019-08-01","value":1054.248041152954},{"date":"2019-09-01","value":456.4800024032593},{"date":"2019-10-01","value":148.80000221729279},{"date":"2019-11-01","value":160.56000351905823},{"date":"2019-12-01","value":1.4880000706762075},{"date":"2020-01-01","value":1.4880000706762075},{"date":"2020-02-01","value":2.0880000181496143},{"date":"2020-03-01","value":0.7440000353381038},{"date":"2020-04-01","value":26.640000343322754},{"date":"2020-05-01","value":177.81600558757782},{"date":"2020-06-01","value":635.040020942688},{"date":"2020-07-01","value":459.04803228378296},{"date":"2020-08-01","value":607.1040329933167},{"date":"2020-09-01","value":423.35999965667725},{"date":"2020-10-01","value":310.24801898002625},{"date":"2020-11-01","value":63.360005021095276},{"date":"2020-12-01","value":2.232000019401312},{"date":"2021-01-01","value":1.4880000706762075},{"date":"2021-02-01","value":0.6720000319182873},{"date":"2021-03-01","value":1.4880000706762075},{"date":"2021-04-01","value":120.96000909805298},{"date":"2021-05-01","value":198.64801454544067},{"date":"2021-06-01","value":760.319995880127},{"date":"2021-07-01","value":627.9360308647156},{"date":"2021-08-01","value":372.7440347671509},{"date":"2021-09-01","value":545.7600116729736},{"date":"2021-10-01","value":334.05602288246155},{"date":"2021-11-01","value":46.80000364780426},{"date":"2021-12-01","value":0.7440000353381038},{"date":"2022-01-01","value":8.928000077605247},{"date":"2022-02-01","value":10.080000400543213},{"date":"2022-03-01","value":34.96800157427788},{"date":"2022-04-01","value":53.28000068664551},{"date":"2022-05-01","value":474.6720085144043},{"date":"2022-06-01","value":479.52000617980957},{"date":"2022-07-01","value":585.5280447006226},{"date":"2022-08-01","value":710.5200319290161},{"date":"2022-09-01","value":437.0400381088257},{"date":"2022-10-01","value":200.88000798225403},{"date":"2022-11-01","value":53.28000068664551},{"date":"2022-12-01","value":15.624001175165176},{"date":"2023-01-01","value":0.0},{"date":"2023-02-01","value":7.392000585794449},{"date":"2023-03-01","value":11.90400056540966},{"date":"2023-04-01","value":5.040000155568123},{"date":"2023-05-01","value":173.35200762748718},{"date":"2023-06-01","value":642.2400140762329},{"date":"2023-07-01","value":641.3280358314514},{"date":"2023-08-01","value":610.8240294456482},{"date":"2023-09-01","value":645.8400106430054},{"date":"2023-10-01","value":421.8480234146118},{"date":"2023-11-01","value":37.440000772476196},{"date":"2023-12-01","value":5.95200028270483},{"date":"2024-01-01","value":6.696000404655933},{"date":"2024-02-01","value":0.0},{"date":"2024-03-01","value":10.416000321507454},{"date":"2024-04-01","value":22.32000097632408},{"date":"2024-05-01","value":348.19201827049255},{"date":"2024-06-01","value":497.5200319290161},{"date":"2024-07-01","value":902.4720439910889},{"date":"2024-08-01","value":513.3600425720215},{"date":"2024-09-01","value":551.5200233459473},{"date":"2024-10-01","value":389.85603618621826},{"date":"2024-11-01","value":124.56000566482544},{"date":"2024-12-01","value":9.67200019955635}],"series_definition":"monthly accumulation (mm/month)","trend":{"result_level":"descriptive_slope","result_level_label":"Descriptive slope only (no significance test)","eligible_years":[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"excluded_years":[],"missing_years":[],"slope":-29.520000072196126,"intercept":62959.536292282864,"slope_units":"mm/year²","confidence_interval":null,"confidence_interval_unavailable_reason":"Inferential confidence interval not supported","mann_kendall":null,"serial_dependence":{"adjacent_pair_count":9,"lag1_spearman_rho":0.5606743638663345,"diagnostic_p_value":0.11632679499319278,"status":"material_dependence_detected","caveat":"Failure to detect lag-1 autocorrelation does not prove independence; the diagnostic may have low power.","supported_for_standard_inference":false,"unavailable_reason":"Material lag-1 serial dependence detected"},"slope_unavailable_reason":null,"significance_unavailable_reason":"Material lag-1 serial dependence detected"},"coverage":{"years_requested":10,"eligible_years":10,"excluded_years":[]},"methodology":{"source":{"conversion":"monthly mean rate × 24 × actual calendar days","annual_aggregation":"sum of twelve valid monthly accumulations","trend_input":"complete eligible annual accumulations","missing_values":"retained as missing; never interpreted as zero or interpolated"},"trend_method":{"slope":"Theil-Sen median of pairwise slopes (SciPy theilslopes, method='separate')","significance":"two-sided Mann-Kendall test with tie correction, alpha from policy","serial_dependence_screen":"lag-1 Spearman correlation of Theil-Sen residuals","confidence_interval":"Theil-Sen 95% interval, reported only when inference is supported","inference_caveat":"Mann-Kendall significance is reported only after a lag-1 serial-dependence screen. An independent Monte Carlo check (5,000 replications) found that this screened test can reject a true no-trend hypothesis more often than the nominal 5% when annual values are autocorrelated (about 10.5% at n = 45, lag-1 autocorrelation 0.3). Treat 'statistically significant' as indicative, not as a guaranteed 5% false-positive rate.","descriptive_slope_note":"The Theil-Sen slope is a robust descriptive rate of change over the eligible years only. It is not a forecast and does not identify a cause."}},"caveats":["Mann-Kendall significance is reported only after a lag-1 serial-dependence screen. An independent Monte Carlo check (5,000 replications) found that this screened test can reject a true no-trend hypothesis more often than the nominal 5% when annual values are autocorrelated (about 10.5% at n = 45, lag-1 autocorrelation 0.3). Treat 'statistically significant' as indicative, not as a guaranteed 5% false-positive rate.","The Theil-Sen slope is a robust descriptive rate of change over the eligible years only. It is not a forecast and does not identify a cause."],"limitations":["IMERG is a satellite-gauge gridded estimate, not a rain-gauge measurement or administrative-region average.","The 0.1 degree native grid is not 5 km spatial resolution.","Monthly products support accumulation analysis, not precipitation intensity or event extremes.","Monthly availability does not prove completeness of every underlying half-hour interval.","Version 07 is pinned and is not mixed with Version 08."],"extra":{},"data_status":"saved_snapshot"}
+{
+ "variable": {
+  "id": "precipitation",
+  "name": "Precipitation",
+  "description": "Annual total precipitation from twelve monthly accumulations.",
+  "annual_value_definition": "sum of 12 monthly accumulations"
+ },
+ "dataset": {
+  "source": "NASA GPM IMERG",
+  "id": "NASA/GPM_L3/IMERG_MONTHLY_V07",
+  "version": "V07 Final (monthly)",
+  "provenance": "satellite–gauge merged estimate",
+  "doi": "10.5067/GPM/IMERG/3B-MONTH/07"
+ },
+ "spatial_support": {
+  "mode": "point",
+  "type": "native_grid_cell",
+  "description": "IMERG native 0.1° grid cell containing the point",
+  "native_grid": "0.1°",
+  "cell": {
+   "id": "imerg-v07:1068:2761",
+   "center": [
+    16.849999999999994,
+    96.15000000000003
+   ],
+   "bounds": {
+    "south": 16.799999999999994,
+    "north": 16.899999999999995,
+    "west": 96.10000000000004,
+    "east": 96.20000000000003
+   },
+   "approximate": false
+  },
+  "resolution": "0.1° grid cell (≈11 km)",
+  "requested": {
+   "latitude": 16.8661,
+   "longitude": 96.1951
+  }
+ },
+ "period": {
+  "start": "2015-01-01",
+  "end_exclusive": "2025-01-01",
+  "catalog_first_image": null,
+  "catalog_last_image": null
+ },
+ "annual": [
+  {
+   "year": 2015,
+   "value": 3439.320123977959,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": true,
+   "coverage_percentage": 100.0,
+   "represented_months": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "missing_months": [],
+   "extra": {
+    "observed_accumulation_mm": 3439.320123977959
+   }
+  },
+  {
+   "year": 2016,
+   "value": 3469.1762154735625,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": true,
+   "coverage_percentage": 100.0,
+   "represented_months": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "missing_months": [],
+   "extra": {
+    "observed_accumulation_mm": 3469.1762154735625
+   }
+  },
+  {
+   "year": 2017,
+   "value": 3470.6641698405147,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": true,
+   "coverage_percentage": 100.0,
+   "represented_months": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "missing_months": [],
+   "extra": {
+    "observed_accumulation_mm": 3470.6641698405147
+   }
+  },
+  {
+   "year": 2018,
+   "value": 3522.192089645192,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": true,
+   "coverage_percentage": 100.0,
+   "represented_months": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "missing_months": [],
+   "extra": {
+    "observed_accumulation_mm": 3522.192089645192
+   }
+  },
+  {
+   "year": 2019,
+   "value": 3311.2080891039222,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": true,
+   "coverage_percentage": 100.0,
+   "represented_months": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "missing_months": [],
+   "extra": {
+    "observed_accumulation_mm": 3311.2080891039222
+   }
+  },
+  {
+   "year": 2020,
+   "value": 2709.168115952052,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": true,
+   "coverage_percentage": 100.0,
+   "represented_months": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "missing_months": [],
+   "extra": {
+    "observed_accumulation_mm": 2709.168115952052
+   }
+  },
+  {
+   "year": 2021,
+   "value": 3011.6161235673353,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": true,
+   "coverage_percentage": 100.0,
+   "represented_months": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "missing_months": [],
+   "extra": {
+    "observed_accumulation_mm": 3011.6161235673353
+   }
+  },
+  {
+   "year": 2022,
+   "value": 3064.320142015815,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": true,
+   "coverage_percentage": 100.0,
+   "represented_months": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "missing_months": [],
+   "extra": {
+    "observed_accumulation_mm": 3064.320142015815
+   }
+  },
+  {
+   "year": 2023,
+   "value": 3203.16012340039,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": true,
+   "coverage_percentage": 100.0,
+   "represented_months": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "missing_months": [],
+   "extra": {
+    "observed_accumulation_mm": 3203.16012340039
+   }
+  },
+  {
+   "year": 2024,
+   "value": 3376.584203861654,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": true,
+   "coverage_percentage": 100.0,
+   "represented_months": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "missing_months": [],
+   "extra": {
+    "observed_accumulation_mm": 3376.584203861654
+   }
+  }
+ ],
+ "series": [
+  {
+   "date": "2015-01-01",
+   "value": 29.016000598669052
+  },
+  {
+   "date": "2015-02-01",
+   "value": 1.3440000638365746
+  },
+  {
+   "date": "2015-03-01",
+   "value": 16.36800129711628
+  },
+  {
+   "date": "2015-04-01",
+   "value": 65.52000403404236
+  },
+  {
+   "date": "2015-05-01",
+   "value": 330.33602643013
+  },
+  {
+   "date": "2015-06-01",
+   "value": 766.8000411987305
+  },
+  {
+   "date": "2015-07-01",
+   "value": 873.456018447876
+  },
+  {
+   "date": "2015-08-01",
+   "value": 553.5360131263733
+  },
+  {
+   "date": "2015-09-01",
+   "value": 435.60001373291016
+  },
+  {
+   "date": "2015-10-01",
+   "value": 302.8080039024353
+  },
+  {
+   "date": "2015-11-01",
+   "value": 50.40000021457672
+  },
+  {
+   "date": "2015-12-01",
+   "value": 14.13600093126297
+  },
+  {
+   "date": "2016-01-01",
+   "value": 50.592002749443054
+  },
+  {
+   "date": "2016-02-01",
+   "value": 4.872000150382519
+  },
+  {
+   "date": "2016-03-01",
+   "value": 2.976000141352415
+  },
+  {
+   "date": "2016-04-01",
+   "value": 46.080002188682556
+  },
+  {
+   "date": "2016-05-01",
+   "value": 373.48802518844604
+  },
+  {
+   "date": "2016-06-01",
+   "value": 537.8400278091431
+  },
+  {
+   "date": "2016-07-01",
+   "value": 762.6000709533691
+  },
+  {
+   "date": "2016-08-01",
+   "value": 773.0160255432129
+  },
+  {
+   "date": "2016-09-01",
+   "value": 514.0800333023071
+  },
+  {
+   "date": "2016-10-01",
+   "value": 345.9600248336792
+  },
+  {
+   "date": "2016-11-01",
+   "value": 33.12000274658203
+  },
+  {
+   "date": "2016-12-01",
+   "value": 24.551999866962433
+  },
+  {
+   "date": "2017-01-01",
+   "value": 4.464000038802624
+  },
+  {
+   "date": "2017-02-01",
+   "value": 0.6720000319182873
+  },
+  {
+   "date": "2017-03-01",
+   "value": 2.232000019401312
+  },
+  {
+   "date": "2017-04-01",
+   "value": 78.48000347614288
+  },
+  {
+   "date": "2017-05-01",
+   "value": 430.03200674057007
+  },
+  {
+   "date": "2017-06-01",
+   "value": 703.4400415420532
+  },
+  {
+   "date": "2017-07-01",
+   "value": 851.1360397338867
+  },
+  {
+   "date": "2017-08-01",
+   "value": 504.43202447891235
+  },
+  {
+   "date": "2017-09-01",
+   "value": 428.40002059936523
+  },
+  {
+   "date": "2017-10-01",
+   "value": 397.29602909088135
+  },
+  {
+   "date": "2017-11-01",
+   "value": 62.64000356197357
+  },
+  {
+   "date": "2017-12-01",
+   "value": 7.440000526607037
+  },
+  {
+   "date": "2018-01-01",
+   "value": 7.440000526607037
+  },
+  {
+   "date": "2018-02-01",
+   "value": 4.032000035047531
+  },
+  {
+   "date": "2018-03-01",
+   "value": 1.4880000706762075
+  },
+  {
+   "date": "2018-04-01",
+   "value": 77.0400059223175
+  },
+  {
+   "date": "2018-05-01",
+   "value": 299.08800745010376
+  },
+  {
+   "date": "2018-06-01",
+   "value": 732.9600048065186
+  },
+  {
+   "date": "2018-07-01",
+   "value": 956.7840099334717
+  },
+  {
+   "date": "2018-08-01",
+   "value": 679.2720351219177
+  },
+  {
+   "date": "2018-09-01",
+   "value": 355.6800127029419
+  },
+  {
+   "date": "2018-10-01",
+   "value": 338.52000975608826
+  },
+  {
+   "date": "2018-11-01",
+   "value": 46.080002188682556
+  },
+  {
+   "date": "2018-12-01",
+   "value": 23.80800113081932
+  },
+  {
+   "date": "2019-01-01",
+   "value": 48.360003769397736
+  },
+  {
+   "date": "2019-02-01",
+   "value": 2.0160000175237656
+  },
+  {
+   "date": "2019-03-01",
+   "value": 0.0
+  },
+  {
+   "date": "2019-04-01",
+   "value": 10.080000311136246
+  },
+  {
+   "date": "2019-05-01",
+   "value": 228.40800833702087
+  },
+  {
+   "date": "2019-06-01",
+   "value": 492.4800109863281
+  },
+  {
+   "date": "2019-07-01",
+   "value": 708.2880163192749
+  },
+  {
+   "date": "2019-08-01",
+   "value": 1054.248041152954
+  },
+  {
+   "date": "2019-09-01",
+   "value": 456.4800024032593
+  },
+  {
+   "date": "2019-10-01",
+   "value": 148.80000221729279
+  },
+  {
+   "date": "2019-11-01",
+   "value": 160.56000351905823
+  },
+  {
+   "date": "2019-12-01",
+   "value": 1.4880000706762075
+  },
+  {
+   "date": "2020-01-01",
+   "value": 1.4880000706762075
+  },
+  {
+   "date": "2020-02-01",
+   "value": 2.0880000181496143
+  },
+  {
+   "date": "2020-03-01",
+   "value": 0.7440000353381038
+  },
+  {
+   "date": "2020-04-01",
+   "value": 26.640000343322754
+  },
+  {
+   "date": "2020-05-01",
+   "value": 177.81600558757782
+  },
+  {
+   "date": "2020-06-01",
+   "value": 635.040020942688
+  },
+  {
+   "date": "2020-07-01",
+   "value": 459.04803228378296
+  },
+  {
+   "date": "2020-08-01",
+   "value": 607.1040329933167
+  },
+  {
+   "date": "2020-09-01",
+   "value": 423.35999965667725
+  },
+  {
+   "date": "2020-10-01",
+   "value": 310.24801898002625
+  },
+  {
+   "date": "2020-11-01",
+   "value": 63.360005021095276
+  },
+  {
+   "date": "2020-12-01",
+   "value": 2.232000019401312
+  },
+  {
+   "date": "2021-01-01",
+   "value": 1.4880000706762075
+  },
+  {
+   "date": "2021-02-01",
+   "value": 0.6720000319182873
+  },
+  {
+   "date": "2021-03-01",
+   "value": 1.4880000706762075
+  },
+  {
+   "date": "2021-04-01",
+   "value": 120.96000909805298
+  },
+  {
+   "date": "2021-05-01",
+   "value": 198.64801454544067
+  },
+  {
+   "date": "2021-06-01",
+   "value": 760.319995880127
+  },
+  {
+   "date": "2021-07-01",
+   "value": 627.9360308647156
+  },
+  {
+   "date": "2021-08-01",
+   "value": 372.7440347671509
+  },
+  {
+   "date": "2021-09-01",
+   "value": 545.7600116729736
+  },
+  {
+   "date": "2021-10-01",
+   "value": 334.05602288246155
+  },
+  {
+   "date": "2021-11-01",
+   "value": 46.80000364780426
+  },
+  {
+   "date": "2021-12-01",
+   "value": 0.7440000353381038
+  },
+  {
+   "date": "2022-01-01",
+   "value": 8.928000077605247
+  },
+  {
+   "date": "2022-02-01",
+   "value": 10.080000400543213
+  },
+  {
+   "date": "2022-03-01",
+   "value": 34.96800157427788
+  },
+  {
+   "date": "2022-04-01",
+   "value": 53.28000068664551
+  },
+  {
+   "date": "2022-05-01",
+   "value": 474.6720085144043
+  },
+  {
+   "date": "2022-06-01",
+   "value": 479.52000617980957
+  },
+  {
+   "date": "2022-07-01",
+   "value": 585.5280447006226
+  },
+  {
+   "date": "2022-08-01",
+   "value": 710.5200319290161
+  },
+  {
+   "date": "2022-09-01",
+   "value": 437.0400381088257
+  },
+  {
+   "date": "2022-10-01",
+   "value": 200.88000798225403
+  },
+  {
+   "date": "2022-11-01",
+   "value": 53.28000068664551
+  },
+  {
+   "date": "2022-12-01",
+   "value": 15.624001175165176
+  },
+  {
+   "date": "2023-01-01",
+   "value": 0.0
+  },
+  {
+   "date": "2023-02-01",
+   "value": 7.392000585794449
+  },
+  {
+   "date": "2023-03-01",
+   "value": 11.90400056540966
+  },
+  {
+   "date": "2023-04-01",
+   "value": 5.040000155568123
+  },
+  {
+   "date": "2023-05-01",
+   "value": 173.35200762748718
+  },
+  {
+   "date": "2023-06-01",
+   "value": 642.2400140762329
+  },
+  {
+   "date": "2023-07-01",
+   "value": 641.3280358314514
+  },
+  {
+   "date": "2023-08-01",
+   "value": 610.8240294456482
+  },
+  {
+   "date": "2023-09-01",
+   "value": 645.8400106430054
+  },
+  {
+   "date": "2023-10-01",
+   "value": 421.8480234146118
+  },
+  {
+   "date": "2023-11-01",
+   "value": 37.440000772476196
+  },
+  {
+   "date": "2023-12-01",
+   "value": 5.95200028270483
+  },
+  {
+   "date": "2024-01-01",
+   "value": 6.696000404655933
+  },
+  {
+   "date": "2024-02-01",
+   "value": 0.0
+  },
+  {
+   "date": "2024-03-01",
+   "value": 10.416000321507454
+  },
+  {
+   "date": "2024-04-01",
+   "value": 22.32000097632408
+  },
+  {
+   "date": "2024-05-01",
+   "value": 348.19201827049255
+  },
+  {
+   "date": "2024-06-01",
+   "value": 497.5200319290161
+  },
+  {
+   "date": "2024-07-01",
+   "value": 902.4720439910889
+  },
+  {
+   "date": "2024-08-01",
+   "value": 513.3600425720215
+  },
+  {
+   "date": "2024-09-01",
+   "value": 551.5200233459473
+  },
+  {
+   "date": "2024-10-01",
+   "value": 389.85603618621826
+  },
+  {
+   "date": "2024-11-01",
+   "value": 124.56000566482544
+  },
+  {
+   "date": "2024-12-01",
+   "value": 9.67200019955635
+  }
+ ],
+ "trend": {
+  "result_level": "descriptive_slope",
+  "result_level_label": "Descriptive slope only (no significance test)",
+  "eligible_years": [
+   2015,
+   2016,
+   2017,
+   2018,
+   2019,
+   2020,
+   2021,
+   2022,
+   2023,
+   2024
+  ],
+  "excluded_years": [],
+  "missing_years": [],
+  "slope": -29.520000072196126,
+  "intercept": 62959.536292282864,
+  "slope_units": "mm/year²",
+  "confidence_interval": null,
+  "confidence_interval_unavailable_reason": "Inferential confidence interval not supported",
+  "mann_kendall": null,
+  "serial_dependence": {
+   "adjacent_pair_count": 9,
+   "lag1_spearman_rho": 0.5606743638663345,
+   "diagnostic_p_value": 0.11632679499319278,
+   "status": "material_dependence_detected",
+   "caveat": "Failure to detect lag-1 autocorrelation does not prove independence; the diagnostic may have low power.",
+   "supported_for_standard_inference": false,
+   "unavailable_reason": "Material lag-1 serial dependence detected"
+  },
+  "slope_unavailable_reason": null,
+  "significance_unavailable_reason": "Material lag-1 serial dependence detected",
+  "change_point": {
+   "status": "none",
+   "last_year_before": 2018,
+   "first_year_after": 2019,
+   "mean_before": 3475.338149734307,
+   "mean_after": 3112.676132983528,
+   "shift": -362.662016750779,
+   "pettitt_p_value": 0.08640834680851252,
+   "step_fits_better_than_line": true
+  }
+ },
+ "investigation": {
+  "id": "a73e5870dfb254d7e509ab88",
+  "request": {
+   "variable": "precipitation",
+   "dataset": "NASA/GPM_L3/IMERG_MONTHLY_V07",
+   "version": "V07 Final (monthly)",
+   "latitude": 16.8661,
+   "longitude": 96.1951,
+   "mode": "point",
+   "radius_km": null,
+   "bbox": null,
+   "start_date": "2015-01-01",
+   "end_date": "2025-01-01"
+  },
+  "requested_period": {
+   "start": "2015-01-01",
+   "end_exclusive": "2025-01-01"
+  },
+  "effective_years": [
+   2015,
+   2016,
+   2017,
+   2018,
+   2019,
+   2020,
+   2021,
+   2022,
+   2023,
+   2024
+  ],
+  "source": "NASA GPM IMERG",
+  "method": "theil_sen",
+  "retrieved_at": "2026-11-14T19:22:07+00:00",
+  "provenance_status": "live_nasa_retrieval"
+ },
+ "data_status": "saved_snapshot",
+ "units": {
+  "annual_value": "mm/year",
+  "slope": "mm/year²"
+ },
+ "series_definition": "monthly accumulation (mm/month)",
+ "coverage": {
+  "years_requested": 10,
+  "eligible_years": 10,
+  "excluded_years": []
+ },
+ "methodology": {
+  "source": {
+   "conversion": "monthly mean rate × 24 × actual calendar days",
+   "annual_aggregation": "sum of twelve valid monthly accumulations",
+   "trend_input": "complete eligible annual accumulations",
+   "missing_values": "retained as missing; never interpreted as zero or interpolated"
+  },
+  "trend_method": {
+   "slope": "Theil-Sen median of pairwise slopes (SciPy theilslopes, method='separate')",
+   "significance": "two-sided Mann-Kendall test with tie correction, alpha from policy",
+   "serial_dependence_screen": "lag-1 Spearman correlation of Theil-Sen residuals",
+   "confidence_interval": "Theil-Sen 95% interval, reported only when inference is supported",
+   "inference_caveat": "Mann-Kendall significance is reported only after a lag-1 serial-dependence screen. An independent Monte Carlo check (5,000 replications) found that this screened test can reject a true no-trend hypothesis more often than the nominal 5% when annual values are autocorrelated (about 10.5% at n = 45, lag-1 autocorrelation 0.3). Treat 'statistically significant' as indicative, not as a guaranteed 5% false-positive rate.",
+   "descriptive_slope_note": "The Theil-Sen slope is a robust descriptive rate of change over the eligible years only. It is not a forecast and does not identify a cause."
+  }
+ },
+ "caveats": [
+  "Mann-Kendall significance is reported only after a lag-1 serial-dependence screen. An independent Monte Carlo check (5,000 replications) found that this screened test can reject a true no-trend hypothesis more often than the nominal 5% when annual values are autocorrelated (about 10.5% at n = 45, lag-1 autocorrelation 0.3). Treat 'statistically significant' as indicative, not as a guaranteed 5% false-positive rate.",
+  "The Theil-Sen slope is a robust descriptive rate of change over the eligible years only. It is not a forecast and does not identify a cause."
+ ],
+ "limitations": [
+  "IMERG is a satellite-gauge gridded estimate, not a rain-gauge measurement or administrative-region average.",
+  "The 0.1 degree native grid is not 5 km spatial resolution.",
+  "Monthly products support accumulation analysis, not precipitation intensity or event extremes.",
+  "Monthly availability does not prove completeness of every underlying half-hour interval.",
+  "Version 07 is pinned and is not mixed with Version 08."
+ ],
+ "extra": {},
+ "methods_lab": {
+  "applicable": {
+   "annual_comparison": true,
+   "seasonal": false
+  },
+  "requirements": {
+   "minimum_years_for_slope": 3,
+   "minimum_years_for_significance": 8,
+   "alpha": 0.05,
+   "dependence_screen": "lag-1 Spearman ρ ≥ 0.3 or p < 0.05 withholds significance; at least 6 adjacent residual pairs needed"
+  },
+  "mann_kendall": null,
+  "significance_unavailable_reason": "Material lag-1 serial dependence detected",
+  "serial_dependence": {
+   "adjacent_pair_count": 9,
+   "lag1_spearman_rho": 0.5606743638663345,
+   "diagnostic_p_value": 0.11632679499319278,
+   "status": "material_dependence_detected",
+   "caveat": "Failure to detect lag-1 autocorrelation does not prove independence; the diagnostic may have low power.",
+   "supported_for_standard_inference": false,
+   "unavailable_reason": "Material lag-1 serial dependence detected"
+  },
+  "change_point": {
+   "status": "none",
+   "last_year_before": 2018,
+   "first_year_after": 2019,
+   "mean_before": 3475.338149734307,
+   "mean_after": 3112.676132983528,
+   "shift": -362.662016750779,
+   "pettitt_p_value": 0.08640834680851252,
+   "step_fits_better_than_line": true
+  },
+  "methods": {
+   "ols": {
+    "name": "Ordinary least squares (descriptive)",
+    "definition": "Slope b and intercept a minimising Σ(yᵢ − a − b·xᵢ)², with x = calendar year and y = eligible annual value; b = Σ(x−x̄)(y−ȳ) / Σ(x−x̄)².",
+    "role": "Descriptive comparison only. No p-value or confidence interval is reported because they require independent, normally distributed, constant-variance residuals."
+   },
+   "theil_sen": {
+    "name": "Theil–Sen estimator",
+    "definition": "Median of the slopes (yⱼ − yᵢ)/(xⱼ − xᵢ) over all pairs of eligible years (SciPy theilslopes, method='separate').",
+    "role": "The project's trend estimator; robust to outliers."
+   },
+   "mann_kendall": {
+    "name": "Mann–Kendall trend test",
+    "definition": "S = Σ_{i<j} sign(yⱼ − yᵢ); tie-corrected variance; continuity-corrected Z; two-sided p-value; Kendall τ = S / √(n₀(n₀ − n₁)), where n₀ = n(n − 1)/2 is the number of pairs and n₁ = Σ t(t − 1)/2 counts pairs tied in value (tie-adjusted τ-b; years never tie).",
+    "role": "Tests for evidence of a monotonic trend; reported only after the lag-1 dependence screen and with enough eligible years."
+   },
+   "serial_dependence": {
+    "name": "Lag-1 residual dependence screen",
+    "definition": "Spearman correlation between consecutive Theil–Sen residuals (adjacent years only).",
+    "role": "Withholds standard significance when material dependence is detected."
+   },
+   "seasonal_kendall": {
+    "name": "Seasonal Kendall test and seasonal Sen slope",
+    "definition": "Mann–Kendall S and variance computed within each calendar month across years and summed; τ = summed S / total number of within-month pairs (no tie adjustment); slope = median of all within-month pairwise slopes (Hirsch, Slack & Smith 1982).",
+    "role": "Used for NDVI, where cloud gaps leave few complete years."
+   },
+   "deseasonalized_ols": {
+    "name": "Deseasonalized OLS (descriptive)",
+    "definition": "OLS slope of monthly anomalies (value minus that calendar month's mean) against decimal year, using the same months and years as the seasonal Sen slope.",
+    "role": "Descriptive comparison with the seasonal Sen slope on the same monthly observations."
+   },
+   "change_point": {
+    "name": "Pettitt change-point check",
+    "definition": "Pettitt (1979) statistic for the most likely single shift; a step is reported only if p < α and a two-mean step model fits better than a straight line.",
+    "role": "Flags abrupt shifts (for example data-source changes) that a gradual trend line would misrepresent."
+   }
+  },
+  "observations": {
+   "basis": "eligible annual values (the observations the trend used)",
+   "eligible": [
+    {
+     "year": 2015,
+     "value": 3439.320123977959
+    },
+    {
+     "year": 2016,
+     "value": 3469.1762154735625
+    },
+    {
+     "year": 2017,
+     "value": 3470.6641698405147
+    },
+    {
+     "year": 2018,
+     "value": 3522.192089645192
+    },
+    {
+     "year": 2019,
+     "value": 3311.2080891039222
+    },
+    {
+     "year": 2020,
+     "value": 2709.168115952052
+    },
+    {
+     "year": 2021,
+     "value": 3011.6161235673353
+    },
+    {
+     "year": 2022,
+     "value": 3064.320142015815
+    },
+    {
+     "year": 2023,
+     "value": 3203.16012340039
+    },
+    {
+     "year": 2024,
+     "value": 3376.584203861654
+    }
+   ],
+   "excluded": []
+  },
+  "ols": {
+   "available": true,
+   "n": 10,
+   "slope": -39.95287233980542,
+   "intercept": 83942.56662992087,
+   "r_squared": 0.21523837444371008,
+   "r_squared_unavailable_reason": null,
+   "residuals": [
+    {
+     "year": 2015,
+     "residual": 1.791258765006205
+    },
+    {
+     "year": 2016,
+     "residual": 71.60022260042024
+    },
+    {
+     "year": 2017,
+     "residual": 113.04104930716858
+    },
+    {
+     "year": 2018,
+     "residual": 204.52184145165666
+    },
+    {
+     "year": 2019,
+     "residual": 33.49071325019759
+    },
+    {
+     "year": 2020,
+     "residual": -528.5963875618763
+    },
+    {
+     "year": 2021,
+     "residual": -186.19550760678248
+    },
+    {
+     "year": 2022,
+     "residual": -93.53861681850685
+    },
+    {
+     "year": 2023,
+     "residual": 85.25423690587922
+    },
+    {
+     "year": 2024,
+     "residual": 298.6311897069536
+    }
+   ],
+   "unavailable_reason": null,
+   "slope_units": "mm/year²",
+   "inference": null,
+   "inference_note": "Descriptive comparison only. No p-value or confidence interval is reported because they require independent, normally distributed, constant-variance residuals."
+  },
+  "theil_sen": {
+   "available": true,
+   "n": 10,
+   "slope": -29.520000072196126,
+   "intercept": 62959.536292282864,
+   "slope_units": "mm/year²",
+   "confidence_interval": null,
+   "confidence_interval_unavailable_reason": "Inferential confidence interval not supported",
+   "unavailable_reason": null,
+   "source": "existing trend engine (unchanged)"
+  },
+  "comparison": {
+   "same_observations": true,
+   "n": 10,
+   "slope_difference": -10.43287226760929,
+   "slope_units": "mm/year²",
+   "fitted": [
+    {
+     "year": 2015,
+     "observed": 3439.320123977959,
+     "ols": 3437.528865212953,
+     "theil_sen": 3476.7361468076706
+    },
+    {
+     "year": 2016,
+     "observed": 3469.1762154735625,
+     "ols": 3397.5759928731422,
+     "theil_sen": 3447.2161467354745
+    },
+    {
+     "year": 2017,
+     "observed": 3470.6641698405147,
+     "ols": 3357.623120533346,
+     "theil_sen": 3417.6961466632783
+    },
+    {
+     "year": 2018,
+     "observed": 3522.192089645192,
+     "ols": 3317.6702481935354,
+     "theil_sen": 3388.176146591082
+    },
+    {
+     "year": 2019,
+     "observed": 3311.2080891039222,
+     "ols": 3277.7173758537247,
+     "theil_sen": 3358.656146518886
+    },
+    {
+     "year": 2020,
+     "observed": 2709.168115952052,
+     "ols": 3237.7645035139285,
+     "theil_sen": 3329.13614644669
+    },
+    {
+     "year": 2021,
+     "observed": 3011.6161235673353,
+     "ols": 3197.811631174118,
+     "theil_sen": 3299.616146374494
+    },
+    {
+     "year": 2022,
+     "observed": 3064.320142015815,
+     "ols": 3157.8587588343216,
+     "theil_sen": 3270.0961463022977
+    },
+    {
+     "year": 2023,
+     "observed": 3203.16012340039,
+     "ols": 3117.905886494511,
+     "theil_sen": 3240.5761462301016
+    },
+    {
+     "year": 2024,
+     "observed": 3376.584203861654,
+     "ols": 3077.9530141547,
+     "theil_sen": 3211.0561461579055
+    }
+   ],
+   "fit_range": [
+    2015,
+    2024
+   ],
+   "note": "Lines are fitted to eligible years only and are not drawn outside the observed period; they are not forecasts."
+  },
+  "seasonal": null,
+  "seasonal_unavailable_reason": "Seasonal methods apply to the NDVI analysis, which is built from monthly values."
+ }
+}

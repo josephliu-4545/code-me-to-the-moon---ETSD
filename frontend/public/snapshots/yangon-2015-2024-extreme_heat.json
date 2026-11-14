@@ -1,1 +1,654 @@
-{"variable":{"id":"extreme_heat","name":"Extreme heat frequency","description":"Share of days whose maximum temperature exceeds the local 1991–2020 calendar-day 90th percentile (bootstrap-adjusted inside the reference period).","annual_value_definition":"percentage of valid days above the local 90th-percentile threshold"},"dataset":{"source":"NASA POWER","id":"POWER daily T2M_MAX (AG community)","version":"POWER API v2 (MERRA-2 based)","provenance":"reanalysis-based model estimate","doi":null},"spatial_support":{"mode":"point","type":"grid_cell_estimate","description":"NASA POWER grid-cell estimate","native_grid":"0.5 x 0.625 degrees","cell":{"center":[17.0,96.25],"bounds":{"south":16.75,"north":17.25,"west":95.9375,"east":96.5625},"approximate":true},"resolution":"0.5° × 0.625° grid cell","requested":{"latitude":16.8661,"longitude":96.1951}},"period":{"start":"2015-01-01","end_exclusive":"2025-01-01"},"units":{"annual_value":"% of days","slope":"percentage points/year"},"annual":[{"year":2015,"value":4.591402928672649,"eligible":true,"reasons":[],"complete_calendar_year":null,"coverage_percentage":100.0,"represented_months":null,"missing_months":null,"extra":{"raw_hot_day_count":16,"raw_hot_day_percentage":4.383561643835616,"bootstrap_adjusted_percentage":4.591402928672649,"bootstrap_confidence_interval":[4.301369863013699,4.657534246575342],"valid_exposure_days":365}},{"year":2016,"value":7.3393631053325805,"eligible":true,"reasons":[],"complete_calendar_year":null,"coverage_percentage":100.0,"represented_months":null,"missing_months":null,"extra":{"raw_hot_day_count":26,"raw_hot_day_percentage":7.103825136612022,"bootstrap_adjusted_percentage":7.3393631053325805,"bootstrap_confidence_interval":[7.103825136612022,7.377049180327869],"valid_exposure_days":366}},{"year":2017,"value":0.0,"eligible":true,"reasons":[],"complete_calendar_year":null,"coverage_percentage":100.0,"represented_months":null,"missing_months":null,"extra":{"raw_hot_day_count":0,"raw_hot_day_percentage":0.0,"bootstrap_adjusted_percentage":0.0,"bootstrap_confidence_interval":[0.0,0.0],"valid_exposure_days":365}},{"year":2018,"value":1.577704298535664,"eligible":true,"reasons":[],"complete_calendar_year":null,"coverage_percentage":100.0,"represented_months":null,"missing_months":null,"extra":{"raw_hot_day_count":5,"raw_hot_day_percentage":1.36986301369863,"bootstrap_adjusted_percentage":1.577704298535664,"bootstrap_confidence_interval":[1.36986301369863,1.643835616438356],"valid_exposure_days":365}},{"year":2019,"value":7.161076995748699,"eligible":true,"reasons":[],"complete_calendar_year":null,"coverage_percentage":100.0,"represented_months":null,"missing_months":null,"extra":{"raw_hot_day_count":24,"raw_hot_day_percentage":6.575342465753424,"bootstrap_adjusted_percentage":7.161076995748699,"bootstrap_confidence_interval":[6.575342465753424,7.397260273972603],"valid_exposure_days":365}},{"year":2020,"value":5.530431505558696,"eligible":true,"reasons":[],"complete_calendar_year":null,"coverage_percentage":100.0,"represented_months":null,"missing_months":null,"extra":{"raw_hot_day_count":19,"raw_hot_day_percentage":5.191256830601093,"bootstrap_adjusted_percentage":5.530431505558696,"bootstrap_confidence_interval":[5.191256830601093,5.737704918032787],"valid_exposure_days":366}},{"year":2021,"value":4.931506849315069,"eligible":true,"reasons":[],"complete_calendar_year":null,"coverage_percentage":100.0,"represented_months":null,"missing_months":null,"extra":{"raw_hot_day_count":18,"raw_hot_day_percentage":4.931506849315069,"bootstrap_adjusted_percentage":null,"bootstrap_confidence_interval":null,"valid_exposure_days":365}},{"year":2022,"value":1.643835616438356,"eligible":true,"reasons":[],"complete_calendar_year":null,"coverage_percentage":100.0,"represented_months":null,"missing_months":null,"extra":{"raw_hot_day_count":6,"raw_hot_day_percentage":1.643835616438356,"bootstrap_adjusted_percentage":null,"bootstrap_confidence_interval":null,"valid_exposure_days":365}},{"year":2023,"value":4.109589041095891,"eligible":true,"reasons":[],"complete_calendar_year":null,"coverage_percentage":100.0,"represented_months":null,"missing_months":null,"extra":{"raw_hot_day_count":15,"raw_hot_day_percentage":4.109589041095891,"bootstrap_adjusted_percentage":null,"bootstrap_confidence_interval":null,"valid_exposure_days":365}},{"year":2024,"value":11.202185792349727,"eligible":true,"reasons":[],"complete_calendar_year":null,"coverage_percentage":100.0,"represented_months":null,"missing_months":null,"extra":{"raw_hot_day_count":41,"raw_hot_day_percentage":11.202185792349727,"bootstrap_adjusted_percentage":null,"bootstrap_confidence_interval":null,"valid_exposure_days":366}}],"series":[],"series_definition":null,"trend":{"result_level":"statistical_inference","result_level_label":"Slope with significance test (indicative; see caveat)","eligible_years":[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"excluded_years":[],"missing_years":[],"slope":0.1878057153772094,"intercept":-374.5121873152805,"slope_units":"percentage points/year","confidence_interval":[-0.5989246562436277,1.577704298535664],"confidence_interval_unavailable_reason":null,"mann_kendall":{"s":5,"variance":125.0,"z":0.35777087639996635,"tau":0.1111111111111111,"p_value":0.7205147871362554,"alpha":0.05,"alternative":"two-sided","is_statistically_significant":false,"direction":"no_detected_trend"},"serial_dependence":{"adjacent_pair_count":9,"lag1_spearman_rho":-0.06666666666666667,"diagnostic_p_value":0.8646897846262036,"status":"not_detected_with_caveat","caveat":"Failure to detect lag-1 autocorrelation does not prove independence; the diagnostic may have low power.","supported_for_standard_inference":true,"unavailable_reason":null},"slope_unavailable_reason":null,"significance_unavailable_reason":null},"coverage":{"years_requested":10,"eligible_years":10,"excluded_years":[]},"methodology":{"source":{"percentile":90,"window_days":5,"quantile":"Hyndman-Fan type 8","comparison":">","leap_day":"interpolated February 28/March 1 threshold","bootstrap":"Zhang-style leave-one-year-out replacement bootstrap for 1991-2020"},"trend_method":{"slope":"Theil-Sen median of pairwise slopes (SciPy theilslopes, method='separate')","significance":"two-sided Mann-Kendall test with tie correction, alpha from policy","serial_dependence_screen":"lag-1 Spearman correlation of Theil-Sen residuals","confidence_interval":"Theil-Sen 95% interval, reported only when inference is supported","inference_caveat":"Mann-Kendall significance is reported only after a lag-1 serial-dependence screen. An independent Monte Carlo check (5,000 replications) found that this screened test can reject a true no-trend hypothesis more often than the nominal 5% when annual values are autocorrelated (about 10.5% at n = 45, lag-1 autocorrelation 0.3). Treat 'statistically significant' as indicative, not as a guaranteed 5% false-positive rate.","descriptive_slope_note":"The Theil-Sen slope is a robust descriptive rate of change over the eligible years only. It is not a forecast and does not identify a cause."}},"caveats":["Mann-Kendall significance is reported only after a lag-1 serial-dependence screen. An independent Monte Carlo check (5,000 replications) found that this screened test can reject a true no-trend hypothesis more often than the nominal 5% when annual values are autocorrelated (about 10.5% at n = 45, lag-1 autocorrelation 0.3). Treat 'statistically significant' as indicative, not as a guaranteed 5% false-positive rate.","The Theil-Sen slope is a robust descriptive rate of change over the eligible years only. It is not a forecast and does not identify a cause."],"limitations":["Hot-day exceedance frequency is not heatwave frequency or duration.","Values are gridded meteorological estimates, not station observations.","A relative percentile is not an absolute health-risk threshold."],"extra":{"reference_period":{"start_year":1991,"end_year":2020,"complete":true,"valid_days":10958,"expected_days":10958},"trend_basis":"bootstrap-adjusted exceedance percentage where applicable","threshold_method":{"percentile":90,"window_days":5,"quantile":"Hyndman-Fan type 8","comparison":">","leap_day":"interpolated February 28/March 1 threshold","bootstrap":"Zhang-style leave-one-year-out replacement bootstrap for 1991-2020"}},"data_status":"saved_snapshot"}
+{
+ "variable": {
+  "id": "extreme_heat",
+  "name": "Extreme heat frequency",
+  "description": "Share of days whose maximum temperature exceeds the local 1991–2020 calendar-day 90th percentile (bootstrap-adjusted inside the reference period).",
+  "annual_value_definition": "percentage of valid days above the local 90th-percentile threshold"
+ },
+ "dataset": {
+  "source": "NASA POWER",
+  "id": "POWER daily T2M_MAX (AG community)",
+  "version": "POWER API v2 (MERRA-2 based)",
+  "provenance": "reanalysis-based model estimate",
+  "doi": null
+ },
+ "spatial_support": {
+  "mode": "point",
+  "type": "grid_cell_estimate",
+  "description": "NASA POWER grid-cell estimate",
+  "native_grid": "0.5 x 0.625 degrees",
+  "cell": {
+   "center": [
+    17.0,
+    96.25
+   ],
+   "bounds": {
+    "south": 16.75,
+    "north": 17.25,
+    "west": 95.9375,
+    "east": 96.5625
+   },
+   "approximate": true
+  },
+  "resolution": "0.5° × 0.625° grid cell",
+  "requested": {
+   "latitude": 16.8661,
+   "longitude": 96.1951
+  }
+ },
+ "period": {
+  "start": "2015-01-01",
+  "end_exclusive": "2025-01-01",
+  "catalog_first_image": null,
+  "catalog_last_image": null
+ },
+ "annual": [
+  {
+   "year": 2015,
+   "value": 4.591402928672649,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": null,
+   "coverage_percentage": 100.0,
+   "represented_months": null,
+   "missing_months": null,
+   "extra": {
+    "raw_hot_day_count": 16,
+    "raw_hot_day_percentage": 4.383561643835616,
+    "bootstrap_adjusted_percentage": 4.591402928672649,
+    "bootstrap_confidence_interval": [
+     4.301369863013699,
+     4.657534246575342
+    ],
+    "valid_exposure_days": 365
+   }
+  },
+  {
+   "year": 2016,
+   "value": 7.3393631053325805,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": null,
+   "coverage_percentage": 100.0,
+   "represented_months": null,
+   "missing_months": null,
+   "extra": {
+    "raw_hot_day_count": 26,
+    "raw_hot_day_percentage": 7.103825136612022,
+    "bootstrap_adjusted_percentage": 7.3393631053325805,
+    "bootstrap_confidence_interval": [
+     7.103825136612022,
+     7.377049180327869
+    ],
+    "valid_exposure_days": 366
+   }
+  },
+  {
+   "year": 2017,
+   "value": 0.0,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": null,
+   "coverage_percentage": 100.0,
+   "represented_months": null,
+   "missing_months": null,
+   "extra": {
+    "raw_hot_day_count": 0,
+    "raw_hot_day_percentage": 0.0,
+    "bootstrap_adjusted_percentage": 0.0,
+    "bootstrap_confidence_interval": [
+     0.0,
+     0.0
+    ],
+    "valid_exposure_days": 365
+   }
+  },
+  {
+   "year": 2018,
+   "value": 1.577704298535664,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": null,
+   "coverage_percentage": 100.0,
+   "represented_months": null,
+   "missing_months": null,
+   "extra": {
+    "raw_hot_day_count": 5,
+    "raw_hot_day_percentage": 1.36986301369863,
+    "bootstrap_adjusted_percentage": 1.577704298535664,
+    "bootstrap_confidence_interval": [
+     1.36986301369863,
+     1.643835616438356
+    ],
+    "valid_exposure_days": 365
+   }
+  },
+  {
+   "year": 2019,
+   "value": 7.161076995748699,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": null,
+   "coverage_percentage": 100.0,
+   "represented_months": null,
+   "missing_months": null,
+   "extra": {
+    "raw_hot_day_count": 24,
+    "raw_hot_day_percentage": 6.575342465753424,
+    "bootstrap_adjusted_percentage": 7.161076995748699,
+    "bootstrap_confidence_interval": [
+     6.575342465753424,
+     7.397260273972603
+    ],
+    "valid_exposure_days": 365
+   }
+  },
+  {
+   "year": 2020,
+   "value": 5.530431505558696,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": null,
+   "coverage_percentage": 100.0,
+   "represented_months": null,
+   "missing_months": null,
+   "extra": {
+    "raw_hot_day_count": 19,
+    "raw_hot_day_percentage": 5.191256830601093,
+    "bootstrap_adjusted_percentage": 5.530431505558696,
+    "bootstrap_confidence_interval": [
+     5.191256830601093,
+     5.737704918032787
+    ],
+    "valid_exposure_days": 366
+   }
+  },
+  {
+   "year": 2021,
+   "value": 4.931506849315069,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": null,
+   "coverage_percentage": 100.0,
+   "represented_months": null,
+   "missing_months": null,
+   "extra": {
+    "raw_hot_day_count": 18,
+    "raw_hot_day_percentage": 4.931506849315069,
+    "bootstrap_adjusted_percentage": null,
+    "bootstrap_confidence_interval": null,
+    "valid_exposure_days": 365
+   }
+  },
+  {
+   "year": 2022,
+   "value": 1.643835616438356,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": null,
+   "coverage_percentage": 100.0,
+   "represented_months": null,
+   "missing_months": null,
+   "extra": {
+    "raw_hot_day_count": 6,
+    "raw_hot_day_percentage": 1.643835616438356,
+    "bootstrap_adjusted_percentage": null,
+    "bootstrap_confidence_interval": null,
+    "valid_exposure_days": 365
+   }
+  },
+  {
+   "year": 2023,
+   "value": 4.109589041095891,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": null,
+   "coverage_percentage": 100.0,
+   "represented_months": null,
+   "missing_months": null,
+   "extra": {
+    "raw_hot_day_count": 15,
+    "raw_hot_day_percentage": 4.109589041095891,
+    "bootstrap_adjusted_percentage": null,
+    "bootstrap_confidence_interval": null,
+    "valid_exposure_days": 365
+   }
+  },
+  {
+   "year": 2024,
+   "value": 11.202185792349727,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": null,
+   "coverage_percentage": 100.0,
+   "represented_months": null,
+   "missing_months": null,
+   "extra": {
+    "raw_hot_day_count": 41,
+    "raw_hot_day_percentage": 11.202185792349727,
+    "bootstrap_adjusted_percentage": null,
+    "bootstrap_confidence_interval": null,
+    "valid_exposure_days": 366
+   }
+  }
+ ],
+ "series": [],
+ "trend": {
+  "result_level": "statistical_inference",
+  "result_level_label": "Slope with significance test (indicative; see caveat)",
+  "eligible_years": [
+   2015,
+   2016,
+   2017,
+   2018,
+   2019,
+   2020,
+   2021,
+   2022,
+   2023,
+   2024
+  ],
+  "excluded_years": [],
+  "missing_years": [],
+  "slope": 0.1878057153772094,
+  "intercept": -374.5121873152805,
+  "slope_units": "percentage points/year",
+  "confidence_interval": [
+   -0.5989246562436277,
+   1.577704298535664
+  ],
+  "confidence_interval_unavailable_reason": null,
+  "mann_kendall": {
+   "s": 5,
+   "variance": 125.0,
+   "z": 0.35777087639996635,
+   "tau": 0.1111111111111111,
+   "p_value": 0.7205147871362554,
+   "alpha": 0.05,
+   "alternative": "two-sided",
+   "is_statistically_significant": false,
+   "direction": "no_detected_trend"
+  },
+  "serial_dependence": {
+   "adjacent_pair_count": 9,
+   "lag1_spearman_rho": -0.06666666666666667,
+   "diagnostic_p_value": 0.8646897846262036,
+   "status": "not_detected_with_caveat",
+   "caveat": "Failure to detect lag-1 autocorrelation does not prove independence; the diagnostic may have low power.",
+   "supported_for_standard_inference": true,
+   "unavailable_reason": null
+  },
+  "slope_unavailable_reason": null,
+  "significance_unavailable_reason": null,
+  "change_point": {
+   "status": "none",
+   "last_year_before": 2018,
+   "first_year_after": 2019,
+   "mean_before": 3.3771175831352234,
+   "mean_after": 5.763104300084406,
+   "shift": 2.385986716949183,
+   "pettitt_p_value": 1.0,
+   "step_fits_better_than_line": true
+  }
+ },
+ "investigation": {
+  "id": "81a42800bca071d4b03a5c56",
+  "request": {
+   "variable": "extreme_heat",
+   "dataset": "POWER daily T2M_MAX (AG community)",
+   "version": "POWER API v2 (MERRA-2 based)",
+   "latitude": 16.8661,
+   "longitude": 96.1951,
+   "mode": "point",
+   "radius_km": null,
+   "bbox": null,
+   "start_date": "2015-01-01",
+   "end_date": "2025-01-01"
+  },
+  "requested_period": {
+   "start": "2015-01-01",
+   "end_exclusive": "2025-01-01"
+  },
+  "effective_years": [
+   2015,
+   2016,
+   2017,
+   2018,
+   2019,
+   2020,
+   2021,
+   2022,
+   2023,
+   2024
+  ],
+  "source": "NASA POWER",
+  "method": "theil_sen",
+  "retrieved_at": "2026-11-14T19:21:57+00:00",
+  "provenance_status": "live_nasa_retrieval"
+ },
+ "data_status": "saved_snapshot",
+ "units": {
+  "annual_value": "% of days",
+  "slope": "percentage points/year"
+ },
+ "series_definition": null,
+ "coverage": {
+  "years_requested": 10,
+  "eligible_years": 10,
+  "excluded_years": []
+ },
+ "methodology": {
+  "source": {
+   "percentile": 90,
+   "window_days": 5,
+   "quantile": "Hyndman-Fan type 8",
+   "comparison": ">",
+   "leap_day": "interpolated February 28/March 1 threshold",
+   "bootstrap": "Zhang-style leave-one-year-out replacement bootstrap for 1991-2020"
+  },
+  "trend_method": {
+   "slope": "Theil-Sen median of pairwise slopes (SciPy theilslopes, method='separate')",
+   "significance": "two-sided Mann-Kendall test with tie correction, alpha from policy",
+   "serial_dependence_screen": "lag-1 Spearman correlation of Theil-Sen residuals",
+   "confidence_interval": "Theil-Sen 95% interval, reported only when inference is supported",
+   "inference_caveat": "Mann-Kendall significance is reported only after a lag-1 serial-dependence screen. An independent Monte Carlo check (5,000 replications) found that this screened test can reject a true no-trend hypothesis more often than the nominal 5% when annual values are autocorrelated (about 10.5% at n = 45, lag-1 autocorrelation 0.3). Treat 'statistically significant' as indicative, not as a guaranteed 5% false-positive rate.",
+   "descriptive_slope_note": "The Theil-Sen slope is a robust descriptive rate of change over the eligible years only. It is not a forecast and does not identify a cause."
+  }
+ },
+ "caveats": [
+  "Mann-Kendall significance is reported only after a lag-1 serial-dependence screen. An independent Monte Carlo check (5,000 replications) found that this screened test can reject a true no-trend hypothesis more often than the nominal 5% when annual values are autocorrelated (about 10.5% at n = 45, lag-1 autocorrelation 0.3). Treat 'statistically significant' as indicative, not as a guaranteed 5% false-positive rate.",
+  "The Theil-Sen slope is a robust descriptive rate of change over the eligible years only. It is not a forecast and does not identify a cause."
+ ],
+ "limitations": [
+  "Hot-day exceedance frequency is not heatwave frequency or duration.",
+  "Values are gridded meteorological estimates, not station observations.",
+  "A relative percentile is not an absolute health-risk threshold."
+ ],
+ "extra": {
+  "reference_period": {
+   "start_year": 1991,
+   "end_year": 2020,
+   "complete": true,
+   "valid_days": 10958,
+   "expected_days": 10958
+  },
+  "trend_basis": "bootstrap-adjusted exceedance percentage where applicable",
+  "threshold_method": {
+   "percentile": 90,
+   "window_days": 5,
+   "quantile": "Hyndman-Fan type 8",
+   "comparison": ">",
+   "leap_day": "interpolated February 28/March 1 threshold",
+   "bootstrap": "Zhang-style leave-one-year-out replacement bootstrap for 1991-2020"
+  }
+ },
+ "methods_lab": {
+  "applicable": {
+   "annual_comparison": true,
+   "seasonal": false
+  },
+  "requirements": {
+   "minimum_years_for_slope": 3,
+   "minimum_years_for_significance": 8,
+   "alpha": 0.05,
+   "dependence_screen": "lag-1 Spearman ρ ≥ 0.3 or p < 0.05 withholds significance; at least 6 adjacent residual pairs needed"
+  },
+  "mann_kendall": {
+   "s": 5,
+   "variance": 125.0,
+   "z": 0.35777087639996635,
+   "tau": 0.1111111111111111,
+   "p_value": 0.7205147871362554,
+   "alpha": 0.05,
+   "alternative": "two-sided",
+   "is_statistically_significant": false,
+   "direction": "no_detected_trend"
+  },
+  "significance_unavailable_reason": null,
+  "serial_dependence": {
+   "adjacent_pair_count": 9,
+   "lag1_spearman_rho": -0.06666666666666667,
+   "diagnostic_p_value": 0.8646897846262036,
+   "status": "not_detected_with_caveat",
+   "caveat": "Failure to detect lag-1 autocorrelation does not prove independence; the diagnostic may have low power.",
+   "supported_for_standard_inference": true,
+   "unavailable_reason": null
+  },
+  "change_point": {
+   "status": "none",
+   "last_year_before": 2018,
+   "first_year_after": 2019,
+   "mean_before": 3.3771175831352234,
+   "mean_after": 5.763104300084406,
+   "shift": 2.385986716949183,
+   "pettitt_p_value": 1.0,
+   "step_fits_better_than_line": true
+  },
+  "methods": {
+   "ols": {
+    "name": "Ordinary least squares (descriptive)",
+    "definition": "Slope b and intercept a minimising Σ(yᵢ − a − b·xᵢ)², with x = calendar year and y = eligible annual value; b = Σ(x−x̄)(y−ȳ) / Σ(x−x̄)².",
+    "role": "Descriptive comparison only. No p-value or confidence interval is reported because they require independent, normally distributed, constant-variance residuals."
+   },
+   "theil_sen": {
+    "name": "Theil–Sen estimator",
+    "definition": "Median of the slopes (yⱼ − yᵢ)/(xⱼ − xᵢ) over all pairs of eligible years (SciPy theilslopes, method='separate').",
+    "role": "The project's trend estimator; robust to outliers."
+   },
+   "mann_kendall": {
+    "name": "Mann–Kendall trend test",
+    "definition": "S = Σ_{i<j} sign(yⱼ − yᵢ); tie-corrected variance; continuity-corrected Z; two-sided p-value; Kendall τ = S / √(n₀(n₀ − n₁)), where n₀ = n(n − 1)/2 is the number of pairs and n₁ = Σ t(t − 1)/2 counts pairs tied in value (tie-adjusted τ-b; years never tie).",
+    "role": "Tests for evidence of a monotonic trend; reported only after the lag-1 dependence screen and with enough eligible years."
+   },
+   "serial_dependence": {
+    "name": "Lag-1 residual dependence screen",
+    "definition": "Spearman correlation between consecutive Theil–Sen residuals (adjacent years only).",
+    "role": "Withholds standard significance when material dependence is detected."
+   },
+   "seasonal_kendall": {
+    "name": "Seasonal Kendall test and seasonal Sen slope",
+    "definition": "Mann–Kendall S and variance computed within each calendar month across years and summed; τ = summed S / total number of within-month pairs (no tie adjustment); slope = median of all within-month pairwise slopes (Hirsch, Slack & Smith 1982).",
+    "role": "Used for NDVI, where cloud gaps leave few complete years."
+   },
+   "deseasonalized_ols": {
+    "name": "Deseasonalized OLS (descriptive)",
+    "definition": "OLS slope of monthly anomalies (value minus that calendar month's mean) against decimal year, using the same months and years as the seasonal Sen slope.",
+    "role": "Descriptive comparison with the seasonal Sen slope on the same monthly observations."
+   },
+   "change_point": {
+    "name": "Pettitt change-point check",
+    "definition": "Pettitt (1979) statistic for the most likely single shift; a step is reported only if p < α and a two-mean step model fits better than a straight line.",
+    "role": "Flags abrupt shifts (for example data-source changes) that a gradual trend line would misrepresent."
+   }
+  },
+  "observations": {
+   "basis": "eligible annual values (the observations the trend used)",
+   "eligible": [
+    {
+     "year": 2015,
+     "value": 4.591402928672649
+    },
+    {
+     "year": 2016,
+     "value": 7.3393631053325805
+    },
+    {
+     "year": 2017,
+     "value": 0.0
+    },
+    {
+     "year": 2018,
+     "value": 1.577704298535664
+    },
+    {
+     "year": 2019,
+     "value": 7.161076995748699
+    },
+    {
+     "year": 2020,
+     "value": 5.530431505558696
+    },
+    {
+     "year": 2021,
+     "value": 4.931506849315069
+    },
+    {
+     "year": 2022,
+     "value": 1.643835616438356
+    },
+    {
+     "year": 2023,
+     "value": 4.109589041095891
+    },
+    {
+     "year": 2024,
+     "value": 11.202185792349727
+    }
+   ],
+   "excluded": []
+  },
+  "ols": {
+   "available": true,
+   "n": 10,
+   "slope": 0.32447616707743554,
+   "intercept": -650.4709097995764,
+   "r_squared": 0.08911834623219139,
+   "r_squared_unavailable_reason": null,
+   "residuals": [
+    {
+     "year": 2015,
+     "residual": 1.2428360672164294
+    },
+    {
+     "year": 2016,
+     "residual": 3.6663200767988826
+    },
+    {
+     "year": 2017,
+     "residual": -3.9975191956111757
+    },
+    {
+     "year": 2018,
+     "residual": -2.744291064152876
+    },
+    {
+     "year": 2019,
+     "residual": 2.5146054659826813
+    },
+    {
+     "year": 2020,
+     "residual": 0.5594838087153144
+    },
+    {
+     "year": 2021,
+     "residual": -0.36391701460579107
+    },
+    {
+     "year": 2022,
+     "residual": -3.9760644145599815
+    },
+    {
+     "year": 2023,
+     "residual": -1.8347871569798109
+    },
+    {
+     "year": 2024,
+     "residual": 4.933333427196548
+    }
+   ],
+   "unavailable_reason": null,
+   "slope_units": "percentage points/year",
+   "inference": null,
+   "inference_note": "Descriptive comparison only. No p-value or confidence interval is reported because they require independent, normally distributed, constant-variance residuals."
+  },
+  "theil_sen": {
+   "available": true,
+   "n": 10,
+   "slope": 0.1878057153772094,
+   "intercept": -374.5121873152805,
+   "slope_units": "percentage points/year",
+   "confidence_interval": [
+    -0.5989246562436277,
+    1.577704298535664
+   ],
+   "confidence_interval_unavailable_reason": null,
+   "unavailable_reason": null,
+   "source": "existing trend engine (unchanged)"
+  },
+  "comparison": {
+   "same_observations": true,
+   "n": 10,
+   "slope_difference": 0.13667045170022615,
+   "slope_units": "percentage points/year",
+   "fitted": [
+    {
+     "year": 2015,
+     "observed": 4.591402928672649,
+     "ols": 3.34856686145622,
+     "theil_sen": 3.91632916979637
+    },
+    {
+     "year": 2016,
+     "observed": 7.3393631053325805,
+     "ols": 3.673043028533698,
+     "theil_sen": 4.1041348851736075
+    },
+    {
+     "year": 2017,
+     "observed": 0.0,
+     "ols": 3.9975191956111757,
+     "theil_sen": 4.291940600550788
+    },
+    {
+     "year": 2018,
+     "observed": 1.577704298535664,
+     "ols": 4.32199536268854,
+     "theil_sen": 4.4797463159280255
+    },
+    {
+     "year": 2019,
+     "observed": 7.161076995748699,
+     "ols": 4.646471529766018,
+     "theil_sen": 4.667552031305206
+    },
+    {
+     "year": 2020,
+     "observed": 5.530431505558696,
+     "ols": 4.970947696843382,
+     "theil_sen": 4.855357746682444
+    },
+    {
+     "year": 2021,
+     "observed": 4.931506849315069,
+     "ols": 5.29542386392086,
+     "theil_sen": 5.043163462059624
+    },
+    {
+     "year": 2022,
+     "observed": 1.643835616438356,
+     "ols": 5.619900030998338,
+     "theil_sen": 5.230969177436862
+    },
+    {
+     "year": 2023,
+     "observed": 4.109589041095891,
+     "ols": 5.944376198075702,
+     "theil_sen": 5.418774892814042
+    },
+    {
+     "year": 2024,
+     "observed": 11.202185792349727,
+     "ols": 6.26885236515318,
+     "theil_sen": 5.60658060819128
+    }
+   ],
+   "fit_range": [
+    2015,
+    2024
+   ],
+   "note": "Lines are fitted to eligible years only and are not drawn outside the observed period; they are not forecasts."
+  },
+  "seasonal": null,
+  "seasonal_unavailable_reason": "Seasonal methods apply to the NDVI analysis, which is built from monthly values."
+ }
+}

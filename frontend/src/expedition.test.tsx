@@ -12,7 +12,8 @@ import { schematicFits, SCHEMATIC } from "./components/expedition/TrendLab";
 import { guardrails, headlineParts, methodNotes, yearRecords } from "./lib/evidence";
 
 import heatRaw from "../public/snapshots/yangon-2015-2024-extreme_heat.json?raw";
-import ndviRaw from "../public/snapshots/yangon-2015-2024-ndvi.json?raw";
+// Historical NDVI retrieval (2026-11-13, annual method, no eligible years): exercises the "no result" paths.
+import ndviRaw from "./test-fixtures/ndvi-yangon-2015-2024-annual-2026-11-13.json?raw";
 import precipRaw from "../public/snapshots/yangon-2015-2024-precipitation.json?raw";
 import tempRaw from "../public/snapshots/yangon-2015-2024-temperature.json?raw";
 
@@ -21,7 +22,7 @@ const RAW: Record<string, string> = { temperature: tempRaw, precipitation: preci
 const snap = (name: string): Analysis => JSON.parse(RAW[name]!);
 const temperature = () => snap("temperature"); // inference, not significant
 const precipitation = () => snap("precipitation"); // descriptive: serial dependence blocked the test
-const ndvi = () => snap("ndvi"); // no eligible years
+const ndvi = () => snap("ndvi"); // no eligible years (historical annual-method retrieval)
 const heat = () => snap("extreme_heat"); // annual-only, threshold methodology
 
 describe("Experience A: discovery in seconds", () => {

@@ -44,7 +44,9 @@ describe("evidence extraction (Layer 1)", () => {
     expect(e.trend.significance).toEqual({ pValue: 1, alpha: 0.05, significant: false, tau: a.trend!.mann_kendall!.tau });
     expect(e.trend.confidenceInterval).toEqual(a.trend!.confidence_interval);
     expect(e.dataset.doi).toBeNull();
-    expect(e.methodsLab).toBeNull(); // the saved snapshot predates the Methods Lab
+    // Refreshed snapshot (current API) carries the Statistical Methods Lab evidence.
+    expect(e.methodsLab?.theilSenSlope).toBe(a.trend!.slope);
+    expect(e.methodsLab?.olsSlope).toBe(a.methods_lab!.ols!.slope);
   });
 
   it("keeps withheld significance as unavailable with the backend's reason (precipitation)", () => {
@@ -59,7 +61,7 @@ describe("evidence extraction (Layer 1)", () => {
     expect(finiteOrNull(null)).toBeNull();
     expect(finiteOrNull(Number.NaN)).toBeNull();
     expect(finiteOrNull("0.1")).toBeNull();
-    const e = evidenceFor(live("yangon-2015-2024-ndvi"), req("ndvi"));
+    const e = evidenceFor(live("yangon-2015-2024-soil_moisture-smap_l3e_v006_am"), req("soil_moisture", { dataset: "smap_l3e_v006_am" }));
     expect(e.trend.slope).toBeNull();
     expect(e.trend.verdict).toBe("unavailable");
     expect(e.observations.excluded.length).toBeGreaterThan(0);
@@ -184,7 +186,7 @@ describe("answers (Layers 3–4)", () => {
   });
 
   it("does not invent a trend when none is available", () => {
-    const e = evidenceFor(live("yangon-2015-2024-ndvi"), req("ndvi"));
+    const e = evidenceFor(live("yangon-2015-2024-soil_moisture-smap_l3e_v006_am"), req("soil_moisture", { dataset: "smap_l3e_v006_am" }));
     const a = ask("How much has it changed?", e);
     expect(a.status).toBe("not_answerable");
     expect(text(a)).toMatch(/cannot be stated/);

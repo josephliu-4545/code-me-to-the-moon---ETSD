@@ -59,6 +59,16 @@ main > .view { flex: 1; display: flex; flex-direction: column; }
   color: var(--text-primary); font-size: var(--fs-sm);
 }
 .offline-banner strong { font-family: var(--font-brand); font-size: var(--fs-xs); letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+/* Previous investigation after a reload: offered, never re-run automatically. */
+.resume-banner {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s3);
+  padding: var(--s3) clamp(var(--s4), 2.5vw, var(--s6));
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  color: var(--text-secondary); font-size: var(--fs-sm);
+}
+.resume-banner p { margin: 0; max-width: 80ch; }
+.resume-banner strong { color: var(--text-primary); }
+.resume-actions { display: flex; flex-wrap: wrap; gap: var(--s2); }
 
 /* Arrival: shown only while the analysis service is contacted (no artificial delay) */
 .arrival { position: relative; flex: 1; min-height: calc(100svh - var(--topbar-h)); display: grid; place-items: center; align-content: center; gap: var(--s5); padding: var(--s6) var(--s4); background: radial-gradient(60% 50% at 50% 40%, var(--surface) 0%, var(--bg) 70%); overflow: hidden; }
