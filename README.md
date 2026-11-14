@@ -319,19 +319,13 @@ npm run dev -- --host 127.0.0.1
 
 ### Single-origin build (one server)
 
-The backend can also serve the built frontend at `/app/`:
+The backend can also build and serve the frontend at `/app/`:
 
 ```powershell
 .\scripts\build-single-origin.ps1
 ```
 
-The script prints the full path of `frontend\dist`. Add it to `backend\.env`:
-
-```
-FRONTEND_DIST_DIR=<full path printed by the script>
-```
-
-Then start the backend and open **http://127.0.0.1:8000/app/**.
+The script builds `frontend\dist`, passes it to the backend through `FRONTEND_DIST_DIR`, starts the backend, and opens **http://127.0.0.1:8000/app/**.
 
 ### Shared backend (optional)
 
