@@ -42,3 +42,31 @@
 @media (max-width: 760px) { .cmp-two-col { grid-template-columns: 1fr; } }
 .cmp-meta { font-size: var(--fs-xs); color: var(--text-secondary); margin-top: 2px; }
 .cmp-meta.muted { color: var(--text-muted); }
+
+/* Dataset Evaluation Lab */
+.eval-subtitle { margin: var(--s4) 0 var(--s2); font-size: var(--fs-lg); color: var(--text-primary); }
+.eval-legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: var(--s3) 0; font-size: var(--fs-sm); }
+.eval-legend > span { display: inline-flex; align-items: center; gap: 6px; }
+.eval-matrix-wrap { max-width: 100%; overflow-x: auto; border: 1px solid var(--border); border-radius: var(--r-md); }
+.eval-matrix { border-collapse: collapse; min-width: 100%; font-size: var(--fs-xs); }
+.eval-matrix th, .eval-matrix td { border-bottom: 1px solid var(--border); padding: 5px; text-align: center; white-space: nowrap; }
+.eval-matrix th:first-child { position: sticky; left: 0; z-index: 1; text-align: left; background: var(--surface); min-width: 150px; }
+.eval-cell { width: 28px; height: 28px; display: inline-grid; place-items: center; border: 1px solid var(--border); border-radius: 5px; color: var(--text-primary); background: var(--surface); font-weight: 800; }
+button.eval-cell { cursor: help; }
+.eval-valid { border-color: var(--valid); background: color-mix(in srgb, var(--valid) 18%, var(--surface)); }
+.eval-missing { border-style: dashed; }
+.eval-excluded { border-color: var(--warning); background: var(--warning-soft); }
+.eval-provisional { border-color: var(--accent-line); background: var(--accent-soft); }
+.eval-outside_coverage { opacity: 0.55; background: var(--surface-hover); }
+.eval-unavailable { border-style: dotted; background: var(--surface-hover); }
+.eval-quality-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--s3); margin-top: var(--s4); }
+.eval-quality-card { border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface); padding: 14px; min-width: 0; }
+.eval-quality-card h3, .eval-quality-card p { margin: 0 0 6px; }
+.eval-metrics th[scope="row"] { min-width: 180px; }
+.eval-metrics p { margin: 0 0 5px; min-width: 220px; }
+.eval-pair-select { max-width: 520px; margin-bottom: var(--s3); }
+.eval-difference-chart { min-height: 300px; }
+@media (max-width: 620px) {
+  .eval-matrix th:first-child { min-width: 120px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
+  .eval-metrics th[scope="row"] { min-width: 145px; }
+}

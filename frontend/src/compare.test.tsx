@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Analysis } from "./api/types";
 import type { CompareResponse, DatasetInfo, DatasetResult } from "./api/compareTypes";
 import { buildOverlayRows } from "./components/compare/OverlayChart";
+import EvaluationLab from "./components/evaluation/EvaluationLab";
 import CompareDatasetsPage, { coverageWarnings, validateCompare } from "./pages/CompareDatasetsPage";
 import { DEFAULT_SELECTION } from "./state/selection";
 
@@ -74,6 +75,57 @@ function compareResponse(over: Partial<CompareResponse> = {}): CompareResponse {
     caveats: ["Datasets are never merged."],
     ...over,
   };
+}
+
+function evaluationResponse(): CompareResponse {
+  const response = compareResponse();
+  (response as CompareResponse & { evaluation: unknown }).evaluation = {
+    datasets: {
+      a: {
+        dataset: "a", resolution: "annual", resolution_note: "Annual coverage: monthly quality-control information is not available for this dataset response.",
+        requested_period: { start: "2015-01-01", end_exclusive: "2018-01-01" }, supported_period: { start: "2000-01-01", end: null },
+        cells: [
+          { period: "2015", status: "valid", reasons: [], value: 27 },
+          { period: "2016", status: "excluded", reasons: ["insufficient_represented_months"], value: 28 },
+          { period: "2017", status: "missing", reasons: ["no_valid_observations"], value: null },
+        ],
+        counts: { valid: 1, missing: 1, excluded: 1, provisional: 0, outside_coverage: 0, unavailable: 0 },
+        completeness: { valid: 1, expected_within_supported_coverage: 3, percentage: 100 / 3, label: "Valid years / Expected years within supported dataset coverage" },
+        eligible_years: [2015], excluded_years: [{ year: 2016, reasons: ["insufficient_represented_months"] }],
+      },
+      b: {
+        dataset: "b", resolution: "monthly", resolution_note: "Monthly coverage from genuine monthly observation and quality-control records.",
+        requested_period: { start: "2015-01-01", end_exclusive: "2015-04-01" }, supported_period: { start: "2000-01-01", end: null },
+        cells: [
+          { period: "2015-01", status: "valid", reasons: [], value: 28 },
+          { period: "2015-02", status: "provisional", reasons: ["provisional_recent_product"], value: 29 },
+          { period: "2015-03", status: "outside_coverage", reasons: ["outside_dataset_record"], value: null },
+        ],
+        counts: { valid: 1, missing: 0, excluded: 0, provisional: 1, outside_coverage: 1, unavailable: 0 },
+        completeness: { valid: 1, expected_within_supported_coverage: 2, percentage: 50, label: "Valid months / Expected months within supported dataset coverage" },
+        eligible_years: [2015], excluded_years: [],
+      },
+      c: {
+        dataset: "c", resolution: "annual", resolution_note: "Annual coverage: monthly quality-control information is not available for this dataset response.",
+        requested_period: { start: "2015-01-01", end_exclusive: "2018-01-01" }, supported_period: { start: "2016-01-01", end: null },
+        cells: [{ period: "2015", status: "outside_coverage", reasons: ["outside_dataset_record"], value: null }, { period: "2016", status: "unavailable", reasons: ["dataset_result_unavailable"], value: null }],
+        counts: { valid: 0, missing: 0, excluded: 0, provisional: 0, outside_coverage: 1, unavailable: 1 },
+        completeness: { valid: 0, expected_within_supported_coverage: 1, percentage: 0, label: "Valid years / Expected years within supported dataset coverage" },
+        eligible_years: [], excluded_years: [],
+      },
+    },
+    pairs: [{
+      ...response.comparison!.pairs[0]!, root_mean_square_difference: 1.2, slope_difference: 0.07,
+      matched_observations: { resolution: "annual", count: 2, period: { start: "2015", end: "2016" }, labels: ["2015", "2016"], valid_observations: { a: ["2015", "2016"], b: ["2015", "2016", "2017"] }, excluded_from_pairing: { a: [], b: ["2017"] }, quality_excluded: { a: ["2018"], b: [] } },
+      annual_differences: [{ year: 2015, difference: -1 }, { year: 2016, difference: -1.4 }],
+      metrics: [
+        { id: "rmse", name: "Root mean square difference", value: 1.2, units: "°C", matched_observations: 2, definition: "Square root of mean squared product differences.", interpretation: "A product-to-product difference, not an error.", limitations: "Neither product is ground truth.", availability: "available", unavailable_reason: null },
+        { id: "pearson_r", name: "Pearson correlation", value: null, units: null, matched_observations: 2, definition: "Linear correlation.", interpretation: "Co-variation, not causation.", limitations: "No p-value.", availability: "unavailable", unavailable_reason: "Requires at least 8 common eligible years." },
+      ],
+    }],
+    cautions: ["Agreement between products does not establish accuracy, measurement truth, or causation."],
+  };
+  return response;
 }
 
 describe("comparison helpers", () => {
@@ -203,5 +255,31 @@ describe("Compare datasets page", () => {
     await userEvent.click(await screen.findByRole("button", { name: "Compare datasets" }));
     expect(await screen.findByText(/fewer than two datasets returned results/)).toBeInTheDocument();
     expect(screen.getByText(/each is shown on its own axis/)).toBeInTheDocument();
+  });
+});
+
+describe("Dataset Evaluation Lab", () => {
+  it("renders genuine monthly and explicitly annual coverage with non-color status details", async () => {
+    render(<EvaluationLab data={evaluationResponse()} />);
+
+    expect(screen.getByRole("heading", { name: "Annual coverage" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Monthly coverage" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /A, 2016: Excluded by quality control.*too few months with valid data/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /B, 2015-02: Provisional or incomplete/i })).toBeInTheDocument();
+    expect(screen.getByText("1 / 3 valid years")).toBeInTheDocument();
+    expect(screen.getByText("1 / 2 valid months")).toBeInTheDocument();
+    expect(screen.getAllByText(/within supported dataset coverage/).length).toBeGreaterThan(0);
+  });
+
+  it("shows matched evidence, metric definitions, unavailable reasons, and product differences", () => {
+    render(<EvaluationLab data={evaluationResponse()} />);
+
+    expect(screen.getByText("2 matched annual observations")).toBeInTheDocument();
+    expect(screen.getByText("Root mean square difference")).toBeInTheDocument();
+    expect(screen.getByText("1.200 °C")).toBeInTheDocument();
+    expect(screen.getByText("Requires at least 8 common eligible years.")).toBeInTheDocument();
+    expect(screen.getAllByText(/A minus B/).length).toBeGreaterThan(0);
+    expect(screen.getByRole("table", { name: "Matched product differences" })).toHaveTextContent("2015");
+    expect(screen.getByText(/does not establish accuracy/)).toBeInTheDocument();
   });
 });
