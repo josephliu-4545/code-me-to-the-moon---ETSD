@@ -113,6 +113,13 @@ function slopeSentence(e: Evidence): string {
   return `According to the selected ${e.dataset.source} analysis, the estimated ${lower(e.variableName)} trend (${e.trend.estimator}) is ${signedNum(e.trend.slope)} ${e.units.slope ?? ""}, ${basis}.`;
 }
 
+/** Region investigations cannot borrow point-based comparison or relationship results. */
+function regionNote(e: Evidence): string {
+  return e.investigation.mode === "region"
+    ? "This is a region investigation. Cached Compare Datasets or Earth System Relationships results for a single point are not used as evidence for this region; an analysis of the same region would be needed."
+    : "";
+}
+
 /** Coverage in the terms of the method actually used (annual years, or months for the seasonal method). */
 function coverageSentence(e: Evidence): string {
   if (e.seasonal) {
@@ -491,7 +498,7 @@ const BUILDERS: Record<Exclude<Intent, "injection" | "secrets" | "getting_starte
       { kind: "background", lines: ["No dataset is best everywhere. The right choice depends on the period you need, the spatial footprint, and whether you want a model, reanalysis or satellite estimate."] },
       r?.comparison
         ? { kind: "statistics", lines: [`Your Compare Datasets result for this place and period reports: ${r.comparison.agreementLevel ?? "no agreement level"}. ${r.comparison.explanation ?? r.comparison.unavailableReason ?? ""}`] }
-        : { kind: "next_steps", lines: [`To see whether alternative datasets agree here, run Compare Datasets for ${lower(e.variableName)} with the same place and period. Only one dataset was analysed in this investigation.`] },
+        : { kind: "next_steps", lines: [`To see whether alternative datasets agree here, run Compare Datasets for ${lower(e.variableName)} with the same place and period. Only one dataset was analysed in this investigation.`, regionNote(e)] },
     ], [datasetSource(e), { label: "Compare Datasets", detail: "Analyse several datasets side by side", href: "#compare" }], e);
   },
 
@@ -499,7 +506,7 @@ const BUILDERS: Record<Exclude<Intent, "injection" | "secrets" | "getting_starte
     const c = r?.comparison;
     if (!c) {
       return answer("dataset_disagreement", "needs_analysis", [
-        { kind: "finding", lines: [`Only one dataset (${e.dataset.source}, ${e.dataset.id}) was analysed in this investigation, so it is not possible to say whether datasets disagree here.`] },
+        { kind: "finding", lines: [`Only one dataset (${e.dataset.source}, ${e.dataset.id}) was analysed in this investigation, so it is not possible to say whether datasets disagree here.`, regionNote(e)] },
         { kind: "background", lines: ["In general, datasets can differ because they measure different quantities (for example, model layers versus satellite retrievals), cover different footprints, use different inputs and processing, or treat missing data differently."] },
         { kind: "next_steps", lines: [e.variableId === "soil_moisture" ? "Run the soil-moisture comparison in Scientific Evaluation, or Compare Datasets, for this place and period." : "Run Compare Datasets for this variable with the same place and period."] },
       ], [{ label: "Compare Datasets", detail: "Analyse several datasets side by side", href: "#compare" }], e);
@@ -600,7 +607,7 @@ const BUILDERS: Record<Exclude<Intent, "injection" | "secrets" | "getting_starte
     const rel = r?.relationships ?? [];
     if (!rel.length) {
       return answer("correlation", "needs_analysis", [
-        { kind: "notice", lines: [`No relationship analysis for ${lower(e.variableName)} at this place and period has been run in this session. Open Earth System Relationships and compare annual values with another variable.`] },
+        { kind: "notice", lines: [`No relationship analysis for ${lower(e.variableName)} at this place and period has been run in this session. Open Earth System Relationships and compare annual values with another variable.`, regionNote(e)] },
       ], [{ label: "Earth System Relationships", detail: "Compare annual values of two variables", href: "#relationships" }], e);
     }
     return answer("correlation", "descriptive", [

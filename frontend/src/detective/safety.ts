@@ -57,6 +57,12 @@ export function safeHref(href: string | undefined): string | undefined {
   if (!href) return undefined;
   if (/^#(explore|evaluation|compare|relationships|science)$/.test(href)) return href;
   const m = /^https:\/\/doi\.org\/(.+)$/.exec(href);
-  if (m && DOI_RE.test(decodeURIComponent(m[1]!))) return href;
-  return undefined;
+  if (!m) return undefined;
+  let doi: string;
+  try {
+    doi = decodeURIComponent(m[1]!);
+  } catch {
+    return undefined; // malformed percent-encoding: reject, never throw into the UI
+  }
+  return DOI_RE.test(doi) ? href : undefined;
 }

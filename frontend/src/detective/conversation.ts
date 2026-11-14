@@ -19,7 +19,10 @@ export interface Turn {
 export interface Conversation {
   investigation: Investigation;
   turns: Turn[];
-  /** Intent of the last assistant answer, used to resolve short follow-ups. */
+  /**
+   * Intent of the most recent assistant answer, used to resolve short follow-ups. It is null after an
+   * unsupported, ambiguous, injection or secrets answer, so "Why?" never reaches back past that turn.
+   */
   lastIntent: Intent | null;
   /** Oldest turns dropped because of the history limit. */
   dropped: number;
@@ -34,7 +37,7 @@ export function appendTurns(store: ConversationStore, inv: Investigation, turns:
   const prev = store[inv.key] ?? { investigation: inv, turns: [], lastIntent: null, dropped: 0 };
   const all = [...prev.turns, ...turns];
   const overflow = Math.max(0, all.length - MAX_TURNS_PER_CONVERSATION);
-  const next: Conversation = { investigation: prev.investigation, turns: all.slice(overflow), lastIntent: lastIntent ?? prev.lastIntent, dropped: prev.dropped + overflow };
+  const next: Conversation = { investigation: prev.investigation, turns: all.slice(overflow), lastIntent, dropped: prev.dropped + overflow };
   const rest = Object.entries(store).filter(([k]) => k !== inv.key);
   // Keep the most recent conversations only; the active one is always kept.
   const kept = rest.slice(Math.max(0, rest.length - (MAX_CONVERSATIONS - 1)));

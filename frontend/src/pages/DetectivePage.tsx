@@ -16,7 +16,7 @@ import { fmtCoord, pText } from "../lib/format";
 import { findSnapshot, useAnalysis } from "../state/useAnalysis";
 
 /** Conversation bucket used before any investigation exists (only "how do I start" style guidance). */
-const NO_INVESTIGATION: Investigation = { key: "__none__", variable: "", variableName: "No investigation", place: "", latitude: 0, longitude: 0, startYear: 0, endYearInclusive: 0, mode: "point", dataset: null };
+const NO_INVESTIGATION: Investigation = { key: "__none__", variable: "", variableName: "No investigation", place: "", latitude: 0, longitude: 0, startYear: 0, endYearInclusive: 0, mode: "point", dataset: null, radiusKm: null, bbox: null };
 
 function investigationLine(inv: Investigation): string {
   return `${inv.variableName} · ${inv.place} (${fmtCoord(inv.latitude, inv.longitude)}) · ${inv.startYear}–${inv.endYearInclusive}${inv.dataset ? ` · ${inv.dataset}` : ""}${inv.mode === "region" ? " · region" : ""}`;

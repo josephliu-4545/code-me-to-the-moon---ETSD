@@ -5,7 +5,7 @@
  * returned. Nothing here calculates a new statistic: every number is copied from the
  * authoritative API response, and anything missing stays `null` (never zero).
  */
-import type { Analysis, AnalysisRequest, ChangePoint } from "../api/types";
+import type { Analysis, AnalysisRequest, ChangePoint, SpatialSupport } from "../api/types";
 import { dataStatusLabel, reasonLabel } from "../lib/format";
 import { fittedChange, isSeasonal, monthCompleteness, periodLabel, slopeName, testName, trendVerdict, type VerdictKind } from "../lib/verdict";
 
@@ -23,6 +23,9 @@ export interface Investigation {
   endYearInclusive: number;
   mode: string;
   dataset: string | null;
+  /** Region identity: circle radius (NDVI) or [west, south, east, north] box (precipitation). Null for points. */
+  radiusKm: number | null;
+  bbox: [number, number, number, number] | null;
 }
 
 export interface Evidence {
@@ -101,17 +104,38 @@ export function toInvestigation(r: AnalysisRequest, variableName: string, place:
     endYearInclusive: r.endYear - 1,
     mode: r.mode,
     dataset: r.variable === "soil_moisture" ? r.dataset ?? null : null,
+    radiusKm: r.mode === "region" && !r.bbox ? r.radiusKm ?? null : null,
+    bbox: r.mode === "region" ? r.bbox ?? null : null,
   };
+}
+
+/** Tolerance for coordinates the backend rounds (requests carry 4 decimals). */
+const COORD_TOL = 1e-3;
+const near = (x: number | undefined, y: number) => typeof x === "number" && Math.abs(x - y) < COORD_TOL;
+
+/**
+ * True when a spatial support describes this investigation's footprint: same requested point and
+ * mode and, for regions, the same circle radius or bounding box. Point-mode sampling details chosen
+ * by the backend (such as NDVI's fixed 0.25 km point circle) are legitimate and not compared.
+ */
+export function spatialMatches(ss: SpatialSupport | undefined, inv: Investigation): boolean {
+  if (!ss?.requested || ss.mode !== inv.mode) return false;
+  if (!near(ss.requested.latitude, inv.latitude) || !near(ss.requested.longitude, inv.longitude)) return false;
+  if (inv.mode !== "region") return true;
+  if (inv.bbox) {
+    const [w, s, e, n] = inv.bbox;
+    return !!ss.bbox && near(ss.bbox.west, w) && near(ss.bbox.south, s) && near(ss.bbox.east, e) && near(ss.bbox.north, n);
+  }
+  if (inv.radiusKm !== null) return typeof ss.radius_km === "number" && Math.abs(ss.radius_km - inv.radiusKm) < 1e-6;
+  return false;
 }
 
 /** True only when the analysis really answers this investigation (guards against stale results). */
 export function analysisMatches(a: Analysis, inv: Investigation): boolean {
-  const req = a.spatial_support?.requested;
   const sameVariable = a.variable?.id === inv.variable;
-  const samePlace = !req || (Math.abs(req.latitude - inv.latitude) < 1e-3 && Math.abs(req.longitude - inv.longitude) < 1e-3);
-  const samePeriod = a.period?.start?.slice(0, 4) === String(inv.startYear);
+  const samePeriod = a.period?.start?.slice(0, 4) === String(inv.startYear) && a.period?.end_exclusive?.slice(0, 4) === String(inv.endYearInclusive + 1);
   const sameDataset = inv.dataset === null || !a.dataset.key || a.dataset.key === inv.dataset;
-  return sameVariable && samePlace && samePeriod && sameDataset;
+  return sameVariable && samePeriod && sameDataset && spatialMatches(a.spatial_support, inv);
 }
 
 function exclusions(a: Analysis): { year: number; reasons: string[] }[] {

@@ -8,7 +8,7 @@
 import type { CompareRequest } from "../api/compareClient";
 import type { CompareResponse } from "../api/compareTypes";
 import type { RelationshipsResponse } from "../api/types";
-import { finiteOrNull, type Investigation } from "./evidence";
+import { finiteOrNull, spatialMatches, type Investigation } from "./evidence";
 
 export interface ComparisonEvidence {
   variable: string;
@@ -50,6 +50,16 @@ type RelKey = { a: string; b: string; lat: number; lon: number; from: number; to
 
 const near = (x: number, y: number) => Math.abs(x - y) < 1e-3;
 
+/**
+ * A comparison is reusable only for the same kind of footprint: a point comparison is not evidence
+ * about a region (and vice versa), and a regional comparison must cover the same region.
+ */
+function comparisonSpatiallyCompatible(res: CompareResponse, inv: Investigation): boolean {
+  if ((res.location?.mode ?? "point") !== inv.mode) return false;
+  const supports = Object.values(res.results ?? {}).flatMap((r) => (r.analysis ? [r.analysis.spatial_support] : []));
+  return inv.mode === "point" ? supports.every((ss) => ss.mode === "point") : supports.length > 0 && supports.every((ss) => spatialMatches(ss, inv));
+}
+
 export function comparisonFromCache(entries: [readonly unknown[], unknown][], inv: Investigation): ComparisonEvidence | null {
   for (const [key, data] of entries) {
     const req = key[1] as CompareRequest | null | undefined;
@@ -57,6 +67,7 @@ export function comparisonFromCache(entries: [readonly unknown[], unknown][], in
     if (!req || !res || req.variable !== inv.variable) continue;
     if (!near(req.latitude, inv.latitude) || !near(req.longitude, inv.longitude)) continue;
     if (req.startYear !== inv.startYear || req.endYear !== inv.endYearInclusive + 1) continue;
+    if (!comparisonSpatiallyCompatible(res, inv)) continue;
     const name = (k: string) => res.results[k]?.entry.name ?? k;
     return {
       variable: res.variable,
@@ -97,6 +108,8 @@ export function relationshipsFromCache(entries: [readonly unknown[], unknown][],
     if (!req || !res || (req.a !== inv.variable && req.b !== inv.variable)) continue;
     if (!near(req.lat, inv.latitude) || !near(req.lon, inv.longitude) || req.from !== inv.startYear || req.to !== inv.endYearInclusive + 1) continue;
     if (inv.variable === "soil_moisture" && inv.dataset && req.ds !== inv.dataset) continue;
+    const ownSupport = res.results?.[inv.variable]?.spatial_support;
+    if (ownSupport ? !spatialMatches(ownSupport, inv) : inv.mode !== "point") continue;
     out.push({
       other: req.a === inv.variable ? req.b : req.a,
       rhoAnnual: finiteOrNull(res.spearman_rho_annual),

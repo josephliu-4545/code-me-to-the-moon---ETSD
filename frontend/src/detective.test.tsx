@@ -437,3 +437,111 @@ describe("Detective page", () => {
     expect(screen.getByRole("textbox", { name: "Your question" })).toBeDisabled();
   });
 });
+
+// ---------------- final review corrections ----------------
+
+describe("review: full investigation identity", () => {
+  it("rejects evidence whose ending period differs", () => {
+    const a = live("yangon-2015-2024-temperature");
+    expect(analysisMatches(a, inv(req("temperature", { endYear: 2024 })))).toBe(false);
+    expect(analysisMatches(a, inv(req("temperature", { endYear: 2025 })))).toBe(true);
+  });
+
+  it("rejects evidence with a different spatial mode", () => {
+    const a = live("yangon-2015-2024-ndvi");
+    expect(analysisMatches(a, inv(req("ndvi", { mode: "region", radiusKm: 5 })))).toBe(false);
+  });
+
+  it("checks the region radius and box, tolerating backend rounding", () => {
+    const circle = live("yangon-2015-2024-ndvi");
+    circle.spatial_support = { ...circle.spatial_support, mode: "region", type: "circle_mean", radius_km: 5 };
+    expect(analysisMatches(circle, inv(req("ndvi", { mode: "region", radiusKm: 5 })))).toBe(true);
+    expect(analysisMatches(circle, inv(req("ndvi", { mode: "region", radiusKm: 10 })))).toBe(false);
+
+    const box = live("yangon-2015-2024-precipitation");
+    box.spatial_support = { ...box.spatial_support, mode: "region", type: "bbox_area_weighted_mean", bbox: { west: 95.69510001, south: 16.3661, east: 96.6951, north: 17.3661 } };
+    expect(analysisMatches(box, inv(req("precipitation", { mode: "region", bbox: [95.6951, 16.3661, 96.6951, 17.3661] })))).toBe(true);
+    expect(analysisMatches(box, inv(req("precipitation", { mode: "region", bbox: [95.9451, 16.6161, 96.4451, 17.1161] })))).toBe(false);
+  });
+
+  it("still accepts every real saved snapshot for its own investigation", () => {
+    for (const [name, r] of [
+      ["yangon-2015-2024-temperature", req("temperature")],
+      ["yangon-2015-2024-ndvi", req("ndvi", { radiusKm: 5 })],
+      ["yangon-2015-2024-precipitation", req("precipitation")],
+      ["yangon-2015-2024-soil_moisture-smap_l3e_v006_am", req("soil_moisture", { dataset: "smap_l3e_v006_am" })],
+    ] as const) {
+      expect(analysisMatches(snap(name), inv(r))).toBe(true);
+    }
+  });
+});
+
+describe("review: cached evidence must match the spatial support", () => {
+  const compare = (mode: string) => ({
+    variable: "temperature", location: { latitude: 16.8661, longitude: 96.1951, mode }, datasets_requested: ["a", "b"],
+    results: {
+      a: { entry: { name: "Dataset A", version: "1", citation: null }, outcome: "inference", message: "", analysis: null },
+      b: { entry: { name: "Dataset B", version: "2", citation: null }, outcome: "inference", message: "", analysis: null },
+    },
+    comparison: { pairs: [], agreement: { level: "moderate agreement", explanation: "x", caution: "y" } },
+    comparison_unavailable_reason: null, caveats: [],
+  }) as unknown as CompareResponse;
+  const ckey = ["compare", { variable: "precipitation", datasets: ["a", "b"], latitude: 16.8661, longitude: 96.1951, startYear: 2015, endYear: 2025 }] as const;
+  const rel = (mode: string) => ({
+    results: { precipitation: { spatial_support: { mode, requested: { latitude: 16.8661, longitude: 96.1951 } } }, temperature: { spatial_support: { mode: "point", requested: { latitude: 16.8661, longitude: 96.1951 } } } },
+    spearman_rho_annual: 0.3, spearman_rho_first_differences: 0.1, common_eligible_years: [2015], interpretation: "", unavailable_reasons: [], alignment: { spatial_supports_differ: false },
+  });
+  const rkey = ["relationships", { a: "precipitation", b: "temperature", lat: 16.8661, lon: 96.1951, from: 2015, to: 2025, ds: "x" }] as const;
+  const regionInv = inv(req("precipitation", { mode: "region", bbox: [95.6951, 16.3661, 96.6951, 17.3661] }));
+  const pointInv = inv(req("precipitation"));
+
+  it("uses a point comparison for a point investigation only", () => {
+    const c = { ...compare("point"), variable: "precipitation" } as CompareResponse;
+    expect(comparisonFromCache([[ckey, c]], pointInv)).not.toBeNull();
+    expect(comparisonFromCache([[ckey, c]], regionInv)).toBeNull();
+  });
+
+  it("uses point relationships for a point investigation only", () => {
+    expect(relationshipsFromCache([[rkey, rel("point")]], pointInv)).toHaveLength(1);
+    expect(relationshipsFromCache([[rkey, rel("point")]], regionInv)).toEqual([]);
+  });
+
+  it("explains that a region investigation needs its own comparison", () => {
+    const e = evidenceFor(live("yangon-2015-2024-precipitation"), req("precipitation"));
+    const regionEvidence = { ...e, investigation: regionInv };
+    const t = text(answerQuestion(classify("Why do the datasets disagree?", null), regionEvidence, { comparison: null, relationships: [] }));
+    expect(t).toMatch(/region/);
+    expect(t).toMatch(/not used as evidence for this region/);
+    expect(text(answerQuestion(classify("Is it correlated with temperature?", null), regionEvidence, { comparison: null, relationships: [] }))).toMatch(/not used as evidence for this region/);
+  });
+});
+
+describe("review: follow-ups after unsupported questions", () => {
+  it("clears the follow-up context after an unsupported answer", () => {
+    const i = inv(req("temperature"));
+    let store: ConversationStore = appendTurns({}, i, [], "direction");
+    store = appendTurns(store, i, [], null);
+    expect(store[i.key]!.lastIntent).toBeNull();
+  });
+
+  it("asks for clarification instead of reaching back past an unsupported question", async () => {
+    const user = userEvent.setup();
+    render(<Harness request={req("temperature")} client={client([[req("temperature"), live("yangon-2015-2024-temperature")]])} />);
+    const input = screen.getByRole("textbox", { name: "Your question" });
+    await user.type(input, "Is temperature increasing?{Enter}");
+    await user.type(input, "What is the best pizza place nearby?{Enter}");
+    await user.type(input, "Why?{Enter}");
+    const topics = within(screen.getByRole("log")).getAllByRole("heading", { level: 3 }).map((h) => h.textContent);
+    expect(topics).toEqual(["Trend direction", "Clarification", "Clarification"]);
+  });
+});
+
+describe("review: DOI link validation", () => {
+  it("rejects malformed percent-encoding without throwing", () => {
+    expect(() => safeHref("https://doi.org/10.5067/%E0%A4%A")).not.toThrow();
+    expect(safeHref("https://doi.org/10.5067/%E0%A4%A")).toBeUndefined();
+    expect(safeHref("https://doi.org/%")).toBeUndefined();
+    expect(safeHref("https://doi.org/10.5067/x%20y")).toBeUndefined();
+    expect(safeHref("https://doi.org/10.5067/GPM/IMERG/3B-MONTH/07")).toBe("https://doi.org/10.5067/GPM/IMERG/3B-MONTH/07");
+  });
+});
