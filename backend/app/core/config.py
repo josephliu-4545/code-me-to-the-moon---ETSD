@@ -89,6 +89,9 @@ class Settings(BaseSettings):
     trusted_proxy_hops: int = Field(default=1, ge=0, le=10)
     unified_cache_max_entries: int = Field(default=128, ge=1, le=2048)
     unified_cache_ttl_seconds: float = Field(default=3600, gt=0)
+    gemini_api_key: str | None = None
+    gemini_model: str = "gemini-3.5-flash-lite"
+    gemini_timeout_seconds: float = Field(default=90.0, gt=0, le=180)
 
 
 @lru_cache

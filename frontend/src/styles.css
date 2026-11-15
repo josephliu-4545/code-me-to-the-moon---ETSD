@@ -9,3 +9,4 @@
 @import "./styles/evidence-light.css";
 /* Keep the custom animated space scenes on every non-Explore page. */
 @import "./styles/space-pages.css";
+@import "./styles/chat.css";

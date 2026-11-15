@@ -4,6 +4,7 @@ import SiteHeader, { type NavItem } from "./components/layout/SiteHeader";
 import Wordmark from "./components/layout/Wordmark";
 import Starfield from "./components/layout/Starfield";
 import SpaceBackdrop from "./components/layout/SpaceBackdrop";
+import MissionScientist from "./components/MissionScientist";
 import { ErrorBox, Loading } from "./components/ResultPanels";
 import CompareDatasetsPage from "./pages/CompareDatasetsPage";
 import DetectivePage from "./pages/DetectivePage";
@@ -16,7 +17,7 @@ import { readStoredInvestigation, storeInvestigation, type StoredInvestigation }
 import { patchSelection, requestIdentity, toRequest, useSelection, type Selection } from "./state/selection";
 import { useTheme } from "./state/theme";
 import { useConversationStore } from "./detective/conversation";
-import { findSnapshot, useVariables } from "./state/useAnalysis";
+import { findSnapshot, useAnalysis, useVariables } from "./state/useAnalysis";
 
 const TABS = [
   { id: "explore", label: "Explore Earth", short: "Explore Earth" },
@@ -68,6 +69,7 @@ export default function App() {
   const conversations = useConversationStore();
   const variables = useVariables();
   const [theme, , toggleTheme] = useTheme();
+  const chatAnalysis = useAnalysis(snapshot ? null : submitted);
 
   function startInvestigation(patch: Partial<Selection>) {
     const clean = Object.fromEntries(Object.entries(patch).filter(([, value]) => value !== undefined)) as Partial<Selection>;
@@ -168,6 +170,7 @@ export default function App() {
           </div>
         )}
       </main>
+      <MissionScientist context={snapshot ?? chatAnalysis.data} />
       <footer className="footer">
         <div className="footer-inner">
           <img className="footer-art" src={POSTER} width={112} height={112} alt="" loading="lazy" />
