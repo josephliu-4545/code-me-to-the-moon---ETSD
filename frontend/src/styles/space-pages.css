@@ -14,12 +14,44 @@
   --chart-surface:#0D1930;--chart-obs:#3E97DD;--chart-trend:#C9822D;--chart-excluded:#8E9DB2;
   --chart-grid:rgba(169,184,206,.1);--chart-axis:rgba(169,184,206,.32);--chart-tick:#A9B8CE;
   --chart-band:rgba(116,183,231,.1);--chart-gap:rgba(169,184,206,.05);--chart-gap-line:rgba(169,184,206,.2);
-  --font-display:"Instrument Serif","Iowan Old Style",Georgia,serif;
+  --font-display:"Space Grotesk Variable","Space Grotesk",ui-sans-serif,system-ui,sans-serif;
   --font-brand:"Space Grotesk Variable","Space Grotesk",ui-sans-serif,system-ui,sans-serif;
   --font-body:"DM Sans Variable","DM Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --font-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   color:var(--text-primary);
   font-family:var(--font-body);
+}
+
+/* Light mission mode: crisp paper-like panels over restrained orbital artwork. */
+[data-theme="light"] :is(.view-space,.investigation-space) {
+  color-scheme:light;
+  --bg:#F3F6FB;--bg-deep:#E7EDF6;
+  --surface:rgba(255,255,255,.92);--surface-raised:#E8EEF7;
+  --surface-glass:rgba(255,255,255,.9);--surface-solid:#FFFFFF;--surface-sunken:#EDF2F8;
+  --surface-hover:rgba(35,74,125,.07);--overlay:rgba(236,242,250,.82);
+  --text-primary:#14233B;--text-secondary:#435672;--text-muted:#64748B;--text-on-accent:#FFFFFF;
+  --accent:#315F9B;--accent-hover:#234B80;--accent-soft:rgba(49,95,155,.1);--accent-line:rgba(49,95,155,.36);--focus:#315F9B;
+  --border:rgba(45,67,99,.16);--border-strong:rgba(45,67,99,.3);
+  --data-primary:#176F9F;--data-secondary:#7254A8;--trend:#A96522;
+  --valid:#28775C;--warning:#A44F35;--unavailable:#68778B;--warning-soft:rgba(164,79,53,.09);
+  --chart-surface:#FFFFFF;--chart-obs:#176F9F;--chart-trend:#A96522;--chart-excluded:#77869A;
+  --chart-grid:rgba(20,35,59,.09);--chart-axis:rgba(20,35,59,.28);--chart-tick:#435672;
+  --chart-band:rgba(23,111,159,.09);--chart-gap:rgba(20,35,59,.035);--chart-gap-line:rgba(20,35,59,.16);
+  background:#F3F6FB;
+}
+[data-theme="light"] .view-space .space-backdrop,
+[data-theme="light"] .investigation-space .space-backdrop{opacity:.24;filter:saturate(.72) contrast(.82)}
+[data-theme="light"] .view-space :is(.page,.hero),
+[data-theme="light"] .investigation-space :is(.page,.hero){background:transparent}
+[data-theme="light"] :is(.view-space,.investigation-space) :is(.sheet,.disclosure,.empty-state,.chart-plot,.assumption-card,.chapter,.cmp-banner,.cmp-dataset,.compare-pair,.context-strip,.dt-answer,.dt-how,.eval-quality-card,.eval-views,.method-card,.relation-findings,.system-picker,.toc,.uncertainty,.gauge,.cautions){
+  background:rgba(255,255,255,.9);border-color:var(--border);box-shadow:0 18px 45px -34px rgba(28,49,80,.36);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)
+}
+[data-theme="light"] :is(.view-space,.investigation-space) .hero::after{opacity:.2}
+[data-theme="light"] :is(.view-space,.investigation-space) .hero-title em{
+  background:linear-gradient(100deg,#315F9B,#7254A8,#176F9F);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent
+}
+[data-theme="light"] :is(.view-space,.investigation-space) .btn-ghost:not(.investigation-page-links a){
+  background:linear-gradient(#fff,#fff) padding-box,conic-gradient(from var(--btn-ang),#315F9B,#7254A8,#176F9F,#315F9B) border-box;color:var(--text-primary)
 }
 .view-space{position:relative;isolation:isolate;overflow:hidden}
 .space-evaluation{background:radial-gradient(1000px 620px at 85% 8%,rgba(30,70,110,.3),transparent 62%),radial-gradient(900px 600px at 5% 70%,rgba(40,60,120,.2),transparent 60%),#03050b}
