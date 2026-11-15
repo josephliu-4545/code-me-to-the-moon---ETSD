@@ -1,13 +1,14 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Analysis } from "./api/types";
+import type { Analysis, AnalysisRequest } from "./api/types";
 import type { CompareResponse, DatasetInfo, DatasetResult } from "./api/compareTypes";
 import { buildOverlayRows } from "./components/compare/OverlayChart";
 import EvaluationLab from "./components/evaluation/EvaluationLab";
 import CompareDatasetsPage, { coverageWarnings, validateCompare } from "./pages/CompareDatasetsPage";
 import { DEFAULT_SELECTION } from "./state/selection";
+import { analysisKey } from "./state/useAnalysis";
 
 function info(key: string, over: Partial<DatasetInfo> = {}): DatasetInfo {
   return {
@@ -166,15 +167,63 @@ describe("Compare datasets page", () => {
   });
   afterEach(() => vi.unstubAllGlobals());
 
-  function renderPage(response: CompareResponse) {
+  function renderPage(response: CompareResponse, active: { submitted?: AnalysisRequest | null; analysis?: Analysis | null; place?: string } = {}) {
     fetchMock.mockImplementation(async (url: string) => {
       if (url.includes("/api/v2/datasets")) return new Response(JSON.stringify(CATALOG), { status: 200 });
       if (url.includes("/api/v2/compare")) return new Response(JSON.stringify(response), { status: 200 });
       return new Response("{}", { status: 404 });
     });
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    return render(<QueryClientProvider client={client}><CompareDatasetsPage selection={DEFAULT_SELECTION} /></QueryClientProvider>);
+    if (active.submitted && active.analysis) client.setQueryData(analysisKey(active.submitted), active.analysis);
+    return render(<QueryClientProvider client={client}><CompareDatasetsPage selection={DEFAULT_SELECTION} submitted={active.submitted ?? null} submittedPlace={active.place ?? ""} /></QueryClientProvider>);
   }
+
+  it("defaults to Database and supports keyboard navigation without leaving Compare", async () => {
+    renderPage(compareResponse());
+    const tabs = await screen.findByRole("tablist", { name: "Compare Lab view" });
+    const database = within(tabs).getByRole("tab", { name: "Database" });
+    const method = within(tabs).getByRole("tab", { name: "Method" });
+    expect(database).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("button", { name: "Compare datasets" })).toBeInTheDocument();
+    database.focus();
+    fireEvent.keyDown(database, { key: "ArrowRight" });
+    expect(method).toHaveAttribute("aria-selected", "true");
+    expect(method).toHaveFocus();
+    expect(window.location.hash).not.toBe("#evaluation");
+    fireEvent.keyDown(method, { key: "Home" });
+    expect(database).toHaveAttribute("aria-selected", "true");
+  });
+
+  it("shows an actionable empty Method state without launching an analysis", async () => {
+    renderPage(compareResponse());
+    await userEvent.click(await screen.findByRole("tab", { name: "Method" }));
+    expect(screen.getByText(/Launch or load an Earth investigation/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Explore Earth/ })).toHaveAttribute("href", "#explore");
+    expect(fetchMock.mock.calls.some((call) => String(call[0]).includes("/api/v2/analysis"))).toBe(false);
+  });
+
+  it("binds Method to the exact completed investigation rather than the current selection", async () => {
+    const submitted: AnalysisRequest = { variable: "temperature", latitude: 16.8661, longitude: 96.1951, startYear: 2015, endYear: 2025, mode: "point" };
+    const completed = analysis(27, 0.02);
+    completed.dataset = { source: "NASA POWER", id: "T2M", version: "v2", provenance: "reanalysis", doi: null };
+    completed.spatial_support = { ...completed.spatial_support, description: "NASA POWER grid cell", requested: { latitude: 16.8661, longitude: 96.1951 } };
+    completed.variable.name = "Air temperature (2 m)";
+    completed.data_status = "saved_snapshot";
+    completed.snapshot = { captured_at: "2026-11-13T00:00:00Z", note: "Captured live retrieval" };
+    renderPage(compareResponse(), { submitted, analysis: completed, place: "Yangon, Myanmar" });
+    await userEvent.click(await screen.findByRole("tab", { name: "Method" }));
+    const context = screen.getByRole("region", { name: "Active investigation" });
+    expect(context).toHaveTextContent("Yangon, Myanmar");
+    expect(context).toHaveTextContent("Air temperature (2 m)");
+    expect(context).toHaveTextContent("NASA POWER");
+    expect(context).toHaveTextContent("T2M");
+    expect(context).toHaveTextContent("v2");
+    expect(context).toHaveTextContent("2015–2024");
+    expect(context).toHaveTextContent("NASA POWER grid cell");
+    expect(context).toHaveTextContent("9");
+    expect(context).toHaveTextContent("°C");
+    expect(context).toHaveTextContent(/saved snapshot/i);
+  });
 
   it("runs a comparison with partial failure and switches to an individual dataset", async () => {
     renderPage(compareResponse());

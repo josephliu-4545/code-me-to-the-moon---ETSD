@@ -89,7 +89,8 @@ def findings(a):
     return {"kind": kind, "label": label, "inference": inference, "note": note, "headline": headline,
             "slope": None if unavailable else slope, "slope_units": units,
             "per_decade": None if unavailable else slope * 10, "per_decade_units": decade_units,
-            "fitted_change": slope * (max(years) - min(years)) if not unavailable and len(years) >= 2 else None,
+            "fitted_change": slope * (max(years) - min(years))
+            if not unavailable and not seasonal and len(years) >= 2 else None,
             "slope_method": "Seasonal Sen slope" if seasonal else "Theil-Sen slope",
             "test_method": "Seasonal Kendall" if seasonal else "Mann-Kendall",
             "tested_null": "No monotonic trend", "test_reported": supported and not unavailable,

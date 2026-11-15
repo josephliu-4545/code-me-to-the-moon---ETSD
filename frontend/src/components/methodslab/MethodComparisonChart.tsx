@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { CartesianGrid, ComposedChart, Legend, Line, ResponsiveContainer, Scatter, Tooltip, XAxis, YAxis } from "recharts";
 import type { MethodsLab } from "../../api/methodsLabTypes";
 import { fmt } from "../../lib/format";
@@ -42,8 +43,22 @@ const ExcludedDot = (p: unknown) => {
 
 export default function MethodComparisonChart({ lab, units }: { lab: MethodsLab; units: string }) {
   const rows = buildComparisonRows(lab);
+  const [showTheilSen, setShowTheilSen] = useState(true);
+  const [showOls, setShowOls] = useState(true);
+  const visibleLines = showTheilSen && showOls
+    ? "showing Theil–Sen and OLS fitted lines"
+    : showTheilSen
+      ? "showing Theil–Sen fitted line; OLS fitted line hidden"
+      : showOls
+        ? "showing OLS fitted line; Theil–Sen fitted line hidden"
+        : "both fitted lines hidden";
   return (
-    <figure className="lab-figure" aria-label="Eligible annual observations with OLS and Theil–Sen lines fitted to the same years">
+    <figure className="lab-figure" aria-label={`Eligible annual observations; ${visibleLines}; both methods use the same years`}>
+      <fieldset className="method-line-toggles">
+        <legend>Fitted lines</legend>
+        <label><input type="checkbox" checked={showTheilSen} onChange={(event) => setShowTheilSen(event.target.checked)} /> Show Theil–Sen fitted line</label>
+        <label><input type="checkbox" checked={showOls} onChange={(event) => setShowOls(event.target.checked)} /> Show OLS fitted line</label>
+      </fieldset>
       <ResponsiveContainer width="100%" height={300}>
         <ComposedChart data={rows} margin={{ top: 10, right: 16, bottom: 4, left: 4 }}>
           <CartesianGrid stroke={CHART.grid} strokeDasharray="3 3" />
@@ -54,8 +69,8 @@ export default function MethodComparisonChart({ lab, units }: { lab: MethodsLab;
           <Legend wrapperStyle={{ fontSize: 12 }} />
           <Scatter name="Eligible observation" dataKey="eligible" shape={EligibleDot} isAnimationActive={false} legendType="circle" fill={CHART.obs} />
           <Scatter name="Excluded (not used)" dataKey="excluded" shape={ExcludedDot} isAnimationActive={false} legendType="circle" fill="none" />
-          <Line name="Theil–Sen line" dataKey="theil_sen" stroke={CHART.trend} strokeWidth={2.5} dot={false} connectNulls isAnimationActive={false} />
-          <Line name="OLS line (descriptive)" dataKey="ols" stroke={OLS_COLOR} strokeWidth={2} strokeDasharray="7 4" dot={false} connectNulls isAnimationActive={false} />
+          {showTheilSen && <Line name="Theil–Sen line" dataKey="theil_sen" stroke={CHART.trend} strokeWidth={2.5} dot={false} connectNulls isAnimationActive={false} />}
+          {showOls && <Line name="OLS line (descriptive)" dataKey="ols" stroke={OLS_COLOR} strokeWidth={2} strokeDasharray="7 4" dot={false} connectNulls isAnimationActive={false} />}
         </ComposedChart>
       </ResponsiveContainer>
       <figcaption className="note">
