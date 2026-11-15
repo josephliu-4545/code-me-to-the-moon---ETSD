@@ -155,7 +155,7 @@ export function ResultSummary({ analysis, place, historyPage = false }: { analys
           <dt>Estimator</dt><dd>{slopeName(analysis)}. {seasonal ? `Compares the same calendar months across years: ${monthsUsed(analysis)}.` : "Median of pairwise slopes on the eligible calendar years."}</dd>
           <dt>Tested hypothesis</dt><dd>No monotonic trend. {t?.result_level === "statistical_inference" && t.mann_kendall ? `Reported ${testName(analysis)} result: p = ${pText(t.mann_kendall.p_value)}, alpha = ${t.mann_kendall.alpha}; ${t.mann_kendall.is_statistically_significant ? "rejected under the reported test policy" : "not rejected"}.` : `Inference note: ${t?.significance_unavailable_reason ?? "Insufficient support for inference"}.`}</dd>
           <dt>Temporal support</dt><dd>{t?.eligible_years.length ? t.eligible_years.join(", ") : "No eligible trend years reported"}. Requested period: {analysis.period.start} to {analysis.period.end_exclusive} (end exclusive).</dd>
-          <dt>Uncertainty</dt><dd>{t?.confidence_interval ? `95% slope interval: ${signed(t.confidence_interval[0], 4)} to ${signed(t.confidence_interval[1], 4)} ${slopeUnits}. This is not a prediction interval.` : t?.confidence_interval_unavailable_reason ?? "No justified slope interval was supplied."}</dd>
+          <dt>Uncertainty</dt><dd>{t?.confidence_interval ? `95% slope interval: ${signed(t.confidence_interval[0], 4)} to ${signed(t.confidence_interval[1], 4)} ${slopeUnits}. It describes slope uncertainty, not a forecast.` : t?.confidence_interval_unavailable_reason ?? "No justified slope interval was supplied."}</dd>
         </dl>
       </Disclosure>
     </section>
