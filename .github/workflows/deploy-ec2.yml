@@ -1,6 +1,8 @@
 name: Deploy to EC2
 
-# Deploys the exact commit that passed CI on main to the EC2 demo server.
+# Deploys every push to main to the EC2 demo server (no CI gate, by team choice).
+# Safety net on the server: if the commit fails to build, the old version keeps running;
+# if it builds but is unhealthy, the server rolls back to the previous version.
 #
 # How it connects (no SSH, no open ports, no stored secrets):
 #   1. GitHub issues a short-lived OIDC token for this workflow run.
@@ -15,16 +17,16 @@ name: Deploy to EC2
 #   AWS_DEPLOY_ROLE_ARN
 
 on:
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
+  push:
     branches: [main]
+  workflow_dispatch: # manual re-deploy of main from the Actions tab
 
 permissions:
   contents: read
   id-token: write # needed to request the OIDC token
 
 concurrency:
+  # One deploy at a time; if several pushes land quickly, only the newest waiting one runs.
   group: deploy-ec2
   cancel-in-progress: false
 
@@ -35,13 +37,12 @@ env:
 
 jobs:
   deploy:
-    name: Deploy tested commit
-    # Only when every CI check passed for a push to main.
-    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main'
+    name: Deploy
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      COMMIT: ${{ github.event.workflow_run.head_sha }}
+      COMMIT: ${{ github.sha }}
     steps:
       - name: Get temporary AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
