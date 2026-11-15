@@ -148,16 +148,12 @@ export function ResultSummary({ analysis, place, historyPage = false }: { analys
         <p className="support-note">Values describe a {inSentence(s.description)} ({s.resolution}), not the exact point. Source: {analysis.dataset.source} · {analysis.dataset.title ?? analysis.dataset.id}.</p>
         <a className="text-link" href="#history">Explore the supporting observations</a>
       </Disclosure>
-      <div className="finding-evidence-links row-gap">
-        <a className="btn btn-ghost" href={historyPage ? "#history" : "#historical-discovery"}>Explore the supporting observations</a>
-        <a className="text-link" href="#evaluation">Inspect data quality and methods</a>
-      </div>
       <Disclosure summary="Why do we say this?" meta="Calculation evidence" className="finding-calculation">
         <p className="note">This explanation uses the returned calculation, not an AI-generated statistic.</p>
         <dl className="kv">
           <dt>Estimated direction</dt><dd>{t?.slope == null ? "No slope available" : `${t.slope > 0 ? "Positive" : t.slope < 0 ? "Negative" : "Zero"} slope: ${signed(t.slope, 4)} ${slopeUnits}`}. {verdict.label}.</dd>
           <dt>Estimator</dt><dd>{slopeName(analysis)}. {seasonal ? `Compares the same calendar months across years: ${monthsUsed(analysis)}.` : "Median of pairwise slopes on the eligible calendar years."}</dd>
-          <dt>Tested hypothesis</dt><dd>No monotonic trend. {t?.result_level === "statistical_inference" && t.mann_kendall ? `${testName(analysis)}: ${pText(t.mann_kendall.p_value)}, alpha = ${t.mann_kendall.alpha}; ${t.mann_kendall.is_statistically_significant ? "rejected under the reported test policy" : "not rejected"}.` : `Test not reported: ${t?.significance_unavailable_reason ?? "Insufficient support for inference"}.`}</dd>
+          <dt>Tested hypothesis</dt><dd>No monotonic trend. {t?.result_level === "statistical_inference" && t.mann_kendall ? `Reported ${testName(analysis)} result: p = ${pText(t.mann_kendall.p_value)}, alpha = ${t.mann_kendall.alpha}; ${t.mann_kendall.is_statistically_significant ? "rejected under the reported test policy" : "not rejected"}.` : `Inference note: ${t?.significance_unavailable_reason ?? "Insufficient support for inference"}.`}</dd>
           <dt>Temporal support</dt><dd>{t?.eligible_years.length ? t.eligible_years.join(", ") : "No eligible trend years reported"}. Requested period: {analysis.period.start} to {analysis.period.end_exclusive} (end exclusive).</dd>
           <dt>Uncertainty</dt><dd>{t?.confidence_interval ? `95% slope interval: ${signed(t.confidence_interval[0], 4)} to ${signed(t.confidence_interval[1], 4)} ${slopeUnits}. This is not a prediction interval.` : t?.confidence_interval_unavailable_reason ?? "No justified slope interval was supplied."}</dd>
         </dl>
