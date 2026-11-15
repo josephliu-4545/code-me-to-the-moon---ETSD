@@ -364,3 +364,79 @@
   [data-theme="light"] :is(.app-history,.app-findings) .investigation-page-links{margin-top:4px;margin-bottom:36px;gap:12px}
   [data-theme="light"] :is(.app-history,.app-findings) .investigation-page-links>a{min-height:54px;padding-inline:18px}
 }
+
+/* ── Depth layer: colour and motion through the middle and bottom of every page (both themes) ── */
+.space-backdrop{--c1:120,150,255;--c2:200,130,255;--c3:90,210,190;--c4:255,170,110}
+.space-history{--c1:255,170,90;--c2:140,120,255;--c3:255,120,120;--c4:120,180,255}
+.space-findings{--c1:230,110,210;--c2:90,150,255;--c3:255,170,110;--c4:150,110,255}
+.space-evaluation{--c1:90,230,190;--c2:80,150,255;--c3:160,240,140;--c4:90,200,230}
+.space-compare{--c1:110,150,255;--c2:255,170,100;--c3:150,110,255;--c4:90,210,230}
+.space-relationships{--c1:240,190,110;--c2:170,110,255;--c3:255,140,120;--c4:120,170,255}
+.space-detective{--c1:90,240,170;--c2:150,110,255;--c3:90,190,255;--c4:196,215,135}
+.space-science{--c1:170,130,255;--c2:90,170,255;--c3:255,200,150;--c4:230,120,220}
+.space-depth{position:absolute;inset:0;pointer-events:none}
+.depth-orb{position:absolute;border-radius:50%;filter:blur(70px);animation:orb-float 18s ease-in-out infinite alternate}
+.depth-orb-1{left:-8%;top:30%;width:44vw;height:44vw;max-width:640px;max-height:640px;background:radial-gradient(closest-side,rgba(var(--c1),.3),transparent)}
+.depth-orb-2{right:-10%;top:48%;width:48vw;height:48vw;max-width:700px;max-height:700px;background:radial-gradient(closest-side,rgba(var(--c2),.28),transparent);animation-duration:24s;animation-delay:-8s}
+.depth-orb-3{left:14%;top:68%;width:40vw;height:40vw;max-width:580px;max-height:580px;background:radial-gradient(closest-side,rgba(var(--c3),.24),transparent);animation-duration:21s;animation-delay:-4s}
+.depth-orb-4{right:6%;top:84%;width:42vw;height:42vw;max-width:620px;max-height:620px;background:radial-gradient(closest-side,rgba(var(--c4),.26),transparent);animation-duration:27s;animation-delay:-12s}
+.depth-ring{position:absolute;border-radius:50%;border:1px solid rgba(var(--c1),.28);box-shadow:0 0 40px -10px rgba(var(--c1),.5)}
+.depth-ring-1{left:-180px;top:40%;width:520px;height:520px;animation:ring-spin 60s linear infinite;border-style:dashed}
+.depth-ring-2{right:-220px;top:72%;width:640px;height:640px;border-color:rgba(var(--c2),.26);animation:ring-spin 90s linear infinite reverse}
+.depth-ring::after{content:"";position:absolute;left:50%;top:-5px;width:9px;height:9px;margin-left:-4.5px;border-radius:50%;background:rgb(var(--c1));box-shadow:0 0 14px 3px rgba(var(--c1),.8)}
+.depth-ring-2::after{background:rgb(var(--c2));box-shadow:0 0 14px 3px rgba(var(--c2),.8)}
+.depth-planet{position:absolute;border-radius:50%;animation:float-y 11s ease-in-out infinite alternate}
+.depth-planet-1{right:7%;top:38%;width:84px;height:84px;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.9),rgb(var(--c1)) 38%,rgba(10,14,30,.95) 78%);box-shadow:0 0 44px -6px rgba(var(--c1),.6)}
+.depth-planet-2{left:5%;top:63%;width:56px;height:56px;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.9),rgb(var(--c2)) 38%,rgba(10,14,30,.95) 78%);box-shadow:0 0 36px -6px rgba(var(--c2),.6);animation-duration:14s;animation-delay:-5s}
+.depth-planet-1::after{content:"";position:absolute;inset:34% -34%;border-radius:50%;border:2px solid rgba(var(--c1),.5);transform:rotate(-22deg)}
+.depth-comet{position:absolute;width:190px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,rgba(var(--c1),.2),#fff);transform:rotate(-28deg);opacity:0;filter:drop-shadow(0 0 7px rgba(var(--c1),.9));animation:meteor 10s linear infinite}
+.depth-comet-1{left:22%;top:46%;animation-delay:2s}.depth-comet-2{left:54%;top:78%;animation-delay:6.5s;animation-duration:13s}
+.depth-horizon{position:absolute;left:-25%;right:-25%;bottom:-760px;height:900px;border-radius:50%;background:radial-gradient(ellipse at 50% 0,rgba(var(--c1),.34),rgba(var(--c2),.12) 30%,transparent 55%),#02040a;box-shadow:0 -2px 0 rgba(var(--c1),.7),0 -24px 80px rgba(var(--c1),.38),0 -70px 160px rgba(var(--c2),.22);animation:horizon-glow 8s ease-in-out infinite alternate}
+@keyframes orb-float{from{transform:translate(0,0) scale(1)}to{transform:translate(6%,-5%) scale(1.15)}}
+@keyframes ring-spin{to{transform:rotate(360deg)}}
+@keyframes horizon-glow{from{opacity:.75}to{opacity:1}}
+
+/* Light mode: moving colour through the whole page, sun rays and floating shapes (no dots) */
+[data-theme="light"] :is(.view-space,.investigation-space)::after{content:"";position:absolute;inset:0;z-index:-2;pointer-events:none;
+  background:radial-gradient(520px 520px at 10% 38%,rgba(255,150,120,.3),transparent 70%),radial-gradient(600px 600px at 92% 52%,rgba(110,150,255,.32),transparent 70%),radial-gradient(540px 540px at 24% 72%,rgba(90,205,185,.3),transparent 70%),radial-gradient(600px 600px at 80% 90%,rgba(190,130,255,.3),transparent 70%);
+  background-size:140% 140%;animation:light-flow 26s ease-in-out infinite alternate}
+@keyframes light-flow{from{background-position:0% 0%}to{background-position:100% 60%}}
+[data-theme="light"] :is(.view-space,.investigation-space) .hero::before{content:"";display:block!important;position:absolute;right:-160px;top:-220px;width:720px;height:720px;border-radius:50%;pointer-events:none;opacity:.5;
+  background:repeating-conic-gradient(from 0deg,rgba(255,190,110,.42) 0 7deg,transparent 7deg 18deg);-webkit-mask-image:radial-gradient(circle,#000 8%,transparent 66%);mask-image:radial-gradient(circle,#000 8%,transparent 66%);animation:ring-spin 80s linear infinite}
+[data-theme="light"] :is(.view-space,.investigation-space) .depth-comet{display:none}
+[data-theme="light"] :is(.view-space,.investigation-space) .depth-horizon{background:radial-gradient(ellipse at 50% 0,rgba(var(--c1),.5),rgba(var(--c2),.2) 30%,transparent 55%);box-shadow:0 -2px 0 rgba(var(--c1),.7),0 -24px 80px rgba(var(--c1),.4)}
+@media(max-width:760px){.depth-planet,.depth-ring{display:none}.depth-orb{filter:blur(46px)}}
+@media(prefers-reduced-motion:reduce){[data-theme="light"] :is(.view-space,.investigation-space)::after,[data-theme="light"] :is(.view-space,.investigation-space) .hero::before{animation:none}}
+
+/* Small floating planets are Earth (Blue Marble texture, slowly rotating, lit from the upper left) */
+.depth-planet.depth-earth{background-color:#0b2a55;background-size:200% 135%;background-position:0 38%;background-repeat:repeat-x;overflow:hidden;animation:float-y 11s ease-in-out infinite alternate,earth-turn 60s linear infinite}
+.depth-planet-1.depth-earth{width:120px;height:120px;box-shadow:0 0 0 1px rgba(140,200,255,.35),0 0 46px -4px rgba(90,170,255,.7)}
+.depth-planet-2.depth-earth{width:84px;height:84px;box-shadow:0 0 0 1px rgba(140,200,255,.35),0 0 36px -4px rgba(90,170,255,.7);animation-duration:14s,80s}
+.depth-planet.depth-earth::before{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 30% 26%,rgba(255,255,255,.28),transparent 34%),radial-gradient(circle at 34% 30%,transparent 46%,rgba(2,6,18,.78) 82%)}
+.depth-planet-1.depth-earth::after{display:none}
+@keyframes earth-turn{to{background-position:-200% 38%}}
+[data-theme="light"] :is(.view-space,.investigation-space) .depth-planet.depth-earth{background-color:#0b2a55;filter:invert(1) hue-rotate(180deg)}
+@media(max-width:760px){.depth-planet.depth-earth{display:block;transform:scale(.7)}}
+
+/* ── Light mode readability: result panels built for a dark surface stay on a dark "night sky" island ── */
+[data-theme="light"] :is(.view-space,.investigation-space) :is(.results,.expedition,.labs,.source-journey){color-scheme:dark;--bg:#070D1B;--bg-deep:#050A15;   --surface:#101D35;--surface-raised:#1C304C;   --surface-glass:rgba(12,22,42,.84);--surface-solid:#0C1730;--surface-sunken:#0A1428;   --surface-hover:rgba(169,184,206,.07);--overlay:rgba(5,10,21,.72);   --text-primary:#F6F0E6;--text-secondary:#A9B8CE;--text-muted:#8798B0;--text-on-accent:#101625;   --accent:#E7AE68;--accent-hover:#F0C38A;--accent-soft:rgba(231,174,104,.12);--accent-line:rgba(231,174,104,.45);--focus:#F0C38A;   --border:rgba(169,184,206,.16);--border-strong:rgba(169,184,206,.3);   --data-primary:#74B7E7;--data-secondary:#B3A0E8;--trend:#E7AE68;   --valid:#78C5A6;--warning:#E49A75;--unavailable:#99A9BB;--warning-soft:rgba(228,154,117,.12);   --chart-surface:#0D1930;--chart-obs:#3E97DD;--chart-trend:#C9822D;--chart-excluded:#8E9DB2;   --chart-grid:rgba(169,184,206,.1);--chart-axis:rgba(169,184,206,.32);--chart-tick:#A9B8CE;   --chart-band:rgba(116,183,231,.1);--chart-gap:rgba(169,184,206,.05);--chart-gap-line:rgba(169,184,206,.2);
+  color:var(--text-primary);background:radial-gradient(900px 500px at 90% 0,rgba(110,90,220,.35),transparent 60%),radial-gradient(800px 500px at 0 100%,rgba(40,150,170,.28),transparent 60%),linear-gradient(160deg,#0b1430,#141b40 55%,#0c1b33);
+  border:1px solid rgba(120,140,220,.35);border-radius:28px;padding:clamp(16px,2.4vw,32px);box-shadow:0 34px 80px -40px rgba(30,40,110,.65)}
+[data-theme="light"] :is(.view-space,.investigation-space) :is(.results,.expedition,.labs,.source-journey) :is(.results,.expedition,.labs,.source-journey){background:none;border:0;padding:0;box-shadow:none;border-radius:0}
+[data-theme="light"] :is(.view-space,.investigation-space) :is(.results,.expedition,.labs,.source-journey) :is(.sheet,.disclosure,.empty-state,.chart-plot,.assumption-card,.chapter,.cmp-banner,.cmp-dataset,.compare-pair,.context-strip,.dt-answer,.dt-how,.eval-quality-card,.eval-views,.method-card,.relation-findings,.system-picker,.toc,.uncertainty,.gauge,.cautions,.layer,.discovery-head,.history-scrubber,.period-comparison,.ev,.change-grid,.provenance){background:linear-gradient(150deg,rgba(30,44,86,.78),rgba(10,16,36,.86))!important;border-color:var(--border)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)!important;color:var(--text-primary)}
+[data-theme="light"] :is(.view-space,.investigation-space) :is(.results,.expedition,.labs,.source-journey) .chart-plot{background:var(--chart-surface)!important}
+[data-theme="light"] :is(.view-space,.investigation-space) :is(.results,.expedition,.labs,.source-journey) .kicker{color:var(--accent)}
+[data-theme="light"] :is(.view-space,.investigation-space) :is(.results,.expedition,.labs,.source-journey) .btn-ghost:not(.investigation-page-links a){background:linear-gradient(#0C1730,#0C1730) padding-box,conic-gradient(from var(--btn-ang),var(--accent),var(--data-primary),var(--data-secondary),var(--accent)) border-box;color:var(--text-primary)}
+[data-theme="light"] :is(.view-space,.investigation-space) :is(.results,.expedition,.labs,.source-journey) :is(input,select,textarea){background:#0A1428;color:var(--text-primary);border-color:var(--border-strong)}
+
+/* ── Light mode planets on every page ── */
+.light-planet{display:none}
+[data-theme="light"] :is(.view-space,.investigation-space) .light-planet{display:block;position:absolute;border-radius:50%;filter:invert(1) hue-rotate(180deg);animation:float-y 13s ease-in-out infinite alternate}
+[data-theme="light"] .light-planet-1{right:max(-40px,4vw);top:90px;width:clamp(220px,26vw,380px);aspect-ratio:1;background:radial-gradient(circle at 30% 26%,#fff 0,rgba(255,255,255,0) 30%),linear-gradient(170deg,#ffd9a8 0 16%,#ffb38a 16% 30%,#ff9db4 30% 46%,#c9a2ff 46% 60%,#9db8ff 60% 76%,#8fd8e8 76%);box-shadow:inset -40px -30px 70px rgba(70,50,140,.45),0 30px 70px -20px rgba(140,110,230,.5)}
+[data-theme="light"] .light-planet-1 i{position:absolute;inset:40% -24%;border-radius:50%;border:8px solid rgba(160,130,240,.45);box-shadow:0 0 0 6px rgba(255,180,140,.25);transform:rotate(-20deg);clip-path:inset(50% 0 0 0)}
+[data-theme="light"] .light-planet-2{left:3%;top:52%;width:clamp(120px,13vw,190px);aspect-ratio:1;background:radial-gradient(circle at 30% 26%,#fff 0,rgba(255,255,255,0) 32%),radial-gradient(circle at 60% 60%,#7fd6c8,#5aa7e8 60%,#6d7fe0);box-shadow:inset -22px -16px 40px rgba(30,60,130,.45),0 20px 50px -16px rgba(80,150,220,.55);animation-duration:17s;animation-delay:-6s}
+[data-theme="light"] .light-planet-3{right:8%;top:80%;width:clamp(90px,9vw,140px);aspect-ratio:1;background:radial-gradient(circle at 30% 26%,#fff 0,rgba(255,255,255,0) 32%),radial-gradient(circle at 55% 60%,#ffc48a,#ff8fa0 65%,#d07be0);box-shadow:inset -16px -12px 30px rgba(120,40,110,.4),0 16px 40px -14px rgba(240,130,150,.55);animation-duration:15s;animation-delay:-3s}
+@media(max-width:760px){[data-theme="light"] .light-planet-1{opacity:.6;right:-80px}[data-theme="light"] .light-planet-2,[data-theme="light"] .light-planet-3{display:none}}
+[data-theme="light"] :is(.view-space,.investigation-space) :is(.results,.expedition,.labs,.source-journey) :is(.kv dt,.note,.sheet-title,.disclosure summary,.disclosure-meta,label,.field,th,td,caption,dd,dt,p,h2,h3,li){color:inherit}
+[data-theme="light"] :is(.view-space,.investigation-space) :is(.results,.expedition,.labs,.source-journey) :is(.kv dt,.note,.disclosure-meta,caption,.chart-sub,.chart-caption){color:var(--text-secondary)}
+[data-theme="light"] :is(.view-space,.investigation-space) :is(.results,.expedition,.labs,.source-journey) :is(.sheet-title,h2,h3,.disclosure summary){color:var(--text-primary)}

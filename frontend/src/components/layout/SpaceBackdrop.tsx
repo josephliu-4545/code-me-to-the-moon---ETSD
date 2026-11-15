@@ -25,6 +25,9 @@ const TRAILS = Array.from({ length: 34 }, (_, i) => {
   return { r, dash: `${arc.toFixed(0)} ${(c - arc).toFixed(0)}`, offset: ((i * 53) % 100) / 100 * c, o: 0.22 + ((i * 29) % 10) / 22, warm: i % 5 === 0 };
 });
 
+/** NASA Blue Marble texture, used only as decoration on the small floating planets. */
+const EARTH = { backgroundImage: `url("${import.meta.env.BASE_URL}brand/earth-blue-marble.jpeg")` };
+
 export default function SpaceBackdrop({ tone }: { tone: string }) {
   const scene = SCENES[tone] ?? "galaxy";
   return (
@@ -64,6 +67,14 @@ export default function SpaceBackdrop({ tone }: { tone: string }) {
           </g>
         </svg>
       )}
+      <div className="space-depth">
+        <span className="depth-orb depth-orb-1" /><span className="depth-orb depth-orb-2" /><span className="depth-orb depth-orb-3" /><span className="depth-orb depth-orb-4" />
+        <span className="depth-ring depth-ring-1" /><span className="depth-ring depth-ring-2" />
+        <span className="depth-planet depth-planet-1 depth-earth" style={EARTH} /><span className="depth-planet depth-planet-2 depth-earth" style={EARTH} />
+        <span className="depth-comet depth-comet-1" /><span className="depth-comet depth-comet-2" />
+        <span className="depth-horizon" />
+        <span className="light-planet light-planet-1"><i /></span><span className="light-planet light-planet-2" /><span className="light-planet light-planet-3" />
+      </div>
       <span className="space-stars space-stars-far" />
       <span className="space-stars space-stars-near" />
       <span className="space-meteor space-meteor-a" />
