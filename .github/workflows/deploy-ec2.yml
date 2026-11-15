@@ -1,52 +1,84 @@
 name: Deploy to EC2
 
-# Deploys main to the EC2 demo server after CI passes on main (or on manual run).
-# The server-side key is restricted to one forced command (/usr/local/bin/estd-deploy):
-# it pulls origin/main, rebuilds the Docker image and restarts the container. It cannot run anything else.
-# Secrets (repository settings): EC2_HOST, EC2_USER, EC2_SSH_KEY.
+# Deploys the exact commit that passed CI on main to the EC2 demo server.
+#
+# How it connects (no SSH, no open ports, no stored secrets):
+#   1. GitHub issues a short-lived OIDC token for this workflow run.
+#   2. AWS exchanges it for temporary credentials of the IAM role in vars.AWS_DEPLOY_ROLE_ARN.
+#      That role only trusts this repository's main branch, and may only run the SSM document
+#      "ETSD-Deploy" on the one demo instance.
+#   3. ETSD-Deploy runs /usr/local/bin/estd-deploy <commit> on the server: it checks the commit is on
+#      main, builds that exact commit, swaps the container, and rolls back to the previous image if
+#      the new one is not healthy. Earth Engine credentials stay in /etc/estd on the server.
+#
+# Repository variable required (Settings -> Secrets and variables -> Actions -> Variables):
+#   AWS_DEPLOY_ROLE_ARN
 
 on:
   workflow_run:
     workflows: [CI]
     types: [completed]
     branches: [main]
-  workflow_dispatch:
 
 permissions:
   contents: read
+  id-token: write # needed to request the OIDC token
 
 concurrency:
   group: deploy-ec2
   cancel-in-progress: false
 
+env:
+  AWS_REGION: ap-southeast-1
+  INSTANCE_ID: i-0c057b433b8ea48e2
+  SITE_URL: https://code-me-to-the-moon.eddiespace.com
+
 jobs:
   deploy:
-    name: Deploy
-    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    name: Deploy tested commit
+    # Only when every CI check passed for a push to main.
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+    env:
+      COMMIT: ${{ github.event.workflow_run.head_sha }}
     steps:
-      - name: Configure SSH
-        env:
-          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-        run: |
-          install -m 700 -d ~/.ssh
-          printf '%s\n' "$EC2_SSH_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          # Pinned server host key (public); protects against connecting to an impostor host.
-          echo "$EC2_HOST ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKS680DfGO4qXOFeIfr/2DBzsCiA4mNIfUphcHt9JSI7" > ~/.ssh/known_hosts
+      - name: Get temporary AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: etsd-deploy-${{ github.run_id }}
 
-      - name: Deploy (pull, build, restart)
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USER: ${{ secrets.EC2_USER }}
-        run: ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 "$EC2_USER@$EC2_HOST" deploy
-
-      - name: Check the site is healthy
+      - name: Deploy ${{ env.COMMIT }} via Systems Manager
         run: |
-          for i in $(seq 1 12); do
-            if curl -sf https://code-me-to-the-moon.eddiespace.com/health; then echo; exit 0; fi
+          set -euo pipefail
+          echo "Deploying commit $COMMIT"
+          CID=$(aws ssm send-command \
+            --document-name ETSD-Deploy \
+            --instance-ids "$INSTANCE_ID" \
+            --parameters "commit=$COMMIT" \
+            --comment "GitHub run ${{ github.run_id }}" \
+            --query Command.CommandId --output text)
+          echo "SSM command: $CID"
+          STATUS=Pending
+          for _ in $(seq 1 180); do
+            sleep 5
+            STATUS=$(aws ssm get-command-invocation --command-id "$CID" --instance-id "$INSTANCE_ID" \
+              --query Status --output text 2>/dev/null || echo Pending)
+            case "$STATUS" in Pending|InProgress|Delayed) continue ;; *) break ;; esac
+          done
+          aws ssm get-command-invocation --command-id "$CID" --instance-id "$INSTANCE_ID" \
+            --query "[StandardOutputContent,StandardErrorContent]" --output text || true
+          echo "Result: $STATUS"
+          [ "$STATUS" = "Success" ]
+
+      - name: Check the public site is healthy
+        run: |
+          for _ in $(seq 1 12); do
+            if curl -sf -o /dev/null "$SITE_URL/app/" && curl -sf "$SITE_URL/api/v2/status" > /dev/null; then
+              echo "Site is up: $SITE_URL"; exit 0
+            fi
             sleep 5
           done
-          echo "Health check failed"; exit 1
+          echo "Public health check failed"; exit 1
