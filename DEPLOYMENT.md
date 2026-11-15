@@ -100,7 +100,7 @@ On Cloud Run the direct peer is Google's front end, whose addresses are not a fi
 | Concurrency | `20` | Earth Engine work is limited inside the app (2 concurrent operations, 20 s queue); more parallel requests only wait |
 | CPU / memory | 1 vCPU / 1 GiB (measure, then adjust) | NumPy, SciPy and the Earth Engine client. Not load-tested. |
 | Port | `8080` (Cloud Run sets `PORT`) | The image listens on `$PORT` |
-| Startup probe | HTTP `GET /` | `/` does not depend on Earth Engine. `/health` initialises Earth Engine and returns 503 when it is unavailable, so use it as a readiness check during validation, not as a liveness probe. |
+| Startup probe | HTTP `GET /app/` | `/app/` serves the built frontend and does not depend on Earth Engine. `/` redirects to `/app/`, and `/health` initialises Earth Engine and returns 503 when it is unavailable, so use it as a readiness check during validation, not as a liveness probe. |
 | Ingress / authentication | Decide explicitly | `--allow-unauthenticated` makes the service public, which is a separate authorised decision |
 
 Example (for the authorised operator; placeholders in capitals):

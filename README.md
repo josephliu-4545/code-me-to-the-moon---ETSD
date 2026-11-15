@@ -427,7 +427,7 @@ The response includes `variable`, `dataset`, `spatial_support`, `period`, `units
 | Precipitation | `GET /api/v1/precipitation`, `GET /api/v1/precipitation/trend`, `GET /api/v1/precipitation/region/trend` (`west`, `south`, `east`, `north`) |
 | NDVI | `GET /api/v1/ndvi`, `GET /api/v1/ndvi/trend` (`radius_km`) |
 | Soil moisture | `GET /api/v1/soil-moisture/datasets`, `GET /api/v1/soil-moisture`, `GET /api/v1/soil-moisture/trend`, `GET /api/v1/soil-moisture/compare` (`datasets=a,b`) |
-| Service | `GET /`, `GET /health` |
+| Service | `GET /` redirects to `/app/`, `GET /health` |
 
 ### How the frontend talks to the backend
 

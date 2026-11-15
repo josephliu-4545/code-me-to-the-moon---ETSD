@@ -114,7 +114,7 @@ def test_api_key_required_when_configured() -> None:
 
 def test_open_paths_stay_reachable_with_keys() -> None:
     c = client(api_keys="k")
-    assert c.get("/").status_code == 200
+    assert c.get("/", follow_redirects=False).status_code == 307
     assert c.get("/api/v2/status").status_code == 200
     assert c.options("/api/v2/variables").status_code != 401
 

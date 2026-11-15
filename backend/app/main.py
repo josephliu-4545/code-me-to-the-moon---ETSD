@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 
 from app.api.routes.ndvi import router as ndvi_router
 from app.api.routes.ndvi_trend import router as ndvi_trend_router
@@ -125,12 +125,8 @@ def create_app(
     )
 
     @application.get("/")
-    async def homepage() -> dict[str, str]:
-        return {
-            "name": resolved_settings.app_name,
-            "version": resolved_settings.app_version,
-            "status": "ok",
-        }
+    async def homepage() -> RedirectResponse:
+        return RedirectResponse(url="/app/", status_code=307)
 
     @application.get("/health")
     async def health() -> JSONResponse:

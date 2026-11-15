@@ -9,7 +9,8 @@ def test_built_frontend_is_served_at_app_when_configured(tmp_path) -> None:
     client = TestClient(create_app(Settings(_env_file=None, ee_project_id="test", frontend_dist_dir=str(tmp_path))))
     r = client.get("/app/")
     assert r.status_code == 200 and "ESTD" in r.text
-    assert client.get("/").json()["status"] == "ok"
+    root = client.get("/", follow_redirects=False)
+    assert root.status_code == 307 and root.headers["location"] == "/app/"
 
 
 def test_frontend_is_not_served_when_not_configured() -> None:
