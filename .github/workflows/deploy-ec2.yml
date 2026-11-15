@@ -1,0 +1,52 @@
+name: Deploy to EC2
+
+# Deploys main to the EC2 demo server after CI passes on main (or on manual run).
+# The server-side key is restricted to one forced command (/usr/local/bin/estd-deploy):
+# it pulls origin/main, rebuilds the Docker image and restarts the container. It cannot run anything else.
+# Secrets (repository settings): EC2_HOST, EC2_USER, EC2_SSH_KEY.
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-ec2
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Configure SSH
+        env:
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$EC2_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          # Pinned server host key (public); protects against connecting to an impostor host.
+          echo "$EC2_HOST ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKS680DfGO4qXOFeIfr/2DBzsCiA4mNIfUphcHt9JSI7" > ~/.ssh/known_hosts
+
+      - name: Deploy (pull, build, restart)
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+        run: ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 "$EC2_USER@$EC2_HOST" deploy
+
+      - name: Check the site is healthy
+        run: |
+          for i in $(seq 1 12); do
+            if curl -sf https://code-me-to-the-moon.eddiespace.com/health; then echo; exit 0; fi
+            sleep 5
+          done
+          echo "Health check failed"; exit 1
