@@ -248,5 +248,4 @@
 :is(.app-history,.app-findings) :is(.investigation-page-links a.btn,.empty-state .row-gap .btn:first-child,.period-comparison .btn-primary,.error-box .btn):hover:not(:disabled){background-size:100% 100%,auto;box-shadow:var(--glow-accent)}
 :is(.app-history,.app-findings) .history-modes button[aria-pressed="true"]{background:var(--surface-raised);color:var(--text-primary)}
 :is(.app-history,.app-findings) .cautions{background:var(--warning-soft);border-color:var(--warning)}
-[data-theme="light"] .space-backdrop{display:none}
 [data-theme="light"] :is(.app-history,.app-findings) :is(.empty-state,.discovery-head,.layer,.sheet,.console-card,.history-scrubber,.period-comparison,.disclosure,.stat-rail){background:var(--surface);backdrop-filter:none}

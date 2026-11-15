@@ -40,14 +40,14 @@
   background:#F3F6FB;
 }
 [data-theme="light"] .view-space .space-backdrop,
-[data-theme="light"] .investigation-space .space-backdrop{opacity:.42;filter:saturate(.9) contrast(.88)}
-[data-theme="light"] .space-backdrop.space-history{background:radial-gradient(900px 620px at 82% 12%,rgba(255,177,91,.28),transparent 62%),radial-gradient(760px 560px at 8% 80%,rgba(114,84,168,.18),transparent 62%),linear-gradient(145deg,#fff9ef,#edf2fb 58%,#f5efff)}
-[data-theme="light"] .space-backdrop.space-findings{background:radial-gradient(900px 620px at 82% 10%,rgba(219,105,199,.25),transparent 62%),radial-gradient(760px 560px at 4% 82%,rgba(67,124,215,.22),transparent 62%),linear-gradient(145deg,#fff5fb,#edf3ff 58%,#fff8f0)!important}
-[data-theme="light"] .space-backdrop.space-evaluation{background:radial-gradient(900px 620px at 82% 10%,rgba(54,180,145,.25),transparent 62%),radial-gradient(760px 560px at 5% 84%,rgba(62,112,205,.18),transparent 62%),linear-gradient(145deg,#effdf8,#edf4ff 58%,#fbfdff)}
-[data-theme="light"] .space-backdrop.space-compare{background:radial-gradient(900px 620px at 82% 10%,rgba(92,113,224,.26),transparent 62%),radial-gradient(760px 560px at 5% 84%,rgba(239,153,79,.2),transparent 62%),linear-gradient(145deg,#f2f3ff,#fff7ef 58%,#f8fbff)}
-[data-theme="light"] .space-backdrop.space-relationships{background:radial-gradient(900px 620px at 82% 10%,rgba(224,167,72,.24),transparent 62%),radial-gradient(760px 560px at 5% 84%,rgba(130,91,190,.2),transparent 62%),linear-gradient(145deg,#fff9e9,#f5f0ff 58%,#f5f9ff)}
-[data-theme="light"] .space-backdrop.space-detective{background:radial-gradient(900px 620px at 75% 5%,rgba(53,195,154,.24),transparent 62%),radial-gradient(760px 560px at 5% 84%,rgba(118,82,205,.2),transparent 62%),linear-gradient(145deg,#edfff9,#f3efff 58%,#f4f9ff)}
-[data-theme="light"] .space-backdrop.space-science{background:radial-gradient(900px 620px at 82% 10%,rgba(134,91,205,.24),transparent 62%),radial-gradient(760px 560px at 5% 84%,rgba(49,130,194,.2),transparent 62%),linear-gradient(145deg,#f6f0ff,#eef8ff 58%,#fffaf2)}
+[data-theme="light"] .investigation-space .space-backdrop{background:transparent!important;opacity:.8;filter:invert(1) hue-rotate(180deg) saturate(1.5);mix-blend-mode:multiply}
+[data-theme="light"] :is(.view-space,.investigation-space):has(>.space-history){background:radial-gradient(900px 620px at 82% 12%,rgba(255,177,91,.28),transparent 62%),radial-gradient(760px 560px at 8% 80%,rgba(114,84,168,.18),transparent 62%),linear-gradient(145deg,#fff9ef,#edf2fb 58%,#f5efff)}
+[data-theme="light"] :is(.view-space,.investigation-space):has(>.space-findings){background:radial-gradient(900px 620px at 82% 10%,rgba(219,105,199,.25),transparent 62%),radial-gradient(760px 560px at 4% 82%,rgba(67,124,215,.22),transparent 62%),linear-gradient(145deg,#fff5fb,#edf3ff 58%,#fff8f0)!important}
+[data-theme="light"] :is(.view-space,.investigation-space):has(>.space-evaluation){background:radial-gradient(900px 620px at 82% 10%,rgba(54,180,145,.25),transparent 62%),radial-gradient(760px 560px at 5% 84%,rgba(62,112,205,.18),transparent 62%),linear-gradient(145deg,#effdf8,#edf4ff 58%,#fbfdff)}
+[data-theme="light"] :is(.view-space,.investigation-space):has(>.space-compare){background:radial-gradient(900px 620px at 82% 10%,rgba(92,113,224,.26),transparent 62%),radial-gradient(760px 560px at 5% 84%,rgba(239,153,79,.2),transparent 62%),linear-gradient(145deg,#f2f3ff,#fff7ef 58%,#f8fbff)}
+[data-theme="light"] :is(.view-space,.investigation-space):has(>.space-relationships){background:radial-gradient(900px 620px at 82% 10%,rgba(224,167,72,.24),transparent 62%),radial-gradient(760px 560px at 5% 84%,rgba(130,91,190,.2),transparent 62%),linear-gradient(145deg,#fff9e9,#f5f0ff 58%,#f5f9ff)}
+[data-theme="light"] :is(.view-space,.investigation-space):has(>.space-detective){background:radial-gradient(900px 620px at 75% 5%,rgba(53,195,154,.24),transparent 62%),radial-gradient(760px 560px at 5% 84%,rgba(118,82,205,.2),transparent 62%),linear-gradient(145deg,#edfff9,#f3efff 58%,#f4f9ff)}
+[data-theme="light"] :is(.view-space,.investigation-space):has(>.space-science){background:radial-gradient(900px 620px at 82% 10%,rgba(134,91,205,.24),transparent 62%),radial-gradient(760px 560px at 5% 84%,rgba(49,130,194,.2),transparent 62%),linear-gradient(145deg,#f6f0ff,#eef8ff 58%,#fffaf2)}
 [data-theme="light"] .view-space :is(.page,.hero),
 [data-theme="light"] .investigation-space :is(.page,.hero){background:transparent}
 [data-theme="light"] :is(.view-space,.investigation-space) :is(.sheet,.disclosure,.empty-state,.chart-plot,.assumption-card,.chapter,.cmp-banner,.cmp-dataset,.compare-pair,.context-strip,.dt-answer,.dt-how,.eval-quality-card,.eval-views,.method-card,.relation-findings,.system-picker,.toc,.uncertainty,.gauge,.cautions){
@@ -253,3 +253,114 @@
 @keyframes btn-ring{to{--btn-ang:360deg}}
 @keyframes btn-flow{to{background-position:300% 0}}
 @media(max-width:760px){.saturn,.spiral,.crescent{opacity:.5}.nova-ring{display:none}}
+
+/* ── Light mode: colourful daylight-sky pages (not plain white) ── */
+[data-theme="light"] :is(.view-space,.investigation-space){position:relative;isolation:isolate}
+[data-theme="light"] :is(.view-space,.investigation-space)::before{content:"";position:absolute;inset:-10% -10% auto -10%;height:min(1100px,120%);z-index:-2;pointer-events:none;
+  background:radial-gradient(38% 46% at 16% 22%,rgba(255,170,120,.5),transparent 70%),radial-gradient(36% 44% at 84% 14%,rgba(120,150,255,.5),transparent 70%),radial-gradient(40% 46% at 62% 70%,rgba(190,130,255,.4),transparent 70%),radial-gradient(34% 40% at 24% 86%,rgba(90,210,190,.42),transparent 70%);
+  filter:blur(50px);animation:light-mesh 22s ease-in-out infinite alternate}
+@keyframes light-mesh{from{transform:translate(-2%,0) scale(1)}to{transform:translate(3%,2%) scale(1.08)}}
+[data-theme="light"] :is(.view-space,.investigation-space) .space-meteor{display:none}
+[data-theme="light"] :is(.view-space,.investigation-space) .hero-title{color:var(--text-primary);-webkit-text-fill-color:currentColor}
+[data-theme="light"] :is(.view-space,.investigation-space) :is(.console-card,.layer,.discovery-head,.history-scrubber,.period-comparison,.stat-rail,.ev,.change-grid){background:linear-gradient(145deg,rgba(255,255,255,.9),rgba(244,248,255,.78));border-color:var(--border);box-shadow:0 18px 45px -30px rgba(28,49,80,.3);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+[data-theme="light"] :is(.view-space,.investigation-space) .btn-primary{background:linear-gradient(100deg,#315F9B,#7254A8,#176F9F,#315F9B) 0 0/300% 100%;color:#fff}
+
+/* Navigation follows the same palette as the page below it (Explore Earth keeps its own). */
+.app:not(.app-explore) .topbar{--accent:#E7AE68;--accent-hover:#F0C38A;--text-primary:#F6F0E6;--text-secondary:#A9B8CE;--text-muted:#8798B0;--border:rgba(169,184,206,.16);--border-strong:rgba(169,184,206,.3);--surface-hover:rgba(169,184,206,.07);--surface-solid:#0C1730;--bg-deep:#050A15;background:rgba(5,10,21,.82);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);color:var(--text-primary)}
+[data-theme="light"] .app:not(.app-explore) .topbar{--accent:#315F9B;--accent-hover:#234B80;--text-primary:#14233B;--text-secondary:#435672;--text-muted:#64748B;--border:rgba(45,67,99,.16);--border-strong:rgba(45,67,99,.3);--surface-hover:rgba(35,74,125,.07);--surface-solid:#FFFFFF;--bg-deep:#E7EDF6;background:rgba(255,255,255,.82)}
+.app:not(.app-explore) .topbar :is(.brand-name,.nav a.active,.menu-button){color:var(--text-primary)}
+.app:not(.app-explore) .topbar .brand-team{color:var(--text-muted)}
+@media(max-width:1080px){.app:not(.app-explore) .topbar .nav{background:var(--surface-solid);border-bottom:1px solid var(--border)}}
+@media(prefers-reduced-motion:reduce){[data-theme="light"] :is(.view-space,.investigation-space)::before{animation:none}}
+
+/* Light mode: no dot patterns — hide the star layers (they inverted into dark dots) */
+[data-theme="light"] :is(.view-space,.investigation-space) :is(.space-stars,.space-constellation circle,.trails-art){display:none}
+
+/* ── Navigation layout: brand and links never overlap ── */
+.topbar .brand{flex:0 0 auto}
+.topbar .nav{min-width:0}
+@media(min-width:1081px){
+  .topbar{gap:16px;padding-inline:20px}
+  .topbar .nav{flex:0 1 auto;margin-left:auto;gap:8px}
+  .topbar .nav ol{flex-wrap:nowrap;gap:0}
+  .topbar .nav-index,.topbar .nav ol .is-planned{display:none}
+  .topbar .nav a{font-size:.8rem;padding:10px 9px;gap:0}
+  .topbar .brand-name{font-size:.95rem}
+  .topbar .brand-team{font-size:.56rem;letter-spacing:.12em}
+}
+@media(min-width:1081px) and (max-width:1320px){
+  .topbar .nav a{font-size:.74rem;padding:10px 6px}
+  .topbar .brand-team{display:none}
+  .topbar .brand-name{font-size:.86rem}
+  .topbar .theme-toggle>span:not(.tt-track){display:none}
+}
+
+/* ── Button animations (all pages except Explore Earth) ── */
+:is(.view-space,.investigation-space) .btn-ghost:not(.investigation-page-links a){animation:btn-ring 7s linear infinite}
+:is(.view-space,.investigation-space) .btn-ghost:not(.investigation-page-links a):hover:not(:disabled){animation-duration:1.8s}
+:is(.view-space,.investigation-space) .btn-primary{animation:btn-breathe 3.2s ease-in-out infinite}
+:is(.view-space,.investigation-space) .btn-primary:hover:not(:disabled){animation:btn-flow 3s linear infinite}
+:is(.view-space,.investigation-space) .btn:active:not(:disabled){animation:btn-press .35s ease-out}
+:is(.view-space,.investigation-space) .text-link{background:linear-gradient(currentColor,currentColor) no-repeat left bottom/0 1px;transition:background-size .35s ease;text-decoration:none}
+:is(.view-space,.investigation-space) .text-link:hover{background-size:100% 1px}
+@keyframes btn-breathe{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 45%,transparent),0 10px 30px -12px var(--accent)}50%{box-shadow:0 0 0 9px transparent,0 14px 36px -10px var(--accent)}}
+@keyframes btn-press{0%{transform:scale(.94)}60%{transform:scale(1.04)}100%{transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){:is(.view-space,.investigation-space) .btn{animation:none!important}}
+
+/* Light mode is a separate daylight design: never reuse or invert the dark-space artwork. */
+[data-theme="light"] :is(.view-space,.investigation-space)>.space-backdrop,
+[data-theme="light"] .investigation-space .space-backdrop{display:none!important}
+[data-theme="light"] :is(.view-space,.investigation-space){
+  background:
+    radial-gradient(circle at 12% 10%,rgba(255,184,121,.34) 0 7%,transparent 25%),
+    radial-gradient(circle at 88% 12%,rgba(118,154,235,.3) 0 8%,transparent 27%),
+    radial-gradient(circle at 72% 72%,rgba(183,139,230,.2) 0 10%,transparent 32%),
+    linear-gradient(145deg,#fffaf3 0%,#f3f7ff 48%,#f8f3ff 100%)!important
+}
+[data-theme="light"] :is(.view-space,.investigation-space)::before{
+  inset:0!important;height:100%!important;filter:none!important;animation:none!important;opacity:1;
+  background:
+    linear-gradient(rgba(49,95,155,.045) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(49,95,155,.045) 1px,transparent 1px),
+    radial-gradient(circle at 82% 180px,transparent 0 88px,rgba(49,95,155,.11) 89px 90px,transparent 91px),
+    radial-gradient(circle at 82% 180px,transparent 0 132px,rgba(114,84,168,.07) 133px 134px,transparent 135px);
+  background-size:72px 72px,72px 72px,auto,auto
+}
+[data-theme="light"] :is(.app-history,.app-findings) .page.investigation-space{
+  background:
+    radial-gradient(circle at 10% 12%,rgba(255,190,120,.3),transparent 27%),
+    radial-gradient(circle at 90% 7%,rgba(103,145,230,.28),transparent 29%),
+    radial-gradient(circle at 65% 68%,rgba(192,139,225,.18),transparent 32%),
+    linear-gradient(145deg,#fffaf4,#f2f7ff 52%,#f8f2ff)!important
+}
+[data-theme="light"] :is(.app-history,.app-findings) :is(.stat-rail,.console-card,.discovery-head,.change-grid,.ev,.sheet,.chart-plot,.history-scrubber,.period-comparison,.cautions,.disclosure,.stale-notice,.error-box,.provenance,.dossier-foot>*){
+  color:var(--text-primary);background:linear-gradient(145deg,#fff,rgba(245,249,255,.96))!important;
+  border-color:rgba(49,95,155,.18)!important;box-shadow:0 18px 45px -32px rgba(42,74,120,.32),inset 0 3px 0 rgba(75,121,185,.12)!important;
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important
+}
+[data-theme="light"] :is(.app-history,.app-findings) :is(.console-glyph,.console-spark,.console-steps li){
+  background:linear-gradient(145deg,#edf5ff,#f5f0ff)!important;border-color:rgba(49,95,155,.14)!important;color:#315F9B
+}
+[data-theme="light"] :is(.app-history,.app-findings) .console-meter{background:#dbe5f2}
+[data-theme="light"] :is(.app-history,.app-findings) .stat-rail{border-radius:24px!important}
+[data-theme="light"] :is(.app-history,.app-findings) .stat-rail-item+.stat-rail-item{border-color:rgba(49,95,155,.14)}
+[data-theme="light"] :is(.app-history,.app-findings) .investigation-page-links{
+  max-width:780px;margin-top:12px;margin-bottom:52px;gap:18px;align-items:stretch
+}
+[data-theme="light"] :is(.app-history,.app-findings) .investigation-page-links>a{min-height:60px;padding-inline:26px}
+[data-theme="light"] :is(.app-history,.app-findings) .investigation-page-links a.btn{
+  background:linear-gradient(105deg,#24578F,#3D76B8)!important;color:#fff!important;border:1px solid rgba(36,87,143,.25)!important;
+  box-shadow:0 14px 30px -18px rgba(36,87,143,.65)!important
+}
+[data-theme="light"] :is(.app-history,.app-findings) .investigation-page-links a.text-link{
+  background:#fff!important;color:#1D3658!important;border:1px solid rgba(49,95,155,.22)!important;
+  box-shadow:0 14px 30px -22px rgba(42,74,120,.4)!important;backdrop-filter:none!important
+}
+[data-theme="light"] :is(.app-history,.app-findings) .investigation-page-links a.text-link:hover{
+  background:#edf5ff!important;border-color:#315F9B!important
+}
+[data-theme="light"] :is(.app-history,.app-findings) .page-body{padding-top:28px}
+@media(max-width:760px){
+  [data-theme="light"] :is(.app-history,.app-findings) .investigation-page-links{margin-top:4px;margin-bottom:36px;gap:12px}
+  [data-theme="light"] :is(.app-history,.app-findings) .investigation-page-links>a{min-height:54px;padding-inline:18px}
+}
