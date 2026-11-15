@@ -73,7 +73,7 @@ export default function InvestigationPage({ section, submitted, selection, onCha
       <SpaceBackdrop tone={isHistory ? "history" : "findings"} />
       {rail.length > 0 && <dl className="stat-rail" aria-label="Investigation at a glance">{rail.map((item) => <div key={item.label} className="stat-rail-item"><dd className="mono">{item.value}</dd><dt>{item.label}</dt></div>)}</dl>}
       <PageHero
-        kicker={isHistory ? "03 / Historical Discovery" : "04 / Mission Findings"}
+        kicker={isHistory ? "Historical Discovery" : "Mission Findings"}
         title={isHistory
           ? <><span className="title-line">Time travel</span><span className="title-line">through</span><em className="title-line">evidence.</em></>
           : <><span className="title-line">Explain</span><span className="title-line">the</span><em className="title-line">discovery.</em></>}

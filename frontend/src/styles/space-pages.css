@@ -388,6 +388,21 @@
   .space-page-findings .investigation-page-links{max-width:100%;margin-bottom:36px}
 }
 
+/* Historical Discovery and Mission Findings enter like the other evidence pages. */
+.investigation-space .hero-title{animation:title-in .9s cubic-bezier(.2,.8,.2,1) both}
+.investigation-space .hero .kicker{display:inline-flex;align-items:center;gap:12px;animation:title-in .7s .05s cubic-bezier(.2,.8,.2,1) both}
+.investigation-space .hero .kicker::before{content:"";width:34px;height:1px;background:var(--accent);transform-origin:left;animation:line-grow 1s .2s cubic-bezier(.2,.8,.2,1) both}
+.investigation-space .hero-lede{animation:title-in .9s .15s cubic-bezier(.2,.8,.2,1) both}
+.investigation-space .hero-title em{background:linear-gradient(100deg,var(--accent),var(--accent-hover),var(--data-primary),var(--accent));background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;animation:shimmer 8s linear infinite}
+.investigation-space .page-body>*{animation:rise-in .7s cubic-bezier(.2,.8,.2,1) both}
+.investigation-space .page-body>*:nth-child(2){animation-delay:.08s}
+.investigation-space .page-body>*:nth-child(3){animation-delay:.16s}
+.investigation-space .page-body>*:nth-child(4){animation-delay:.24s}
+.investigation-space .page-body>*:nth-child(n+5){animation-delay:.3s}
+@media(prefers-reduced-motion:reduce){
+  .investigation-space .hero-title,.investigation-space .hero .kicker,.investigation-space .hero .kicker::before,.investigation-space .hero-lede,.investigation-space .hero-title em,.investigation-space .page-body>*{animation:none!important}
+}
+
 /* ── Depth layer: colour and motion through the middle and bottom of every page (both themes) ── */
 .space-backdrop{--c1:120,150,255;--c2:200,130,255;--c3:90,210,190;--c4:255,170,110}
 .space-history{--c1:255,170,90;--c2:140,120,255;--c3:255,120,120;--c4:120,180,255}
