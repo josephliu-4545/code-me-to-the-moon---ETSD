@@ -64,6 +64,14 @@ export interface DatasetResult {
   analysis: Analysis | null;
 }
 
+export type DirectionEvidence =
+  | "descriptive_same_direction"
+  | "descriptive_opposite_direction"
+  | "indicative_same_direction"
+  | "indicative_opposite_direction"
+  | "descriptive_no_direction"
+  | "unavailable";
+
 export interface PairComparison {
   datasets: [string, string];
   lineage: "same_lineage" | "partially_related" | "independent";
@@ -74,7 +82,10 @@ export interface PairComparison {
   full_period_slopes: Record<string, number | null>;
   common_period_slopes: Record<string, number> | null;
   common_period_slope_sign_agreement?: boolean | null;
+  /** Legacy: sign agreement of full-request slopes, which may use different eligible years. Not used for agreement. */
   slope_sign_agreement: boolean | null;
+  /** Direction over common eligible years: descriptive unless both datasets' own tests cover exactly those years. */
+  direction_evidence?: DirectionEvidence;
   confidence_intervals_overlap: boolean | null;
   annual_differences: { year: number; difference: number }[] | null;
   mean_difference: number | null;
@@ -161,7 +172,30 @@ export interface CompareResponse {
     pairs: PairComparison[];
     all_numerically_comparable: boolean;
     common_eligible_years_all: number[];
-    agreement: { level: string; slope_sign_agreement_all: boolean | null; min_spearman_rho: number | null; explanation: string; caution: string };
+    agreement: {
+      level: string;
+      /** Plain-language label (descriptive or indicative); `level` identifiers are kept for compatibility. */
+      label?: string;
+      basis?: string;
+      direction_evidence?: "descriptive" | "indicative" | "unavailable";
+      /** Whether every pair, only some, or no pair had a common-period direction. */
+      direction_coverage?: "complete" | "partial" | "none";
+      /** Whether every pair, only some, or no pair had a correlation (needs 8 common years). */
+      covariation_coverage?: "complete" | "partial" | "none";
+      pairs_total?: number;
+      pairs_with_direction?: number;
+      pairs_without_direction?: number;
+      pairs_with_correlation?: number;
+      /** Each pair's own finding, kept even when no overall conclusion is drawn. */
+      pair_findings?: { datasets: string[]; direction_evidence: DirectionEvidence; spearman_rho: number | null; common_eligible_years: number }[];
+      /** Common-period direction agreement across all assessed pairs. */
+      slope_sign_agreement_all: boolean | null;
+      min_spearman_rho: number | null;
+      explanation: string;
+      comparability_note?: string | null;
+      independence_note?: string | null;
+      caution: string;
+    };
     method: Record<string, string>;
   } | null;
   comparison_unavailable_reason: string | null;

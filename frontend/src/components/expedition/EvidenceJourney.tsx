@@ -112,7 +112,9 @@ function TrendPanel({ analysis: a, focusYear, onFocusYear, onOpenLab }: Pick<Pro
           <div><dt>Per decade</dt><dd><span className="mono">{signed(perDecade(t.slope), 3)}</span> {decadeUnits(t.slope_units ?? null)}</dd></div>
           {change && <div><dt>Along the fitted line</dt><dd><span className="mono">{signed(change.value, 3)}</span> {a.units.annual_value}, {change.from}–{change.to}</dd></div>}
         </dl>
-        <p className="sp-muted">Filled dots shaped the line; hollow rings were shown but not used.</p>
+        <p className="sp-muted">{isSeasonal(a)
+          ? `This slope comes from qualifying monthly values (${monthsUsed(a) || "no qualifying months"}), compared month by month, so no line is drawn through these annual means.`
+          : "Filled dots shaped the line; hollow rings were shown but not used."}</p>
         <button type="button" className="btn btn-ghost" onClick={() => onOpenLab("trend")}>How is this line found? →</button>
       </div>
     </div>

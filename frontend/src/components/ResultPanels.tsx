@@ -134,6 +134,7 @@ export function ResultSummary({ analysis, place }: { analysis: Analysis; place?:
           {lines.map((l) => <li key={l}>{l}</li>)}
         </ul>
         <dl className="statement-facts">
+          <div><dt>Reported test</dt><dd>{t?.mann_kendall ? `Kendall: p = ${fmt(t.mann_kendall.p_value, 4)}, alpha = ${t.mann_kendall.alpha}` : `Test not reported: ${t?.significance_unavailable_reason ?? "Inference unavailable"}`}</dd></div>
           {t?.slope != null && <div><dt>Per decade</dt><dd className="mono">{signed(perDecade(t.slope), 3)} {decadeUnits(t.slope_units ?? null)}</dd></div>}
           {change && <div><dt>Along the fitted line</dt><dd><span className="mono">{signed(change.value, 3)}</span> {analysis.units.annual_value} from {change.from} to {change.to}</dd></div>}
           <div><dt>Inference</dt><dd>{verdict.inference} · {t?.result_level_label ?? "No trend computed"}</dd></div>
@@ -143,7 +144,9 @@ export function ResultSummary({ analysis, place }: { analysis: Analysis; place?:
         </dl>
         {change && <p className="layer-note">The fitted-line change is slope × years between the first and last eligible years. It is not the observed difference between those two years’ values.</p>}
         {reading && <p className="layer-note">{reading}</p>}
+        {t?.confidence_interval && <p className="layer-note">This is not a prediction interval. It describes uncertainty in the estimated slope under the reported method and assumptions.</p>}
         <p className="support-note">Values describe a {inSentence(s.description)} ({s.resolution}), not the exact point. Source: {analysis.dataset.source} · {analysis.dataset.title ?? analysis.dataset.id}.</p>
+        <a className="text-link" href="#history">Explore the supporting observations</a>
       </Disclosure>
     </section>
   );
@@ -251,6 +254,8 @@ export function ErrorBox({ error, onRetry, extra }: { error: unknown; onRetry?: 
     title = e.reason === "outside_dataset_coverage" || e.reason === "unsupported_land_cover_region" ? "Not available at this location" : "This request is not supported";
   } else if (e?.status === 401) {
     title = "Team access key required";
+  } else if (e?.status === 409 && e.reason === "analysis_changed") {
+    title = "Investigation evidence changed";
   } else if (e?.status === 429) {
     title = "Please slow down";
   } else if (e?.status === 504) {

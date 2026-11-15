@@ -26,6 +26,7 @@ from app.api.routes.soil_moisture import descriptor_payload
 from app.api.scientific_notes import (
     DESCRIPTIVE_SLOPE_NOTE, INFERENCE_CAVEAT, SEASONAL_DESCRIPTIVE_SLOPE_NOTE, SEASONAL_TREND_METHOD, TREND_METHOD,
 )
+from app.services.discovery_service import discovery, compare_periods, validate_windows
 from app.api.methods_lab import build_methods_lab
 from app.core.outbound_throttle import OutboundThrottle, ThrottleBusy
 from app.statistics.change_point import detect_step
@@ -549,13 +550,38 @@ async def analysis(
                 "radius_km": params.get("radius_km"), "bbox": box,
                 "start_date": start_date.isoformat(), "end_date": end_date.isoformat()}
     request_id = hashlib.sha256(json.dumps(identity, sort_keys=True).encode()).hexdigest()[:24]
-    return {**payload, "investigation": {"id": request_id, "request": identity,
+    return {**payload, "discovery": discovery(payload), "investigation": {"id": request_id, "request": identity,
             "requested_period": {"start": start_date.isoformat(), "end_exclusive": end_date.isoformat()},
             "effective_years": (payload.get("trend") or {}).get("eligible_years", []),
             "source": payload["dataset"]["source"], "method": "seasonal_sen" if variable == "ndvi" else "theil_sen",
             "retrieved_at": cache_meta["retrieved_at"],
             "provenance_status": "cached_nasa_retrieval" if cache_meta["hit"] else payload["data_status"]}, "cache": cache_meta,
             "data_status": "cached_nasa_retrieval" if cache_meta["hit"] else payload["data_status"]}
+
+
+@router.get("/period-comparison", tags=["historical discovery"])
+async def period_comparison(
+    request: Request,
+    variable: Literal["temperature", "relative_humidity", "extreme_heat", "precipitation", "ndvi", "soil_moisture"],
+    latitude: Annotated[float, Query(ge=-90, le=90)], longitude: Annotated[float, Query(ge=-180, le=180)],
+    start_date: date, end_date: date,
+    first_start_year: Annotated[int, Query(ge=1900, le=2200)], first_end_year: Annotated[int, Query(ge=1900, le=2200)],
+    second_start_year: Annotated[int, Query(ge=1900, le=2200)], second_end_year: Annotated[int, Query(ge=1900, le=2200)],
+    analysis_id: Annotated[str, Query(min_length=64, max_length=64)],
+    mode: Literal["point", "region"] = "point", radius_km: Annotated[float | None, Query(gt=0)] = None,
+    dataset: str | None = None, bbox: str | None = None,
+) -> dict[str, Any]:
+    _year_bounds(start_date, end_date)
+    try:
+        validate_windows(start_date, end_date, first_start_year, first_end_year, second_start_year, second_end_year)
+    except ValueError as exc:
+        raise HTTPException(422, {"reason": "invalid_comparison_periods", "message": str(exc)}) from exc
+    result = await analysis(request, variable, latitude, longitude, start_date, end_date, mode, radius_km, dataset, bbox)
+    if result["discovery"]["analysis_id"] != analysis_id:
+        raise HTTPException(409, {"reason": "analysis_changed", "message": "The source result changed. Run the investigation again before comparing periods."})
+    return {**compare_periods(result, first_start_year, first_end_year, second_start_year, second_end_year),
+            "dataset": result["dataset"], "spatial_support": result["spatial_support"],
+            "data_status": result["data_status"], "cache": result["cache"]}
 
 
 @router.get("/relationships")

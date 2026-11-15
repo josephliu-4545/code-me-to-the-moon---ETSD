@@ -1,4 +1,4 @@
-import { CartesianGrid, Line, LineChart, ReferenceArea, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { CartesianGrid, Line, LineChart, ReferenceLine, ReferenceArea, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { Analysis } from "../api/types";
 import { fmt, reasonLabel } from "../lib/format";
 import { calendarSeries, gapRuns, monthLabel, type MonthRow } from "../lib/series";
@@ -30,7 +30,7 @@ const IsolatedDot = (p: unknown) => {
   return <circle key={`d${index}`} cx={cx} cy={cy} r={3.5} fill={CHART.series} stroke={CHART.surface} strokeWidth={1.5} />;
 };
 
-export default function SeriesChart({ analysis }: { analysis: Analysis }) {
+export default function SeriesChart({ analysis, onSelect, selectedDate }: { analysis: Analysis; onSelect?: (date: string) => void; selectedDate?: string }) {
   if (!analysis.series.length || !analysis.series_definition) return null;
   const rows: Indexed[] = calendarSeries(analysis.series, analysis.period.start, analysis.period.end_exclusive).map((r, i) => ({ ...r, i }));
   if (!rows.length) return null;
@@ -56,7 +56,7 @@ export default function SeriesChart({ analysis }: { analysis: Analysis }) {
       </div>
       <div className="chart-plot" aria-hidden>
         <ResponsiveContainer width="100%" height={210}>
-          <LineChart data={rows} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
+          <LineChart onClick={(state) => { const label = (state as unknown as { activeLabel?: string | number }).activeLabel; const row = label == null ? undefined : rows[Number(label)]; if (row) onSelect?.(row.month); }} data={rows} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
             <defs>
               <pattern id="gap-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
                 <rect width="6" height="6" fill="var(--chart-gap)" />
@@ -64,6 +64,7 @@ export default function SeriesChart({ analysis }: { analysis: Analysis }) {
               </pattern>
             </defs>
             <CartesianGrid stroke={CHART.grid} vertical={false} />
+            {selectedDate && index.has(selectedDate) && <ReferenceLine x={index.get(selectedDate)} stroke={CHART.obs} strokeDasharray="2 4" />}
             {runs.map((g) => (
               <ReferenceArea key={g.from} x1={index.get(g.from)! - 0.5} x2={index.get(g.to)! + 0.5} fill="url(#gap-hatch)" fillOpacity={1} ifOverflow="hidden" />
             ))}
@@ -87,7 +88,7 @@ export default function SeriesChart({ analysis }: { analysis: Analysis }) {
             <tbody>
               {rows.map((r) => (
                 <tr key={r.month} className={r.state === "valid" ? "" : "row-excluded"}>
-                  <th scope="row" className="mono">{r.month}</th>
+                  <th scope="row" className="mono">{onSelect ? <button type="button" className="history-date" onClick={() => onSelect(r.month)}>{r.month}</button> : r.month}</th>
                   <td className="mono">{fmt(r.value, 3)}</td>
                   <td>{stateText(r)}</td>
                 </tr>

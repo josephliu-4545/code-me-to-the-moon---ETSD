@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { api } from "../api/client";
 import { isUnreachable, type Analysis, type AnalysisRequest, type VariableInfo } from "../api/types";
 import AnswerCard from "../components/detective/AnswerCard";
@@ -15,7 +15,7 @@ import { planInvestigationQuestion } from "../detective/planner";
 import { comparisonFromCache, relationshipsFromCache, type RelatedEvidence } from "../detective/related";
 import { cleanQuestion, MAX_QUESTION_CHARS } from "../detective/safety";
 import { fmtCoord, pText } from "../lib/format";
-import { findSnapshot, useAnalysis } from "../state/useAnalysis";
+import { useAnalysis } from "../state/useAnalysis";
 import type { Selection } from "../state/selection";
 
 /** Conversation bucket used before any investigation exists (only "how do I start" style guidance). */
@@ -71,22 +71,19 @@ function Transcript({ turns, prefix }: { turns: Turn[]; prefix: string }) {
   );
 }
 
-export default function DetectivePage({ submitted, place, variables, conversations, onStartInvestigation = () => undefined }: {
+export default function DetectivePage({ submitted, place, variables, conversations, snapshot = null, onLoadSnapshot, onStartInvestigation = () => undefined }: {
   submitted: AnalysisRequest | null;
   place: string;
   variables: VariableInfo[];
   conversations: ConversationApi;
   onStartInvestigation?: (selection: Partial<Selection>) => void;
+  /** The saved snapshot shared by every page for this exact request (App), never fetched separately here. */
+  snapshot?: Analysis | null;
+  onLoadSnapshot?: () => Promise<boolean>;
 }) {
   const query = useAnalysis(submitted);
   const unreachable = isUnreachable(query.error);
-  // Offline only: a clearly labelled saved snapshot of an earlier live retrieval (static file, no NASA request).
-  const snapshot = useQuery({
-    queryKey: ["snapshot", submitted],
-    queryFn: () => findSnapshot(submitted!),
-    enabled: submitted !== null && unreachable,
-    staleTime: Infinity,
-  });
+  const [snapshotMissing, setSnapshotMissing] = useState(false);
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState("");
   const [announcement, setAnnouncement] = useState("");
@@ -96,7 +93,8 @@ export default function DetectivePage({ submitted, place, variables, conversatio
 
   const variableName = variables.find((v) => v.id === submitted?.variable)?.name ?? submitted?.variable ?? "";
   const inv = submitted ? toInvestigation(submitted, variableName, place) : null;
-  const analysis: Analysis | undefined = query.data ?? (unreachable ? snapshot.data ?? undefined : undefined);
+  // Same precedence as Explore and Scientific Evaluation: fresh data first, else the shared snapshot.
+  const analysis: Analysis | undefined = query.data ?? snapshot ?? undefined;
   const current = analysis && inv && analysisMatches(analysis, inv) ? analysis : undefined;
   const evidence = useMemo(() => (current && inv ? buildEvidence(current, inv) : null), [current, inv?.key]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -187,10 +185,17 @@ export default function DetectivePage({ submitted, place, variables, conversatio
         )}
 
         {submitted && (query.isPending || query.isFetching) && !evidence && <Loading label="Waiting for the investigation's NASA data and statistics…" />}
-        {submitted && unreachable && snapshot.isFetching && <Loading label="Looking for a saved snapshot…" />}
-        {submitted && query.isError && !unreachable && <ErrorBox error={query.error} onRetry={() => query.refetch()} />}
-        {submitted && unreachable && snapshot.isSuccess && !snapshot.data && (
-          <ErrorBox error={query.error} onRetry={() => query.refetch()} extra={<p>No saved snapshot matches this investigation, so there is no evidence to answer from.</p>} />
+        {submitted && query.isError && !query.isFetching && !evidence && (
+          <ErrorBox
+            error={query.error}
+            onRetry={() => query.refetch()}
+            extra={unreachable && onLoadSnapshot ? (
+              <>
+                <button type="button" className="btn btn-ghost" onClick={async () => setSnapshotMissing(!(await onLoadSnapshot()))}>Show saved snapshot</button>
+                {snapshotMissing && <span className="status-hint">No saved snapshot matches this investigation, so there is no evidence to answer from.</span>}
+              </>
+            ) : null}
+          />
         )}
 
         <section className="dt-chat" aria-label="Conversation with the AI Earth Detective">

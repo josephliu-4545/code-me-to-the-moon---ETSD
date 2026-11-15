@@ -1,1 +1,870 @@
-{"variable":{"id":"ndvi","name":"Vegetation greenness (NDVI)","description":"Annual mean of quality-filtered MODIS NDVI averaged over a circular area.","annual_value_definition":"equal-weight mean of monthly means of quality-filtered 16-day composites"},"dataset":{"source":"NASA MODIS","id":"MODIS/061/MOD13Q1","version":"Collection 6.1","provenance":"satellite observation","doi":"10.5067/MODIS/MOD13Q1.061"},"spatial_support":{"mode":"point","type":"circle_mean","radius_km":0.25,"description":"Mean of valid 250 m MODIS pixels within 0.25 km of the point (small sampling area for point mode)","native_grid":"250 m","resolution":"250 m pixels averaged over a circle (radius_km)","requested":{"latitude":16.8661,"longitude":96.1951}},"period":{"start":"2015-01-01","end_exclusive":"2025-01-01"},"units":{"annual_value":"NDVI (unitless)","slope":"NDVI units/year"},"annual":[{"year":2015,"value":0.49445451737446555,"eligible":false,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"],"complete_calendar_year":true,"coverage_percentage":34.78260869565217,"represented_months":[1,2,3,11,12],"missing_months":[4,5,6,7,8,9,10],"extra":{"mean_spatial_coverage_percentage":26.785714285714285,"minimum_spatial_coverage_percentage":0.0,"valid_observations":8,"expected_observations":23}},{"year":2016,"value":0.5349329549210345,"eligible":false,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"],"complete_calendar_year":true,"coverage_percentage":30.434782608695656,"represented_months":[1,3,4,5,10,11,12],"missing_months":[2,6,7,8,9],"extra":{"mean_spatial_coverage_percentage":25.510204081632654,"minimum_spatial_coverage_percentage":0.0,"valid_observations":7,"expected_observations":23}},{"year":2017,"value":0.540048012879068,"eligible":false,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"],"complete_calendar_year":true,"coverage_percentage":26.08695652173913,"represented_months":[1,2,4,11,12],"missing_months":[3,5,6,7,8,9,10],"extra":{"mean_spatial_coverage_percentage":39.285714285714285,"minimum_spatial_coverage_percentage":37.5,"valid_observations":6,"expected_observations":23}},{"year":2018,"value":0.5757962185140211,"eligible":false,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"],"complete_calendar_year":true,"coverage_percentage":13.043478260869565,"represented_months":[1,2,12],"missing_months":[3,4,5,6,7,8,9,10,11],"extra":{"mean_spatial_coverage_percentage":26.785714285714285,"minimum_spatial_coverage_percentage":12.5,"valid_observations":3,"expected_observations":23}},{"year":2019,"value":0.5828996144237175,"eligible":false,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"],"complete_calendar_year":true,"coverage_percentage":8.695652173913043,"represented_months":[1,12],"missing_months":[2,3,4,5,6,7,8,9,10,11],"extra":{"mean_spatial_coverage_percentage":27.678571428571427,"minimum_spatial_coverage_percentage":12.5,"valid_observations":2,"expected_observations":23}},{"year":2020,"value":0.6370480146290491,"eligible":false,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"],"complete_calendar_year":true,"coverage_percentage":8.695652173913043,"represented_months":[10,12],"missing_months":[1,2,3,4,5,6,7,8,9,11],"extra":{"mean_spatial_coverage_percentage":7.142857142857142,"minimum_spatial_coverage_percentage":0.0,"valid_observations":2,"expected_observations":23}},{"year":2021,"value":0.5566197644869328,"eligible":false,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"],"complete_calendar_year":true,"coverage_percentage":17.391304347826086,"represented_months":[2,11,12],"missing_months":[1,3,4,5,6,7,8,9,10],"extra":{"mean_spatial_coverage_percentage":25.892857142857142,"minimum_spatial_coverage_percentage":0.0,"valid_observations":4,"expected_observations":23}},{"year":2022,"value":0.5513247356912958,"eligible":false,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"],"complete_calendar_year":true,"coverage_percentage":13.043478260869565,"represented_months":[1,3],"missing_months":[2,4,5,6,7,8,9,10,11,12],"extra":{"mean_spatial_coverage_percentage":29.166666666666668,"minimum_spatial_coverage_percentage":25.0,"valid_observations":3,"expected_observations":23}},{"year":2023,"value":0.5357757575757577,"eligible":false,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"],"complete_calendar_year":true,"coverage_percentage":4.3478260869565215,"represented_months":[1],"missing_months":[2,3,4,5,6,7,8,9,10,11,12],"extra":{"mean_spatial_coverage_percentage":12.5,"minimum_spatial_coverage_percentage":12.5,"valid_observations":1,"expected_observations":23}},{"year":2024,"value":0.5488147896304812,"eligible":false,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"],"complete_calendar_year":true,"coverage_percentage":21.73913043478261,"represented_months":[1,3,5,12],"missing_months":[2,4,6,7,8,9,10,11],"extra":{"mean_spatial_coverage_percentage":15.0,"minimum_spatial_coverage_percentage":0.0,"valid_observations":5,"expected_observations":23}}],"series":[{"date":"2015-01-01","value":0.48363957803223073},{"date":"2015-02-01","value":0.4251563454625978},{"date":"2015-03-01","value":0.45454231738035267},{"date":"2015-11-01","value":0.5907482188295164},{"date":"2015-12-01","value":0.5181861271676301},{"date":"2016-01-01","value":0.4788968193384224},{"date":"2016-03-01","value":0.5080317880794701},{"date":"2016-04-01","value":0.4590251968503937},{"date":"2016-05-01","value":0.43760642317380366},{"date":"2016-10-01","value":0.658132824427481},{"date":"2016-11-01","value":0.6157015267175574},{"date":"2016-12-01","value":0.5871361058601134},{"date":"2017-01-01","value":0.5557258269720101},{"date":"2017-02-01","value":0.48455037783375315},{"date":"2017-04-01","value":0.44758979848866504},{"date":"2017-11-01","value":0.6193895674300254},{"date":"2017-12-01","value":0.5929844936708861},{"date":"2018-01-01","value":0.611160307017544},{"date":"2018-02-01","value":0.478036702954899},{"date":"2018-12-01","value":0.6381916455696203},{"date":"2019-01-01","value":0.5920230263157895},{"date":"2019-12-01","value":0.5737762025316455},{"date":"2020-10-01","value":0.712678787878788},{"date":"2020-12-01","value":0.5614172413793104},{"date":"2021-02-01","value":0.4559119647355163},{"date":"2021-11-01","value":0.6393407124681935},{"date":"2021-12-01","value":0.5746066162570889},{"date":"2022-01-01","value":0.5463551388888889},{"date":"2022-03-01","value":0.5562943324937027},{"date":"2023-01-01","value":0.5357757575757577},{"date":"2024-01-01","value":0.5734226053639847},{"date":"2024-03-01","value":0.49779828926905134},{"date":"2024-05-01","value":0.5828},{"date":"2024-12-01","value":0.5412382638888888}],"series_definition":"monthly mean NDVI","trend":{"result_level":"annual_summaries_only","result_level_label":"Too few eligible years for a slope","eligible_years":[],"excluded_years":[{"year":2015,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"]},{"year":2016,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"]},{"year":2017,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"]},{"year":2018,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"]},{"year":2019,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"]},{"year":2020,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"]},{"year":2021,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"]},{"year":2022,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"]},{"year":2023,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"]},{"year":2024,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"]}],"missing_years":[],"slope":null,"intercept":null,"slope_units":null,"confidence_interval":null,"confidence_interval_unavailable_reason":null,"mann_kendall":null,"serial_dependence":null,"slope_unavailable_reason":"At least 3 eligible annual observations are required","significance_unavailable_reason":"At least 3 eligible annual observations are required"},"coverage":{"years_requested":10,"eligible_years":0,"excluded_years":[{"year":2015,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"]},{"year":2016,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"]},{"year":2017,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"]},{"year":2018,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"]},{"year":2019,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"]},{"year":2020,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"]},{"year":2021,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"]},{"year":2022,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"]},{"year":2023,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"]},{"year":2024,"reasons":["insufficient_represented_months","insufficient_valid_slot_coverage","missing_calendar_quarter"]}]},"methodology":{"source":{"annual_aggregation":"Equal-weight mean of represented monthly means.","minimum_represented_months":9,"minimum_valid_slot_coverage":0.7,"require_all_quarters":true,"exclude_partial_years":true,"minimum_observation_spatial_coverage":null,"minimum_slope_years":3,"minimum_significance_years":8,"significance_alpha":0.05,"thresholds_are_universal_standards":false},"trend_method":{"slope":"Theil-Sen median of pairwise slopes (SciPy theilslopes, method='separate')","significance":"two-sided Mann-Kendall test with tie correction, alpha from policy","serial_dependence_screen":"lag-1 Spearman correlation of Theil-Sen residuals","confidence_interval":"Theil-Sen 95% interval, reported only when inference is supported","inference_caveat":"Mann-Kendall significance is reported only after a lag-1 serial-dependence screen. An independent Monte Carlo check (5,000 replications) found that this screened test can reject a true no-trend hypothesis more often than the nominal 5% when annual values are autocorrelated (about 10.5% at n = 45, lag-1 autocorrelation 0.3). Treat 'statistically significant' as indicative, not as a guaranteed 5% false-positive rate.","descriptive_slope_note":"The Theil-Sen slope is a robust descriptive rate of change over the eligible years only. It is not a forecast and does not identify a cause."}},"caveats":["Mann-Kendall significance is reported only after a lag-1 serial-dependence screen. An independent Monte Carlo check (5,000 replications) found that this screened test can reject a true no-trend hypothesis more often than the nominal 5% when annual values are autocorrelated (about 10.5% at n = 45, lag-1 autocorrelation 0.3). Treat 'statistically significant' as indicative, not as a guaranteed 5% false-positive rate.","The Theil-Sen slope is a robust descriptive rate of change over the eligible years only. It is not a forecast and does not identify a cause."],"limitations":["Coverage thresholds are configurable policy choices, not universal scientific standards.","Monthly stratification reduces but does not eliminate seasonal sampling bias.","Quality filtering can create nonrandom missingness.","A nonsignificant autocorrelation diagnostic does not prove independence.","Statistical association does not establish causation or attribution.","No minimum spatial-coverage eligibility threshold was applied; spatial support is reported descriptively."],"extra":{},"data_status":"saved_snapshot"}
+{
+ "variable": {
+  "id": "ndvi",
+  "name": "Vegetation greenness (NDVI)",
+  "description": "Annual mean of quality-filtered MODIS NDVI averaged over a circular area.",
+  "annual_value_definition": "equal-weight mean of monthly means of quality-filtered 16-day composites"
+ },
+ "dataset": {
+  "source": "NASA MODIS",
+  "id": "MODIS/061/MOD13Q1",
+  "version": "Collection 6.1",
+  "provenance": "satellite observation",
+  "doi": "10.5067/MODIS/MOD13Q1.061"
+ },
+ "spatial_support": {
+  "mode": "point",
+  "type": "circle_mean",
+  "radius_km": 0.25,
+  "description": "Mean of valid 250 m MODIS pixels within 0.25 km of the point (small sampling area for point mode)",
+  "native_grid": "250 m",
+  "resolution": "250 m pixels averaged over a circle around the point",
+  "requested": {
+   "latitude": 16.8661,
+   "longitude": 96.1951
+  }
+ },
+ "period": {
+  "start": "2015-01-01",
+  "end_exclusive": "2025-01-01",
+  "catalog_first_image": null,
+  "catalog_last_image": null
+ },
+ "annual": [
+  {
+   "year": 2015,
+   "value": 0.49445451737446555,
+   "eligible": false,
+   "reasons": [
+    "insufficient_represented_months",
+    "insufficient_valid_slot_coverage",
+    "missing_calendar_quarter"
+   ],
+   "complete_calendar_year": true,
+   "coverage_percentage": 34.78260869565217,
+   "represented_months": [
+    1,
+    2,
+    3,
+    11,
+    12
+   ],
+   "missing_months": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+   ],
+   "extra": {
+    "mean_spatial_coverage_percentage": 26.785714285714285,
+    "minimum_spatial_coverage_percentage": 0.0,
+    "valid_observations": 8,
+    "expected_observations": 23
+   }
+  },
+  {
+   "year": 2016,
+   "value": 0.5349329549210345,
+   "eligible": false,
+   "reasons": [
+    "insufficient_represented_months",
+    "insufficient_valid_slot_coverage",
+    "missing_calendar_quarter"
+   ],
+   "complete_calendar_year": true,
+   "coverage_percentage": 30.434782608695656,
+   "represented_months": [
+    1,
+    3,
+    4,
+    5,
+    10,
+    11,
+    12
+   ],
+   "missing_months": [
+    2,
+    6,
+    7,
+    8,
+    9
+   ],
+   "extra": {
+    "mean_spatial_coverage_percentage": 25.510204081632654,
+    "minimum_spatial_coverage_percentage": 0.0,
+    "valid_observations": 7,
+    "expected_observations": 23
+   }
+  },
+  {
+   "year": 2017,
+   "value": 0.540048012879068,
+   "eligible": false,
+   "reasons": [
+    "insufficient_represented_months",
+    "insufficient_valid_slot_coverage",
+    "missing_calendar_quarter"
+   ],
+   "complete_calendar_year": true,
+   "coverage_percentage": 26.08695652173913,
+   "represented_months": [
+    1,
+    2,
+    4,
+    11,
+    12
+   ],
+   "missing_months": [
+    3,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+   ],
+   "extra": {
+    "mean_spatial_coverage_percentage": 39.285714285714285,
+    "minimum_spatial_coverage_percentage": 37.5,
+    "valid_observations": 6,
+    "expected_observations": 23
+   }
+  },
+  {
+   "year": 2018,
+   "value": 0.5757962185140211,
+   "eligible": false,
+   "reasons": [
+    "insufficient_represented_months",
+    "insufficient_valid_slot_coverage",
+    "missing_calendar_quarter"
+   ],
+   "complete_calendar_year": true,
+   "coverage_percentage": 13.043478260869565,
+   "represented_months": [
+    1,
+    2,
+    12
+   ],
+   "missing_months": [
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "extra": {
+    "mean_spatial_coverage_percentage": 26.785714285714285,
+    "minimum_spatial_coverage_percentage": 12.5,
+    "valid_observations": 3,
+    "expected_observations": 23
+   }
+  },
+  {
+   "year": 2019,
+   "value": 0.5828996144237175,
+   "eligible": false,
+   "reasons": [
+    "insufficient_represented_months",
+    "insufficient_valid_slot_coverage",
+    "missing_calendar_quarter"
+   ],
+   "complete_calendar_year": true,
+   "coverage_percentage": 8.695652173913043,
+   "represented_months": [
+    1,
+    12
+   ],
+   "missing_months": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "extra": {
+    "mean_spatial_coverage_percentage": 27.678571428571427,
+    "minimum_spatial_coverage_percentage": 12.5,
+    "valid_observations": 2,
+    "expected_observations": 23
+   }
+  },
+  {
+   "year": 2020,
+   "value": 0.6370480146290491,
+   "eligible": false,
+   "reasons": [
+    "insufficient_represented_months",
+    "insufficient_valid_slot_coverage",
+    "missing_calendar_quarter"
+   ],
+   "complete_calendar_year": true,
+   "coverage_percentage": 8.695652173913043,
+   "represented_months": [
+    10,
+    12
+   ],
+   "missing_months": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    11
+   ],
+   "extra": {
+    "mean_spatial_coverage_percentage": 7.142857142857142,
+    "minimum_spatial_coverage_percentage": 0.0,
+    "valid_observations": 2,
+    "expected_observations": 23
+   }
+  },
+  {
+   "year": 2021,
+   "value": 0.5566197644869328,
+   "eligible": false,
+   "reasons": [
+    "insufficient_represented_months",
+    "insufficient_valid_slot_coverage",
+    "missing_calendar_quarter"
+   ],
+   "complete_calendar_year": true,
+   "coverage_percentage": 17.391304347826086,
+   "represented_months": [
+    2,
+    11,
+    12
+   ],
+   "missing_months": [
+    1,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+   ],
+   "extra": {
+    "mean_spatial_coverage_percentage": 25.892857142857142,
+    "minimum_spatial_coverage_percentage": 0.0,
+    "valid_observations": 4,
+    "expected_observations": 23
+   }
+  },
+  {
+   "year": 2022,
+   "value": 0.5513247356912958,
+   "eligible": false,
+   "reasons": [
+    "insufficient_represented_months",
+    "insufficient_valid_slot_coverage",
+    "missing_calendar_quarter"
+   ],
+   "complete_calendar_year": true,
+   "coverage_percentage": 13.043478260869565,
+   "represented_months": [
+    1,
+    3
+   ],
+   "missing_months": [
+    2,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "extra": {
+    "mean_spatial_coverage_percentage": 29.166666666666668,
+    "minimum_spatial_coverage_percentage": 25.0,
+    "valid_observations": 3,
+    "expected_observations": 23
+   }
+  },
+  {
+   "year": 2023,
+   "value": 0.5357757575757577,
+   "eligible": false,
+   "reasons": [
+    "insufficient_represented_months",
+    "insufficient_valid_slot_coverage",
+    "missing_calendar_quarter"
+   ],
+   "complete_calendar_year": true,
+   "coverage_percentage": 4.3478260869565215,
+   "represented_months": [
+    1
+   ],
+   "missing_months": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "extra": {
+    "mean_spatial_coverage_percentage": 12.5,
+    "minimum_spatial_coverage_percentage": 12.5,
+    "valid_observations": 1,
+    "expected_observations": 23
+   }
+  },
+  {
+   "year": 2024,
+   "value": 0.5488147896304812,
+   "eligible": false,
+   "reasons": [
+    "insufficient_represented_months",
+    "insufficient_valid_slot_coverage",
+    "missing_calendar_quarter"
+   ],
+   "complete_calendar_year": true,
+   "coverage_percentage": 21.73913043478261,
+   "represented_months": [
+    1,
+    3,
+    5,
+    12
+   ],
+   "missing_months": [
+    2,
+    4,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "extra": {
+    "mean_spatial_coverage_percentage": 15.0,
+    "minimum_spatial_coverage_percentage": 0.0,
+    "valid_observations": 5,
+    "expected_observations": 23
+   }
+  }
+ ],
+ "series": [
+  {
+   "date": "2015-01-01",
+   "value": 0.48363957803223073
+  },
+  {
+   "date": "2015-02-01",
+   "value": 0.4251563454625978
+  },
+  {
+   "date": "2015-03-01",
+   "value": 0.45454231738035267
+  },
+  {
+   "date": "2015-11-01",
+   "value": 0.5907482188295164
+  },
+  {
+   "date": "2015-12-01",
+   "value": 0.5181861271676301
+  },
+  {
+   "date": "2016-01-01",
+   "value": 0.4788968193384224
+  },
+  {
+   "date": "2016-03-01",
+   "value": 0.5080317880794701
+  },
+  {
+   "date": "2016-04-01",
+   "value": 0.4590251968503937
+  },
+  {
+   "date": "2016-05-01",
+   "value": 0.43760642317380366
+  },
+  {
+   "date": "2016-10-01",
+   "value": 0.658132824427481
+  },
+  {
+   "date": "2016-11-01",
+   "value": 0.6157015267175574
+  },
+  {
+   "date": "2016-12-01",
+   "value": 0.5871361058601134
+  },
+  {
+   "date": "2017-01-01",
+   "value": 0.5557258269720101
+  },
+  {
+   "date": "2017-02-01",
+   "value": 0.48455037783375315
+  },
+  {
+   "date": "2017-04-01",
+   "value": 0.44758979848866504
+  },
+  {
+   "date": "2017-11-01",
+   "value": 0.6193895674300254
+  },
+  {
+   "date": "2017-12-01",
+   "value": 0.5929844936708861
+  },
+  {
+   "date": "2018-01-01",
+   "value": 0.611160307017544
+  },
+  {
+   "date": "2018-02-01",
+   "value": 0.478036702954899
+  },
+  {
+   "date": "2018-12-01",
+   "value": 0.6381916455696203
+  },
+  {
+   "date": "2019-01-01",
+   "value": 0.5920230263157895
+  },
+  {
+   "date": "2019-12-01",
+   "value": 0.5737762025316455
+  },
+  {
+   "date": "2020-10-01",
+   "value": 0.712678787878788
+  },
+  {
+   "date": "2020-12-01",
+   "value": 0.5614172413793104
+  },
+  {
+   "date": "2021-02-01",
+   "value": 0.4559119647355163
+  },
+  {
+   "date": "2021-11-01",
+   "value": 0.6393407124681935
+  },
+  {
+   "date": "2021-12-01",
+   "value": 0.5746066162570889
+  },
+  {
+   "date": "2022-01-01",
+   "value": 0.5463551388888889
+  },
+  {
+   "date": "2022-03-01",
+   "value": 0.5562943324937027
+  },
+  {
+   "date": "2023-01-01",
+   "value": 0.5357757575757577
+  },
+  {
+   "date": "2024-01-01",
+   "value": 0.5734226053639847
+  },
+  {
+   "date": "2024-03-01",
+   "value": 0.49779828926905134
+  },
+  {
+   "date": "2024-05-01",
+   "value": 0.5828
+  },
+  {
+   "date": "2024-12-01",
+   "value": 0.5412382638888888
+  }
+ ],
+ "trend": {
+  "result_level": "statistical_inference",
+  "result_level_label": "Slope with significance test (indicative; see caveat)",
+  "eligible_years": [
+   2015,
+   2016,
+   2017,
+   2018,
+   2019,
+   2020,
+   2021,
+   2022,
+   2023,
+   2024
+  ],
+  "excluded_years": [],
+  "missing_years": [],
+  "slope": 0.001471659030787593,
+  "intercept": -2.411731927936181,
+  "slope_units": "NDVI units/year",
+  "confidence_interval": [
+   -0.006507587728551334,
+   0.013189374877778492
+  ],
+  "confidence_interval_unavailable_reason": null,
+  "mann_kendall": {
+   "s": 2,
+   "variance": 130.66666666666666,
+   "z": 0.08748177652797065,
+   "tau": 0.03571428571428571,
+   "p_value": 0.9302885701156911,
+   "alpha": 0.05,
+   "alternative": "two-sided",
+   "is_statistically_significant": false,
+   "direction": "no_detected_trend"
+  },
+  "serial_dependence": null,
+  "slope_unavailable_reason": null,
+  "significance_unavailable_reason": null,
+  "method": "seasonal_kendall",
+  "months_used": [
+   1,
+   12
+  ],
+  "sample_count": 16,
+  "change_point": {
+   "status": "none",
+   "last_year_before": 2016,
+   "first_year_after": 2017,
+   "mean_before": -0.043318827139764066,
+   "mean_after": 0.009393507731415555,
+   "shift": 0.05271233487117962,
+   "pettitt_p_value": 0.4949906250906068,
+   "step_fits_better_than_line": true
+  }
+ },
+ "investigation": {
+  "id": "8d088148402ccd9b86399cfb",
+  "request": {
+   "variable": "ndvi",
+   "dataset": "MODIS/061/MOD13Q1",
+   "version": "Collection 6.1",
+   "latitude": 16.8661,
+   "longitude": 96.1951,
+   "mode": "point",
+   "radius_km": 0.25,
+   "bbox": null,
+   "start_date": "2015-01-01",
+   "end_date": "2025-01-01"
+  },
+  "requested_period": {
+   "start": "2015-01-01",
+   "end_exclusive": "2025-01-01"
+  },
+  "effective_years": [
+   2015,
+   2016,
+   2017,
+   2018,
+   2019,
+   2020,
+   2021,
+   2022,
+   2023,
+   2024
+  ],
+  "source": "NASA MODIS",
+  "method": "seasonal_sen",
+  "retrieved_at": "2026-11-14T19:22:16+00:00",
+  "provenance_status": "live_nasa_retrieval"
+ },
+ "data_status": "saved_snapshot",
+ "units": {
+  "annual_value": "NDVI units",
+  "slope": "NDVI units/year"
+ },
+ "series_definition": "monthly mean NDVI",
+ "coverage": {
+  "years_requested": 10,
+  "eligible_years": 0,
+  "excluded_years": [
+   {
+    "year": 2015,
+    "reasons": [
+     "insufficient_represented_months",
+     "insufficient_valid_slot_coverage",
+     "missing_calendar_quarter"
+    ]
+   },
+   {
+    "year": 2016,
+    "reasons": [
+     "insufficient_represented_months",
+     "insufficient_valid_slot_coverage",
+     "missing_calendar_quarter"
+    ]
+   },
+   {
+    "year": 2017,
+    "reasons": [
+     "insufficient_represented_months",
+     "insufficient_valid_slot_coverage",
+     "missing_calendar_quarter"
+    ]
+   },
+   {
+    "year": 2018,
+    "reasons": [
+     "insufficient_represented_months",
+     "insufficient_valid_slot_coverage",
+     "missing_calendar_quarter"
+    ]
+   },
+   {
+    "year": 2019,
+    "reasons": [
+     "insufficient_represented_months",
+     "insufficient_valid_slot_coverage",
+     "missing_calendar_quarter"
+    ]
+   },
+   {
+    "year": 2020,
+    "reasons": [
+     "insufficient_represented_months",
+     "insufficient_valid_slot_coverage",
+     "missing_calendar_quarter"
+    ]
+   },
+   {
+    "year": 2021,
+    "reasons": [
+     "insufficient_represented_months",
+     "insufficient_valid_slot_coverage",
+     "missing_calendar_quarter"
+    ]
+   },
+   {
+    "year": 2022,
+    "reasons": [
+     "insufficient_represented_months",
+     "insufficient_valid_slot_coverage",
+     "missing_calendar_quarter"
+    ]
+   },
+   {
+    "year": 2023,
+    "reasons": [
+     "insufficient_represented_months",
+     "insufficient_valid_slot_coverage",
+     "missing_calendar_quarter"
+    ]
+   },
+   {
+    "year": 2024,
+    "reasons": [
+     "insufficient_represented_months",
+     "insufficient_valid_slot_coverage",
+     "missing_calendar_quarter"
+    ]
+   }
+  ]
+ },
+ "methodology": {
+  "source": {
+   "annual_aggregation": "Equal-weight mean of represented monthly means.",
+   "minimum_represented_months": 9,
+   "minimum_valid_slot_coverage": 0.7,
+   "require_all_quarters": true,
+   "exclude_partial_years": true,
+   "minimum_observation_spatial_coverage": null,
+   "minimum_slope_years": 3,
+   "minimum_significance_years": 8,
+   "significance_alpha": 0.05,
+   "thresholds_are_universal_standards": false
+  },
+  "trend_method": {
+   "slope": "seasonal Sen slope: median of within-month pairwise slopes, divided by the real year gap (Hirsch, Slack & Smith 1982)",
+   "significance": "two-sided Seasonal Kendall test: Mann-Kendall S and tie-corrected variance summed over calendar months",
+   "months": "a calendar month is used only if it has values in at least 70% of the requested years",
+   "why": "cloud-masked months (for example the monsoon) rarely leave complete years for the annual method; comparing each month only with the same month in other years needs no complete years",
+   "confidence_interval": "rank-based 95% interval for the seasonal Sen slope, reported only when inference is supported",
+   "not_applied": "Hirsch-Slack correction for correlation between adjacent months; the p-value may be optimistic",
+   "descriptive_slope_note": "The seasonal Sen slope is a robust descriptive rate of change, from monthly values in the months the trend uses only. It is not a forecast and does not identify a cause."
+  }
+ },
+ "caveats": [
+  "Seasonal Kendall treats months as independent; correlation between adjacent months (Hirsch-Slack correction) is not applied, so the p-value may be optimistic.",
+  "The seasonal Sen slope is a robust descriptive rate of change, from monthly values in the months the trend uses only. It is not a forecast and does not identify a cause."
+ ],
+ "limitations": [
+  "Coverage thresholds are configurable policy choices, not universal scientific standards.",
+  "Monthly stratification reduces but does not eliminate seasonal sampling bias.",
+  "Quality filtering can create nonrandom missingness.",
+  "A nonsignificant autocorrelation diagnostic does not prove independence.",
+  "Statistical association does not establish causation or attribution.",
+  "No minimum spatial-coverage eligibility threshold was applied; spatial support is reported descriptively.",
+  "Seasonal Kendall treats months as independent; correlation between adjacent months (Hirsch-Slack correction) is not applied, so the p-value may be optimistic.",
+  "The NDVI trend uses only calendar months with data in at least 70% of years: Jan, Dec."
+ ],
+ "extra": {},
+ "methods_lab": {
+  "applicable": {
+   "annual_comparison": false,
+   "seasonal": true
+  },
+  "requirements": {
+   "minimum_years_for_slope": 3,
+   "minimum_years_for_significance": 8,
+   "alpha": 0.05,
+   "dependence_screen": "lag-1 Spearman ρ ≥ 0.3 or p < 0.05 withholds significance; at least 6 adjacent residual pairs needed"
+  },
+  "mann_kendall": {
+   "s": 2,
+   "variance": 130.66666666666666,
+   "z": 0.08748177652797065,
+   "tau": 0.03571428571428571,
+   "p_value": 0.9302885701156911,
+   "alpha": 0.05,
+   "alternative": "two-sided",
+   "is_statistically_significant": false,
+   "direction": "no_detected_trend"
+  },
+  "significance_unavailable_reason": null,
+  "serial_dependence": null,
+  "change_point": {
+   "status": "none",
+   "last_year_before": 2016,
+   "first_year_after": 2017,
+   "mean_before": -0.043318827139764066,
+   "mean_after": 0.009393507731415555,
+   "shift": 0.05271233487117962,
+   "pettitt_p_value": 0.4949906250906068,
+   "step_fits_better_than_line": true
+  },
+  "methods": {
+   "ols": {
+    "name": "Ordinary least squares (descriptive)",
+    "definition": "Slope b and intercept a minimising Σ(yᵢ − a − b·xᵢ)², with x = calendar year and y = eligible annual value; b = Σ(x−x̄)(y−ȳ) / Σ(x−x̄)².",
+    "role": "Descriptive comparison only. No p-value or confidence interval is reported because they require independent, normally distributed, constant-variance residuals."
+   },
+   "theil_sen": {
+    "name": "Theil–Sen estimator",
+    "definition": "Median of the slopes (yⱼ − yᵢ)/(xⱼ − xᵢ) over all pairs of eligible years (SciPy theilslopes, method='separate').",
+    "role": "The project's trend estimator; robust to outliers."
+   },
+   "mann_kendall": {
+    "name": "Mann–Kendall trend test",
+    "definition": "S = Σ_{i<j} sign(yⱼ − yᵢ); tie-corrected variance; continuity-corrected Z; two-sided p-value; Kendall τ = S / √(n₀(n₀ − n₁)), where n₀ = n(n − 1)/2 is the number of pairs and n₁ = Σ t(t − 1)/2 counts pairs tied in value (tie-adjusted τ-b; years never tie).",
+    "role": "Tests for evidence of a monotonic trend; reported only after the lag-1 dependence screen and with enough eligible years."
+   },
+   "serial_dependence": {
+    "name": "Lag-1 residual dependence screen",
+    "definition": "Spearman correlation between consecutive Theil–Sen residuals (adjacent years only).",
+    "role": "Withholds standard significance when material dependence is detected."
+   },
+   "seasonal_kendall": {
+    "name": "Seasonal Kendall test and seasonal Sen slope",
+    "definition": "Mann–Kendall S and variance computed within each calendar month across years and summed; τ = summed S / total number of within-month pairs (no tie adjustment); slope = median of all within-month pairwise slopes (Hirsch, Slack & Smith 1982).",
+    "role": "Used for NDVI, where cloud gaps leave few complete years."
+   },
+   "deseasonalized_ols": {
+    "name": "Deseasonalized OLS (descriptive)",
+    "definition": "OLS slope of monthly anomalies (value minus that calendar month's mean) against decimal year, using the same months and years as the seasonal Sen slope.",
+    "role": "Descriptive comparison with the seasonal Sen slope on the same monthly observations."
+   },
+   "change_point": {
+    "name": "Pettitt change-point check",
+    "definition": "Pettitt (1979) statistic for the most likely single shift; a step is reported only if p < α and a two-mean step model fits better than a straight line.",
+    "role": "Flags abrupt shifts (for example data-source changes) that a gradual trend line would misrepresent."
+   }
+  },
+  "annual_comparison_unavailable_reason": "This variable's trend uses the Seasonal Kendall method on monthly values, so an annual OLS vs Theil–Sen comparison would use a different sample. The seasonal panel compares estimators on the same monthly observations.",
+  "seasonal": {
+   "method": "seasonal_kendall",
+   "months_used": [
+    1,
+    12
+   ],
+   "months_not_used": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "month_names_used": [
+    "Jan",
+    "Dec"
+   ],
+   "years_contributing": [
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024
+   ],
+   "sample_count": 16,
+   "seasonal_sen_slope": 0.001471659030787593,
+   "slope_units": "NDVI units/year",
+   "confidence_interval": [
+    -0.006507587728551334,
+    0.013189374877778492
+   ],
+   "confidence_interval_unavailable_reason": null,
+   "seasonal_kendall": {
+    "s": 2,
+    "variance": 130.66666666666666,
+    "z": 0.08748177652797065,
+    "tau": 0.03571428571428571,
+    "p_value": 0.9302885701156911,
+    "alpha": 0.05,
+    "alternative": "two-sided",
+    "is_statistically_significant": false,
+    "direction": "no_detected_trend"
+   },
+   "deseasonalized_ols_slope": 0.00262403768111527,
+   "deseasonalized_ols_unavailable_reason": null,
+   "comparison_note": "Both slopes use the same monthly observations (months in at least 70% of years). The seasonal Sen slope is a median of within-month pairwise slopes; the deseasonalized OLS slope fits monthly anomalies by least squares. They are related but not identical estimators, and neither is an annual-value trend. The deseasonalized OLS regresses month-centred values on decimal year without centring the time axis within each month. On one synthetic unit-test fixture (an exactly linear series over 10 years and 5 months) this gave a slope about 2% below the true value; that figure is specific to that fixture, is not an expected bias for other data, and must not be used as a correction.",
+   "availability_rule": "A calendar month is used only if it has data in at least 70% of the years (and at least 3 years)."
+  },
+  "observations": {
+   "basis": "monthly means in the months used by the seasonal method",
+   "eligible": [],
+   "excluded": []
+  }
+ }
+}

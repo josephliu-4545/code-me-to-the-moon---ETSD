@@ -2,7 +2,9 @@ import {
   ApiError,
   type Analysis,
   type AnalysisRequest,
+  type ComparisonWindow,
   type GeocodeResult,
+  type PeriodComparison,
   type RelationshipsResponse,
   type SoilMoistureCompare,
   type VariableId,
@@ -53,24 +55,34 @@ export async function getJson<T>(path: string, params: Record<string, string | n
   return body as T;
 }
 
+export function analysisParams(r: AnalysisRequest) {
+  return {
+    variable: r.variable,
+    latitude: r.latitude,
+    longitude: r.longitude,
+    start_date: `${r.startYear}-01-01`,
+    end_date: `${r.endYear}-01-01`,
+    mode: r.mode,
+    radius_km: r.variable === "ndvi" && r.mode === "region" ? r.radiusKm : undefined,
+    dataset: r.variable === "soil_moisture" ? r.dataset : undefined,
+    bbox: r.bbox ? r.bbox.map((v) => v.toFixed(4)).join(",") : undefined,
+  };
+}
+
 export const api = {
   variables: (signal?: AbortSignal, verify = false) => getJson<VariablesResponse>("/api/v2/variables", verify ? { verify_availability: "true" } : {}, signal),
   analysis: (r: AnalysisRequest, signal?: AbortSignal) =>
     getJson<Analysis>(
       "/api/v2/analysis",
-      {
-        variable: r.variable,
-        latitude: r.latitude,
-        longitude: r.longitude,
-        start_date: `${r.startYear}-01-01`,
-        end_date: `${r.endYear}-01-01`,
-        mode: r.mode,
-        radius_km: r.variable === "ndvi" && r.mode === "region" ? r.radiusKm : undefined,
-        dataset: r.variable === "soil_moisture" ? r.dataset : undefined,
-        bbox: r.bbox ? r.bbox.map((v) => v.toFixed(4)).join(",") : undefined,
-      },
+      analysisParams(r),
       signal,
     ),
+  periodComparison: (r: AnalysisRequest, analysisId: string, windows: ComparisonWindow, signal?: AbortSignal) =>
+    getJson<PeriodComparison>("/api/v2/period-comparison", {
+      ...analysisParams(r), analysis_id: analysisId,
+      first_start_year: windows.first_start_year, first_end_year: windows.first_end_year,
+      second_start_year: windows.second_start_year, second_end_year: windows.second_end_year,
+    }, signal),
   relationships: (
     a: VariableId,
     b: VariableId,
