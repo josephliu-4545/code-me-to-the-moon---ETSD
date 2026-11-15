@@ -95,7 +95,7 @@ export default function InvestigationPage({ section, submitted, selection, onCha
         {analysis && <ConsoleCards analysis={analysis} />}
         {analysis && <div className="results" key={analysis.discovery?.analysis_id ?? JSON.stringify(submitted)}>
           {isHistory ? <HistoricalDiscovery analysis={analysis} request={submitted ?? undefined} /> : <>
-            <ResultSummary analysis={analysis} historyPage />
+            <ResultSummary analysis={analysis} />
             <TrendChart analysis={analysis} />
             <Cautions analysis={analysis} />
             <div className="dossier-foot"><ProvenanceCard analysis={analysis} /><div><MethodNotes analysis={analysis} /><Limitations analysis={analysis} /></div></div>

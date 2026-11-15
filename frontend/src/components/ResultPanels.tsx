@@ -49,7 +49,7 @@ function DiscoverySpark({ analysis }: { analysis: Analysis }) {
  * Level 1 shows the short headline, its qualification and three instrument readouts.
  * Level 3 (the full scientific statement) stays one click away.
  */
-export function ResultSummary({ analysis, place, historyPage = false }: { analysis: Analysis; place?: string; historyPage?: boolean }) {
+export function ResultSummary({ analysis, place }: { analysis: Analysis; place?: string }) {
   const t = analysis.trend;
   const verdict = trendVerdict(analysis);
   const head = headlineParts(analysis);
