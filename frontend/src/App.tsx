@@ -161,7 +161,7 @@ export default function App() {
               />
             )}
             {tab === "evaluation" && <EvaluationPage submitted={submitted} snapshot={snapshot} onLoadSnapshot={loadSnapshot} />}
-            {tab === "compare" && <CompareDatasetsPage selection={selection} />}
+            {tab === "compare" && <CompareDatasetsPage selection={selection} submitted={submitted} submittedPlace={submittedPlace} snapshot={snapshot} />}
             {tab === "relationships" && <RelationshipsPage variables={variables.data.variables} selection={selection} />}
             {tab === "detective" && <DetectivePage submitted={submitted} place={submittedPlace} variables={variables.data.variables} conversations={conversations} onStartInvestigation={startInvestigation} snapshot={snapshot} onLoadSnapshot={loadSnapshot} />}
             {tab === "science" && <SciencePage variables={variables.data.variables} caveats={variables.data.caveats} />}

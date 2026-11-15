@@ -1,16 +1,19 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { compareApi, type CompareRequest } from "../api/compareClient";
 import type { CompareResponse, DatasetInfo, VariableDatasets } from "../api/compareTypes";
 import { AgreementBanner, DatasetStatusCards, PairTable, ProvenanceTable, SummaryTable } from "../components/compare/ComparisonPanels";
 import OverlayChart from "../components/compare/OverlayChart";
 import EvaluationLab from "../components/evaluation/EvaluationLab";
+import MethodsLab from "../components/methodslab/MethodsLab";
 import { ErrorBox, Limitations, Loading, ProvenanceCard, ResultSummary } from "../components/ResultPanels";
 import SeriesChart from "../components/SeriesChart";
 import TrendChart from "../components/TrendChart";
 import PageHero from "../components/ui/PageHero";
 import { fmtCoord } from "../lib/format";
+import type { Analysis, AnalysisRequest } from "../api/types";
 import type { Selection } from "../state/selection";
+import { useAnalysis } from "../state/useAnalysis";
 import "../compare.css";
 
 const VARIABLE_NAMES: Record<string, string> = {
@@ -44,8 +47,59 @@ export function coverageWarnings(selected: DatasetInfo[], startYear: number, end
   return out;
 }
 
-export default function CompareDatasetsPage({ selection }: { selection: Selection }) {
+type CompareView = "database" | "method";
+
+function MethodInvestigation({ analysis, place }: { analysis: Analysis | null; place: string }) {
+  if (!analysis) {
+    return (
+      <section className="compare-method-empty" aria-labelledby="method-empty-title">
+        <p className="kicker">Statistical method comparison</p>
+        <h2 id="method-empty-title" className="section-title">Launch or load an Earth investigation first.</h2>
+        <p>The Method view uses the exact completed investigation. It never substitutes example data or starts another NASA request when you open this tab.</p>
+        <a className="btn btn-ink" href="#explore">Go to Explore Earth →</a>
+      </section>
+    );
+  }
+  const eligible = analysis.methods_lab?.applicable.seasonal
+    ? analysis.methods_lab.seasonal?.sample_count ?? 0
+    : analysis.methods_lab?.observations.eligible.length ?? analysis.coverage.eligible_years;
+  const frequency = analysis.methods_lab?.observations.basis ?? analysis.series_definition ?? "analysis observations";
+  const location = place || fmtCoord(analysis.spatial_support.requested.latitude, analysis.spatial_support.requested.longitude);
+  return (
+    <div className="compare-method">
+      <section className="method-context lab-section" role="region" aria-label="Active investigation">
+        <div className="lab-section-head">
+          <p className="kicker">Your investigation</p>
+          <h2 className="section-title">Two analytical lenses on the same observations</h2>
+          <p className="section-lede">Both estimators below come from the completed analysis response. Opening this view does not retrieve or alter NASA observations.</p>
+        </div>
+        <dl className="method-context-grid">
+          <div><dt>Location or region</dt><dd>{location}</dd></div>
+          <div><dt>Variable</dt><dd>{analysis.variable.name}</dd></div>
+          <div><dt>Dataset</dt><dd>{analysis.dataset.source} · {analysis.dataset.id} · {analysis.dataset.version}</dd></div>
+          <div><dt>Period</dt><dd>{analysis.period.start.slice(0, 4)}–{Number(analysis.period.end_exclusive.slice(0, 4)) - 1}</dd></div>
+          <div><dt>Geographic support</dt><dd>{analysis.spatial_support.description} · {analysis.spatial_support.resolution}</dd></div>
+          <div><dt>Eligible observations</dt><dd>{eligible} · {frequency}</dd></div>
+          <div><dt>Units</dt><dd>{analysis.units.annual_value} · trend rate {analysis.units.slope}</dd></div>
+          <div><dt>Data status</dt><dd>{analysis.data_status.replaceAll("_", " ")}{analysis.snapshot ? ` · captured ${analysis.snapshot.captured_at.slice(0, 10)}` : ""}</dd></div>
+        </dl>
+      </section>
+      <MethodsLab analysis={analysis} initialTab="estimators" />
+    </div>
+  );
+}
+
+export default function CompareDatasetsPage({ selection, submitted: activeSubmitted = null, submittedPlace = "", snapshot = null }: {
+  selection: Selection;
+  submitted?: AnalysisRequest | null;
+  submittedPlace?: string;
+  snapshot?: Analysis | null;
+}) {
   const catalog = useQuery({ queryKey: ["datasets-catalog"], queryFn: ({ signal }) => compareApi.datasets(signal), staleTime: Infinity });
+  const activeQuery = useAnalysis(activeSubmitted, false);
+  const activeAnalysis = activeQuery.data ?? snapshot;
+  const [compareView, setCompareView] = useState<CompareView>("database");
+  const viewRefs = useRef<Record<CompareView, HTMLButtonElement | null>>({ database: null, method: null });
   const [variable, setVariable] = useState("temperature");
   const [chosen, setChosen] = useState<Record<string, string[]>>({});
   const [submitted, setSubmitted] = useState<CompareRequest | null>(null);
@@ -96,18 +150,43 @@ export default function CompareDatasetsPage({ selection }: { selection: Selectio
     });
   }
 
+  function onViewKeyDown(event: KeyboardEvent<HTMLButtonElement>, current: CompareView) {
+    const order: CompareView[] = ["database", "method"];
+    let next: CompareView | undefined;
+    if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+      const delta = event.key === "ArrowRight" ? 1 : -1;
+      next = order[(order.indexOf(current) + delta + order.length) % order.length];
+    } else if (event.key === "Home") next = order[0];
+    else if (event.key === "End") next = order[order.length - 1];
+    if (!next) return;
+    event.preventDefault();
+    setCompareView(next);
+    viewRefs.current[next]?.focus();
+  }
+
   if (catalog.isPending) return <div className="page page-control page-status"><Loading label="Loading the dataset catalog…" /></div>;
   if (catalog.isError) return <div className="page page-control page-status"><ErrorBox error={catalog.error} onRetry={() => catalog.refetch()} /></div>;
 
   return (
     <div className="page page-control compare-page">
-      <PageHero kicker="Mission Control · Compare Datasets" title={<>Do independent records <em>tell the same story</em>?</>} tone="control">
+      <PageHero kicker="Mission Control · Compare Lab" title={<>Investigate the data. <em>Challenge the methods.</em></>} tone="control">
         <p>
           Analyse one variable with several NASA and partner datasets, each independently with its own quality rules, then compare them descriptively.
           Location and period come from Explore Earth: <strong>{selection.placeName || "custom point"}</strong>, <span className="mono">{fmtCoord(selection.latitude, selection.longitude)}</span>, {selection.startYear}–{selection.endYearInclusive} (point analysis at each dataset's native grid cell).
         </p>
       </PageHero>
       <div className="page-body">
+
+      <div className="compare-lab-tabs" role="tablist" aria-label="Compare Lab view">
+        <button ref={(node) => { viewRefs.current.database = node; }} id="compare-tab-database" type="button" role="tab"
+          aria-selected={compareView === "database"} aria-controls="compare-panel-database" tabIndex={compareView === "database" ? 0 : -1}
+          className={compareView === "database" ? "active" : ""} onClick={() => setCompareView("database")} onKeyDown={(e) => onViewKeyDown(e, "database")}>Database</button>
+        <button ref={(node) => { viewRefs.current.method = node; }} id="compare-tab-method" type="button" role="tab"
+          aria-selected={compareView === "method"} aria-controls="compare-panel-method" tabIndex={compareView === "method" ? 0 : -1}
+          className={compareView === "method" ? "active" : ""} onClick={() => setCompareView("method")} onKeyDown={(e) => onViewKeyDown(e, "method")}>Method</button>
+      </div>
+
+      {compareView === "database" ? <div id="compare-panel-database" role="tabpanel" aria-labelledby="compare-tab-database">
 
       <section className="lab-section" aria-labelledby="cmp-var-h">
         <div className="lab-section-head"><p className="kicker">Step 1</p><h2 id="cmp-var-h" className="section-title">1 · Variable</h2></div>
@@ -231,6 +310,9 @@ export default function CompareDatasetsPage({ selection }: { selection: Selectio
           </>}
         </>
       )}
+      </div> : <div id="compare-panel-method" role="tabpanel" aria-labelledby="compare-tab-method" tabIndex={0}>
+        <MethodInvestigation analysis={activeAnalysis ?? null} place={submittedPlace} />
+      </div>}
       </div>
     </div>
   );

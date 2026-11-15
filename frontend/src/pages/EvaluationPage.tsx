@@ -288,8 +288,8 @@ export default function EvaluationPage({ submitted, snapshot, onLoadSnapshot }: 
           {intervalReading(a) && <p className="plain">{intervalReading(a)}</p>}
           {step && <p className="step-warning" role="note"><strong>Sudden step in the record.</strong> {step}</p>}
           <p className="plain">{seasonal
-            ? "This variable uses the Seasonal Kendall test on monthly values: cloud or data gaps leave too few complete years for the annual method (Theil–Sen with a screened Mann–Kendall test) used for the other variables. Comparisons between the two methods are not available here."
-            : "Only one trend method (Theil–Sen with a screened Mann–Kendall test) is computed for this variable; comparisons with other methods are not available, so this page cannot show whether another method would change the interpretation."}</p>
+            ? "This variable uses Seasonal Sen and the Seasonal Kendall test on monthly values. The Statistical Methods Lab keeps that seasonal result distinct from its descriptive deseasonalized OLS comparison; it does not substitute or mislabel an annual Theil–Sen estimate."
+            : "The reported trend remains Theil–Sen with a separately screened Mann–Kendall test. Open the Statistical Methods Lab to compare Theil–Sen with descriptive OLS on the same eligible annual observations; OLS does not replace the reported method or add significance inference."}</p>
           {a.caveats[0] && <p className="caveat">{a.caveats[0]}</p>}
           {a.caveats[1] && <p className="note">{a.caveats[1]}</p>}
         </section>

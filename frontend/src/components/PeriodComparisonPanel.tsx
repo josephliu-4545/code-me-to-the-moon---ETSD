@@ -35,7 +35,7 @@ export default function PeriodComparisonPanel({ analysis, request }: { analysis:
     {query.isFetching && <p role="status" className="note">Calculating comparable period statistics from the submitted investigation.</p>}
     {query.isError && <ErrorBox error={query.error} onRetry={() => query.refetch()} />}
     {query.data && !query.isFetching && <div className="period-result" role="status">
-      {query.data.analysis_id !== analysis.discovery?.analysis_id ? <p>The evidence identity changed. Run the investigation again.</p> : <>
+      {query.data.analysis_id !== analysis.discovery?.analysis_id ? <p>Investigation evidence changed. Run the investigation again.</p> : <>
         <div className="history-inspection">{[query.data.first, query.data.second].map((p, i) => <div key={i}><h4>{i === 0 ? "First" : "Second"} period: {p.start_year}–{p.end_year_inclusive}</h4>
           <p className="history-difference mono">{p.mean === null ? "Unavailable" : `${fmt(p.mean, 4)} ${query.data!.annual_units}`}</p>
           <p className="note">{p.count}/{p.expected_years} eligible years. {p.eligible_years.join(", ") || "No eligible years"}.</p>

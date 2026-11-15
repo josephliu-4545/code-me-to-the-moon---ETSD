@@ -79,8 +79,13 @@ describe("Mission Findings traceability", () => {
     expect(screen.getAllByText("Descriptive slope only").length).toBeGreaterThan(0);
   });
 
-  it("always explains causality and forecasting limits regardless of caveat ordering", () => {
+  it("always explains causality and forecasting limits regardless of caveat ordering", async () => {
     render(<Cautions analysis={{ ...fixture(), caveats: ["Other note", "Unrelated caveat"] }} />);
-    expect(screen.getByRole("button", { name: /A trend is not a cause/ })).toBeInTheDocument();
+    const cause = screen.getByRole("button", { name: /A trend is not a cause/ });
+    expect(cause).toBeInTheDocument();
+    await userEvent.click(cause);
+    const detail = screen.getByRole("article", { name: "A trend is not a cause." });
+    expect(within(detail).getAllByText(/It is not a forecast/).length).toBeGreaterThan(0);
+    expect(within(detail).getByText(/finding the cause needs a separate attribution study/)).toBeInTheDocument();
   });
 });

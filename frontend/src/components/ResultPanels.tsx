@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import AccessKeyForm from "./AccessKeyForm";
 import type { Analysis } from "../api/types";
 import { ApiError, isUnreachable } from "../api/types";
-import { dataStatusLabel, decadeUnits, fmt, fmtCoord, perDecade, signed } from "../lib/format";
+import { dataStatusLabel, decadeUnits, fmt, fmtCoord, perDecade, pText, signed } from "../lib/format";
 import { stepWarning, summarize } from "../lib/summary";
-import { discoveryHeadline, inSentence, fittedChange, intervalReading, isSeasonal, monthCompleteness, monthsUsed, periodLabel, slopeName, trendVerdict } from "../lib/verdict";
+import { discoveryHeadline, inSentence, fittedChange, intervalReading, isSeasonal, monthCompleteness, monthsUsed, periodLabel, slopeName, testName, trendVerdict } from "../lib/verdict";
 import { headlineParts, plainReason, type StageId } from "../lib/evidence";
 import MethodExplorer from "./expedition/MethodExplorer";
 import ScientificGuardrails from "./expedition/ScientificGuardrails";
@@ -148,13 +148,23 @@ export function ResultSummary({ analysis, place }: { analysis: Analysis; place?:
         <p className="support-note">Values describe a {inSentence(s.description)} ({s.resolution}), not the exact point. Source: {analysis.dataset.source} · {analysis.dataset.title ?? analysis.dataset.id}.</p>
         <a className="text-link" href="#history">Explore the supporting observations</a>
       </Disclosure>
+      <Disclosure summary="Why do we say this?" meta="Calculation evidence" className="finding-calculation">
+        <p className="note">This explanation uses the returned calculation, not an AI-generated statistic.</p>
+        <dl className="kv">
+          <dt>Estimated direction</dt><dd>{t?.slope == null ? "No slope available" : `${t.slope > 0 ? "Positive" : t.slope < 0 ? "Negative" : "Zero"} slope: ${signed(t.slope, 4)} ${slopeUnits}`}. {verdict.label}.</dd>
+          <dt>Estimator</dt><dd>{slopeName(analysis)}. {seasonal ? `Compares the same calendar months across years: ${monthsUsed(analysis)}.` : "Median of pairwise slopes on the eligible calendar years."}</dd>
+          <dt>Tested hypothesis</dt><dd>No monotonic trend. {t?.result_level === "statistical_inference" && t.mann_kendall ? `Reported ${testName(analysis)} result: p = ${pText(t.mann_kendall.p_value)}, alpha = ${t.mann_kendall.alpha}; ${t.mann_kendall.is_statistically_significant ? "rejected under the reported test policy" : "not rejected"}.` : `Inference note: ${t?.significance_unavailable_reason ?? "Insufficient support for inference"}.`}</dd>
+          <dt>Temporal support</dt><dd>{t?.eligible_years.length ? t.eligible_years.join(", ") : "No eligible trend years reported"}. Requested period: {analysis.period.start} to {analysis.period.end_exclusive} (end exclusive).</dd>
+          <dt>Uncertainty</dt><dd>{t?.confidence_interval ? `95% slope interval: ${signed(t.confidence_interval[0], 4)} to ${signed(t.confidence_interval[1], 4)} ${slopeUnits}. It describes slope uncertainty, not a forecast.` : t?.confidence_interval_unavailable_reason ?? "No justified slope interval was supplied."}</dd>
+        </dl>
+      </Disclosure>
     </section>
   );
 }
 
 /** Experience C (kept under its original name for existing callers). */
 export function Cautions({ analysis, onShowEvidence }: { analysis: Analysis; onShowEvidence?: (stage: StageId) => void }) {
-  return <ScientificGuardrails analysis={analysis} onShowEvidence={onShowEvidence} />;
+  return <><ScientificGuardrails analysis={analysis} onShowEvidence={onShowEvidence} /><p className="guardrail-summary">It is not a forecast, does not identify a cause, and does not establish future conditions.</p></>;
 }
 
 export function ProvenanceCard({ analysis }: { analysis: Analysis }) {
