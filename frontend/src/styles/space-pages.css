@@ -507,6 +507,37 @@
 [data-theme="light"] .light-planet-1 i{position:absolute;inset:40% -24%;border-radius:50%;border:8px solid rgba(160,130,240,.45);box-shadow:0 0 0 6px rgba(255,180,140,.25);transform:rotate(-20deg);clip-path:inset(50% 0 0 0)}
 [data-theme="light"] .light-planet-2{left:3%;top:52%;width:clamp(120px,13vw,190px);aspect-ratio:1;background:radial-gradient(circle at 30% 26%,#fff 0,rgba(255,255,255,0) 32%),radial-gradient(circle at 60% 60%,#7fd6c8,#5aa7e8 60%,#6d7fe0);box-shadow:inset -22px -16px 40px rgba(30,60,130,.45),0 20px 50px -16px rgba(80,150,220,.55);animation-duration:17s;animation-delay:-6s}
 [data-theme="light"] .light-planet-3{right:8%;top:80%;width:clamp(90px,9vw,140px);aspect-ratio:1;background:radial-gradient(circle at 30% 26%,#fff 0,rgba(255,255,255,0) 32%),radial-gradient(circle at 55% 60%,#ffc48a,#ff8fa0 65%,#d07be0);box-shadow:inset -16px -12px 30px rgba(120,40,110,.4),0 16px 40px -14px rgba(240,130,150,.55);animation-duration:15s;animation-delay:-3s}
+
+/* Final light-scene treatment: real Earth photography in headers, no decorative planets or rings. */
+[data-theme="light"] :is(.view-space,.investigation-space) :is(
+  .space-backdrop,.depth-orb,.depth-ring,.depth-planet,.depth-horizon,
+  .light-planet,.hero-stars,.space-galaxy-core,.nova-ring,.crescent,.horizon
+){display:none!important}
+[data-theme="light"] :is(.view-space,.investigation-space) .hero::before,
+[data-theme="light"] :is(.view-space,.investigation-space) .hero::after,
+[data-theme="light"] :is(.view-space,.investigation-space) .hero-text::before,
+[data-theme="light"] :is(.view-space,.investigation-space) .page-body::before{content:none!important;display:none!important}
+[data-theme="light"] :is(.view-space,.investigation-space) .hero{
+  isolation:isolate;overflow:hidden;
+  background:
+    linear-gradient(90deg,rgba(249,252,255,.97) 0%,rgba(249,252,255,.9) 42%,rgba(249,252,255,.48) 72%,rgba(249,252,255,.7) 100%),
+    linear-gradient(180deg,rgba(224,239,255,.16),rgba(238,229,255,.38)),
+    url("/brand/earth-blue-marble.jpeg") center 42%/cover no-repeat;
+  border-bottom:1px solid rgba(55,91,145,.16);
+  box-shadow:0 24px 70px -58px rgba(29,67,126,.85)
+}
+[data-theme="light"] :is(.view-space,.investigation-space) .hero::after{
+  content:""!important;display:block!important;position:absolute;z-index:-1;
+  inset:auto 0 0;height:3px;pointer-events:none;
+  background:linear-gradient(90deg,#ffad72,#78a9e8 38%,#a98be0 68%,#63c8af);
+  opacity:.82
+}
+@media(max-width:760px){
+  [data-theme="light"] :is(.view-space,.investigation-space) .hero{
+    background-position:64% center;
+    background-size:auto 100%
+  }
+}
 @media(max-width:760px){[data-theme="light"] .light-planet-1{opacity:.6;right:-80px}[data-theme="light"] .light-planet-2,[data-theme="light"] .light-planet-3{display:none}}
 [data-theme="light"] :is(.view-space,.investigation-space) :is(.results,.expedition,.labs,.source-journey) :is(.kv dt,.note,.sheet-title,.disclosure summary,.disclosure-meta,label,.field,th,td,caption,dd,dt,p,h2,h3,li){color:inherit}
 [data-theme="light"] :is(.view-space,.investigation-space) :is(.results,.expedition,.labs,.source-journey) :is(.kv dt,.note,.disclosure-meta,caption,.chart-sub,.chart-caption){color:var(--text-secondary)}
