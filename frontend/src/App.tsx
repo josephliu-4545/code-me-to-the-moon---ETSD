@@ -9,8 +9,6 @@ import CompareDatasetsPage from "./pages/CompareDatasetsPage";
 import DetectivePage from "./pages/DetectivePage";
 import EvaluationPage from "./pages/EvaluationPage";
 import ExplorePage from "./pages/ExplorePage";
-import LivingEarthPage from "./pages/LivingEarthPage";
-import MissionReportPage from "./pages/MissionReportPage";
 import InvestigationPage from "./pages/InvestigationPage";
 import RelationshipsPage from "./pages/RelationshipsPage";
 import SciencePage from "./pages/SciencePage";
@@ -28,12 +26,10 @@ const TABS = [
   { id: "compare", label: "Compare Datasets", short: "Compare" },
   { id: "relationships", label: "Earth System Relationships", short: "Relationships" },
   { id: "detective", label: "AI Earth Detective", short: "Detective" },
-  { id: "living", label: "Living Earth", short: "Living Earth" },
-  { id: "report", label: "Mission Report", short: "Report" },
   { id: "science", label: "Scientific Information", short: "Field Guide" },
 ] as const satisfies readonly NavItem[];
 type Tab = (typeof TABS)[number]["id"];
-const ROUTES: Tab[] = ["explore", "history", "findings", "evaluation", "compare", "relationships", "detective", "living", "report", "science"];
+const ROUTES: Tab[] = ["explore", "history", "findings", "evaluation", "compare", "relationships", "detective", "science"];
 const SPACE_TABS: Tab[] = ["evaluation", "compare", "relationships", "detective", "science"];
 
 function currentTab(): Tab {
@@ -168,8 +164,6 @@ export default function App() {
             {tab === "compare" && <CompareDatasetsPage selection={selection} />}
             {tab === "relationships" && <RelationshipsPage variables={variables.data.variables} selection={selection} />}
             {tab === "detective" && <DetectivePage submitted={submitted} place={submittedPlace} variables={variables.data.variables} conversations={conversations} onStartInvestigation={startInvestigation} snapshot={snapshot} onLoadSnapshot={loadSnapshot} />}
-            {tab === "living" && <LivingEarthPage submitted={submitted} snapshot={snapshot} />}
-            {tab === "report" && <MissionReportPage submitted={submitted} place={submittedPlace} snapshot={snapshot} />}
             {tab === "science" && <SciencePage variables={variables.data.variables} caveats={variables.data.caveats} />}
           </div>
         )}

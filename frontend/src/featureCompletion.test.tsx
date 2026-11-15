@@ -4,15 +4,12 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Analysis, VariablesResponse } from "./api/types";
 import { planInvestigationQuestion } from "./detective/planner";
-import { buildMissionReport, settingsUrl } from "./lib/report";
-import { visualIndex } from "./pages/LivingEarthPage";
 
 vi.mock("./components/MapView", () => ({ default: () => <div>Map ready</div> }));
 
 const SNAPSHOTS = import.meta.glob("../public/snapshots/*.json", { eager: true, import: "default" }) as Record<string, unknown>;
 const variables = SNAPSHOTS["../public/snapshots/variables.json"] as VariablesResponse;
 const precipitation = structuredClone(SNAPSHOTS["../public/snapshots/yangon-2015-2024-precipitation.json"]) as Analysis;
-const request = { variable: "precipitation" as const, latitude: 1.3521, longitude: 103.8198, startYear: 2015, endYear: 2025, mode: "point" as const };
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -50,22 +47,4 @@ describe("completed feature journeys", () => {
     await waitFor(() => expect(calls.some((url) => url.includes("/api/v2/analysis") && url.includes("variable=precipitation") && url.includes("latitude=1.3521") && url.includes("longitude=103.8198"))).toBe(true));
   });
 
-  it("maps only returned annual values into the Living Earth artistic index", () => {
-    const valid = precipitation.annual.filter((point) => point.value !== null);
-    const selected = valid[0]!;
-    expect(visualIndex(precipitation, selected.year)).not.toBeNull();
-    const missing = structuredClone(precipitation);
-    missing.annual[0]!.value = null;
-    expect(visualIndex(missing, missing.annual[0]!.year)).toBeNull();
-  });
-
-  it("builds a reproducible report from the exact response and request", () => {
-    const report = buildMissionReport(precipitation, request, "Singapore", new Date("2026-11-15T00:00:00Z"));
-    expect(report.investigation.request).toEqual(request);
-    expect(report.investigation.dataset).toEqual(precipitation.dataset);
-    expect(report.finding.trend).toEqual(precipitation.trend);
-    expect(report.evidence.annual).toEqual(precipitation.annual);
-    expect(report.scientific_context.limitations).toEqual(precipitation.limitations);
-    expect(settingsUrl(request, "Singapore", "https://example.test", "/app")).toContain("v=precipitation");
-  });
 });
