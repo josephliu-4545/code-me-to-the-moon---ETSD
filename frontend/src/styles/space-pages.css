@@ -509,6 +509,13 @@
 [data-theme="light"] .light-planet-3{right:8%;top:80%;width:clamp(90px,9vw,140px);aspect-ratio:1;background:radial-gradient(circle at 30% 26%,#fff 0,rgba(255,255,255,0) 32%),radial-gradient(circle at 55% 60%,#ffc48a,#ff8fa0 65%,#d07be0);box-shadow:inset -16px -12px 30px rgba(120,40,110,.4),0 16px 40px -14px rgba(240,130,150,.55);animation-duration:15s;animation-delay:-3s}
 
 /* Final light-scene treatment: real Earth photography in headers, no decorative planets or rings. */
+[data-theme="light"] .app-history{--page-hero-photo:url("/brand/page-scenes/history.jpg")}
+[data-theme="light"] .app-findings{--page-hero-photo:url("/brand/page-scenes/findings.jpg")}
+[data-theme="light"] .app-evaluation{--page-hero-photo:url("/brand/page-scenes/evaluation.jpg")}
+[data-theme="light"] .app-compare{--page-hero-photo:url("/brand/page-scenes/compare.jpg")}
+[data-theme="light"] .app-relationships{--page-hero-photo:url("/brand/page-scenes/relationships.jpg")}
+[data-theme="light"] .app-detective{--page-hero-photo:url("/brand/page-scenes/detective.jpg")}
+[data-theme="light"] .app-science{--page-hero-photo:url("/brand/page-scenes/science.jpg")}
 [data-theme="light"] :is(.view-space,.investigation-space) :is(
   .space-backdrop,.depth-orb,.depth-ring,.depth-planet,.depth-horizon,
   .light-planet,.hero-stars,.space-galaxy-core,.nova-ring,.crescent,.horizon
@@ -522,7 +529,7 @@
   background:
     linear-gradient(90deg,rgba(249,252,255,.97) 0%,rgba(249,252,255,.9) 42%,rgba(249,252,255,.48) 72%,rgba(249,252,255,.7) 100%),
     linear-gradient(180deg,rgba(224,239,255,.16),rgba(238,229,255,.38)),
-    url("/brand/earth-blue-marble.jpeg") center 42%/cover no-repeat;
+    var(--page-hero-photo) center 42%/cover no-repeat;
   border-bottom:1px solid rgba(55,91,145,.16);
   box-shadow:0 24px 70px -58px rgba(29,67,126,.85)
 }
