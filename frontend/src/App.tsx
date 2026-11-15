@@ -8,9 +8,11 @@ import CompareDatasetsPage from "./pages/CompareDatasetsPage";
 import DetectivePage from "./pages/DetectivePage";
 import EvaluationPage from "./pages/EvaluationPage";
 import ExplorePage from "./pages/ExplorePage";
+import LivingEarthPage from "./pages/LivingEarthPage";
+import MissionReportPage from "./pages/MissionReportPage";
 import RelationshipsPage from "./pages/RelationshipsPage";
 import SciencePage from "./pages/SciencePage";
-import { toRequest, useSelection } from "./state/selection";
+import { patchSelection, toRequest, useSelection, type Selection } from "./state/selection";
 import { useTheme } from "./state/theme";
 import { useConversationStore } from "./detective/conversation";
 import { useVariables } from "./state/useAnalysis";
@@ -21,11 +23,12 @@ const TABS = [
   { id: "compare", label: "Compare Datasets", short: "Compare" },
   { id: "relationships", label: "Earth System Relationships", short: "Relationships" },
   { id: "detective", label: "AI Earth Detective", short: "Detective" },
-  { id: "living", label: "Living Environment", short: "Living Environment", planned: true },
+  { id: "living", label: "Living Earth", short: "Living Earth" },
+  { id: "report", label: "Mission Report", short: "Report" },
   { id: "science", label: "Scientific Information", short: "Field Guide" },
 ] as const satisfies readonly NavItem[];
-type Tab = Exclude<(typeof TABS)[number]["id"], "living">;
-const ROUTES: Tab[] = ["explore", "evaluation", "compare", "relationships", "detective", "science"];
+type Tab = (typeof TABS)[number]["id"];
+const ROUTES: Tab[] = ["explore", "evaluation", "compare", "relationships", "detective", "living", "report", "science"];
 
 function currentTab(): Tab {
   const h = window.location.hash.replace("#", "") as Tab;
@@ -43,6 +46,17 @@ export default function App() {
   const conversations = useConversationStore();
   const variables = useVariables();
   const [theme, , toggleTheme] = useTheme();
+
+  function startInvestigation(patch: Partial<Selection>) {
+    const clean = Object.fromEntries(Object.entries(patch).filter(([, value]) => value !== undefined)) as Partial<Selection>;
+    const next = patchSelection(selection, clean);
+    update(clean);
+    setSnapshot(null);
+    setSubmittedPlace(next.placeName);
+    setSubmitted(toRequest(next));
+    window.location.hash = "explore";
+    setTab("explore");
+  }
 
   useEffect(() => {
     const onHash = () => setTab(currentTab());
@@ -103,7 +117,9 @@ export default function App() {
             {tab === "evaluation" && <EvaluationPage submitted={submitted} snapshot={snapshot} />}
             {tab === "compare" && <CompareDatasetsPage selection={selection} />}
             {tab === "relationships" && <RelationshipsPage variables={variables.data.variables} selection={selection} />}
-            {tab === "detective" && <DetectivePage submitted={submitted} place={submittedPlace} variables={variables.data.variables} conversations={conversations} />}
+            {tab === "detective" && <DetectivePage submitted={submitted} place={submittedPlace} variables={variables.data.variables} conversations={conversations} onStartInvestigation={startInvestigation} />}
+            {tab === "living" && <LivingEarthPage submitted={submitted} snapshot={snapshot} />}
+            {tab === "report" && <MissionReportPage submitted={submitted} place={submittedPlace} snapshot={snapshot} />}
             {tab === "science" && <SciencePage variables={variables.data.variables} caveats={variables.data.caveats} />}
           </div>
         )}

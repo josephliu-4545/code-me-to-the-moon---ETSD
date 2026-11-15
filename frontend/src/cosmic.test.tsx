@@ -197,10 +197,10 @@ describe("Explore launch and result identity", () => {
     expect(screen.getByRole("button", { name: /Switch to Orbit/ })).toBeInTheDocument();
   });
 
-  it("shows Living Environment as planned, not as a link", async () => {
+  it("offers Living Earth and Mission Report as working destinations", async () => {
     await renderApp();
     await screen.findByRole("button", { name: "Launch investigation" });
-    expect(screen.queryByRole("link", { name: /Living Environment/ })).toBeNull();
-    expect(screen.getByText(/not yet available/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Living Earth" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Mission Report" })).toBeInTheDocument();
   });
 });
