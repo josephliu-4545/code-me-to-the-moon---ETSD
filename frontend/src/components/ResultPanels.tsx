@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import AccessKeyForm from "./AccessKeyForm";
 import type { Analysis } from "../api/types";
 import { ApiError, isUnreachable } from "../api/types";
-import { dataStatusLabel, decadeUnits, fmt, fmtCoord, perDecade, signed } from "../lib/format";
+import { dataStatusLabel, decadeUnits, fmt, fmtCoord, perDecade, pText, signed } from "../lib/format";
 import { stepWarning, summarize } from "../lib/summary";
-import { discoveryHeadline, inSentence, fittedChange, intervalReading, isSeasonal, monthCompleteness, monthsUsed, periodLabel, slopeName, trendVerdict } from "../lib/verdict";
+import { discoveryHeadline, inSentence, fittedChange, intervalReading, isSeasonal, monthCompleteness, monthsUsed, periodLabel, slopeName, testName, trendVerdict } from "../lib/verdict";
 import { headlineParts, plainReason, type StageId } from "../lib/evidence";
 import MethodExplorer from "./expedition/MethodExplorer";
 import ScientificGuardrails from "./expedition/ScientificGuardrails";
@@ -49,7 +49,7 @@ function DiscoverySpark({ analysis }: { analysis: Analysis }) {
  * Level 1 shows the short headline, its qualification and three instrument readouts.
  * Level 3 (the full scientific statement) stays one click away.
  */
-export function ResultSummary({ analysis, place }: { analysis: Analysis; place?: string }) {
+export function ResultSummary({ analysis, place, historyPage = false }: { analysis: Analysis; place?: string; historyPage?: boolean }) {
   const t = analysis.trend;
   const verdict = trendVerdict(analysis);
   const head = headlineParts(analysis);
@@ -145,13 +145,27 @@ export function ResultSummary({ analysis, place }: { analysis: Analysis; place?:
         {reading && <p className="layer-note">{reading}</p>}
         <p className="support-note">Values describe a {inSentence(s.description)} ({s.resolution}), not the exact point. Source: {analysis.dataset.source} · {analysis.dataset.title ?? analysis.dataset.id}.</p>
       </Disclosure>
+      <div className="finding-evidence-links row-gap">
+        <a className="btn btn-ghost" href={historyPage ? "#history" : "#historical-discovery"}>Explore the supporting observations</a>
+        <a className="text-link" href="#evaluation">Inspect data quality and methods</a>
+      </div>
+      <Disclosure summary="Why do we say this?" meta="Calculation evidence" className="finding-calculation">
+        <p className="note">This explanation uses the returned calculation, not an AI-generated statistic.</p>
+        <dl className="kv">
+          <dt>Estimated direction</dt><dd>{t?.slope == null ? "No slope available" : `${t.slope > 0 ? "Positive" : t.slope < 0 ? "Negative" : "Zero"} slope: ${signed(t.slope, 4)} ${slopeUnits}`}. {verdict.label}.</dd>
+          <dt>Estimator</dt><dd>{slopeName(analysis)}. {seasonal ? `Compares the same calendar months across years: ${monthsUsed(analysis)}.` : "Median of pairwise slopes on the eligible calendar years."}</dd>
+          <dt>Tested hypothesis</dt><dd>No monotonic trend. {t?.result_level === "statistical_inference" && t.mann_kendall ? `${testName(analysis)}: ${pText(t.mann_kendall.p_value)}, alpha = ${t.mann_kendall.alpha}; ${t.mann_kendall.is_statistically_significant ? "rejected under the reported test policy" : "not rejected"}.` : `Test not reported: ${t?.significance_unavailable_reason ?? "Insufficient support for inference"}.`}</dd>
+          <dt>Temporal support</dt><dd>{t?.eligible_years.length ? t.eligible_years.join(", ") : "No eligible trend years reported"}. Requested period: {analysis.period.start} to {analysis.period.end_exclusive} (end exclusive).</dd>
+          <dt>Uncertainty</dt><dd>{t?.confidence_interval ? `95% slope interval: ${signed(t.confidence_interval[0], 4)} to ${signed(t.confidence_interval[1], 4)} ${slopeUnits}. This is not a prediction interval.` : t?.confidence_interval_unavailable_reason ?? "No justified slope interval was supplied."}</dd>
+        </dl>
+      </Disclosure>
     </section>
   );
 }
 
 /** Experience C (kept under its original name for existing callers). */
 export function Cautions({ analysis, onShowEvidence }: { analysis: Analysis; onShowEvidence?: (stage: StageId) => void }) {
-  return <ScientificGuardrails analysis={analysis} onShowEvidence={onShowEvidence} />;
+  return <><ScientificGuardrails analysis={analysis} onShowEvidence={onShowEvidence} /><p className="guardrail-summary">It is not a forecast, does not identify a cause, and does not establish future conditions.</p></>;
 }
 
 export function ProvenanceCard({ analysis }: { analysis: Analysis }) {
@@ -251,6 +265,8 @@ export function ErrorBox({ error, onRetry, extra }: { error: unknown; onRetry?: 
     title = e.reason === "outside_dataset_coverage" || e.reason === "unsupported_land_cover_region" ? "Not available at this location" : "This request is not supported";
   } else if (e?.status === 401) {
     title = "Team access key required";
+    } else if (e?.status === 409 && e.reason === "analysis_changed") {
+      title = "Investigation evidence changed";
   } else if (e?.status === 429) {
     title = "Please slow down";
   } else if (e?.status === 504) {

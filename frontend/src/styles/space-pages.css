@@ -403,6 +403,39 @@
   .investigation-space .hero-title,.investigation-space .hero .kicker,.investigation-space .hero .kicker::before,.investigation-space .hero-lede,.investigation-space .hero-title em,.investigation-space .page-body>*{animation:none!important}
 }
 
+/* Light mode uses flowing atmosphere and data-scan layers, not dark-space circles. */
+[data-theme="light"] :is(.view-space,.investigation-space){
+  background:linear-gradient(135deg,#fff8ef 0%,#eef6ff 44%,#f5efff 72%,#effcf8 100%)!important
+}
+[data-theme="light"] :is(.view-space,.investigation-space)::before{
+  inset:0!important;height:100%!important;opacity:.72;filter:none!important;
+  background:
+    repeating-linear-gradient(118deg,transparent 0 72px,rgba(52,93,150,.045) 73px 74px,transparent 75px 148px),
+    linear-gradient(112deg,rgba(255,174,105,.22),transparent 28%,rgba(100,153,225,.17) 52%,transparent 72%,rgba(123,206,180,.16))!important;
+  background-size:180% 100%,180% 100%!important;animation:daylight-scan 20s ease-in-out infinite alternate!important
+}
+[data-theme="light"] :is(.view-space,.investigation-space)::after{
+  content:"";position:absolute;z-index:-1;left:-12%;right:-12%;top:110px;height:360px;pointer-events:none;
+  background:linear-gradient(100deg,rgba(255,184,116,.28),rgba(116,154,230,.2) 45%,rgba(184,132,223,.22) 70%,rgba(98,202,177,.2));
+  clip-path:polygon(0 34%,16% 16%,34% 40%,53% 12%,70% 38%,86% 18%,100% 36%,100% 68%,84% 54%,67% 76%,49% 50%,31% 72%,14% 52%,0 66%);
+  animation:daylight-wave 15s ease-in-out infinite alternate
+}
+[data-theme="light"] :is(.view-space,.investigation-space) :is(.hero::after,.page-body::before){display:none!important}
+[data-theme="light"] :is(.app-history,.app-findings) .page.investigation-space{
+  background:linear-gradient(135deg,#fff7ed 0%,#eef6ff 48%,#f6efff 76%,#effbf7 100%)!important
+}
+[data-theme="light"] .app-evaluation .view-space{background:linear-gradient(135deg,#effcf7,#edf5ff 52%,#f8f3ff)!important}
+[data-theme="light"] .app-compare .view-space{background:linear-gradient(135deg,#f1f3ff,#fff5e9 54%,#eef8ff)!important}
+[data-theme="light"] .app-relationships .view-space{background:linear-gradient(135deg,#fff8e9,#f5efff 52%,#eef7ff)!important}
+[data-theme="light"] .app-detective .view-space{background:linear-gradient(135deg,#ebfff8,#f4efff 55%,#eef7ff)!important}
+[data-theme="light"] .app-science .view-space{background:linear-gradient(135deg,#f5efff,#edf8ff 52%,#fff8ed)!important}
+@keyframes daylight-scan{from{background-position:0 0,0 0}to{background-position:34% 0,-28% 0}}
+@keyframes daylight-wave{from{transform:translate3d(-2%,0,0) skewY(-1deg);opacity:.7}to{transform:translate3d(3%,24px,0) skewY(1deg);opacity:1}}
+@media(prefers-reduced-motion:reduce){
+  [data-theme="light"] :is(.view-space,.investigation-space)::before,
+  [data-theme="light"] :is(.view-space,.investigation-space)::after{animation:none!important}
+}
+
 /* ── Depth layer: colour and motion through the middle and bottom of every page (both themes) ── */
 .space-backdrop{--c1:120,150,255;--c2:200,130,255;--c3:90,210,190;--c4:255,170,110}
 .space-history{--c1:255,170,90;--c2:140,120,255;--c3:255,120,120;--c4:120,180,255}
