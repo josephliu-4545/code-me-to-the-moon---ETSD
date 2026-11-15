@@ -9,6 +9,18 @@ export type VariableId =
 
 export type Mode = "point" | "region";
 
+export interface Availability {
+  documented_first: string;
+  documented_last: string | null;
+  latest_observation: string | null;
+  latest_complete_year: number | null;
+  verification: "documented_only" | "live_catalog_cached";
+  provisional?: string;
+}
+export interface ProductInfo {
+  key: string; title: string; native_grid: string; native_units: string;
+  availability: Availability; limitations: string[];
+}
 export interface VariableInfo {
   id: VariableId;
   name: string;
@@ -33,6 +45,11 @@ export interface VariableInfo {
   region_description?: string;
   datasets?: string[];
   default_dataset?: string;
+  products?: ProductInfo[];
+  availability?: Availability;
+  geographic_limitations?: string[];
+  min_region_span_degrees?: number;
+  sampling?: { point_radius_km: number | null; approximate: boolean };
 }
 
 export interface VariablesResponse {
@@ -180,6 +197,7 @@ export interface Analysis {
   data_status: "live_nasa_retrieval" | "cached_nasa_retrieval" | "saved_snapshot";
   cache?: CacheInfo;
   snapshot?: { captured_at: string; note: string };
+  investigation?: { id: string; request: Record<string, unknown>; effective_years: number[]; source: string; method: string; retrieved_at: string };
 }
 
 export interface AnalysisRequest {

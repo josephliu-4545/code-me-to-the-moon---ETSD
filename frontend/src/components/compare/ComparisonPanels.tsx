@@ -1,3 +1,4 @@
+import { agreementLabel, directionLabel } from "../../lib/agreement";
 import type { CompareResponse, DatasetResult, Outcome, PairComparison } from "../../api/compareTypes";
 import { fmt, reasonLabel, signed } from "../../lib/format";
 import { DATASET_COLORS } from "./OverlayChart";
@@ -19,14 +20,6 @@ const LINEAGE_LABEL: Record<PairComparison["lineage"], string> = {
   independent: "Independent sources",
 };
 
-const AGREEMENT_LABEL: Record<string, string> = {
-  consistent: "Consistent",
-  mixed: "Mixed",
-  same_direction_weak_covariation: "Same direction, weak year-to-year agreement",
-  conflicting_trend_direction: "Conflicting trend direction",
-  partially_assessable: "Partially assessable",
-  not_assessable: "Not assessable",
-};
 
 export function outcomeTone(o: Outcome) {
   return OUTCOME_TONE[o] ?? "info";
@@ -69,10 +62,19 @@ export function AgreementBanner({ data }: { data: CompareResponse }) {
     );
   }
   const ag = data.comparison.agreement;
-  const tone = ag.level === "consistent" ? "good" : ag.level === "conflicting_trend_direction" ? "bad" : ag.level === "mixed" ? "warn" : "info";
+  // Descriptive evidence is never shown as a success or a failure; only attention-worthy patterns are highlighted.
+  const tone = ag.level === "conflicting_trend_direction" || ag.level === "mixed" ? "warn" : "info";
   return (
     <div className={`cmp-banner cmp-${tone}`} role="status">
-      <strong>Agreement: {AGREEMENT_LABEL[ag.level] ?? ag.level}.</strong> {ag.explanation}
+      <strong>Agreement: {agreementLabel(ag)}.</strong> {ag.explanation}
+      <div className="note">
+        Directions are compared using slopes over each pair&apos;s common eligible years only{ag.direction_evidence === "indicative" ? "." : " (descriptive: no significance test on that sample)."}
+        {ag.direction_coverage === "partial" && ag.pairs_total !== undefined
+          ? ` Only ${ag.pairs_with_direction ?? 0} of ${ag.pairs_total} dataset pairs could be compared, so no overall conclusion is drawn; see the pair table for each available pair.`
+          : ""}
+        {ag.comparability_note ? ` ${ag.comparability_note}` : ""}
+        {ag.independence_note ? ` ${ag.independence_note}` : ""}
+      </div>
       <div className="note">{ag.caution}</div>
     </div>
   );
@@ -120,7 +122,7 @@ export function PairTable({ data }: { data: CompareResponse }) {
     <div className="table-wrap">
       <table className="table">
         <thead>
-          <tr><th>Pair</th><th>Lineage</th><th>Common years</th><th>Mean difference</th><th>Spearman ρ</th><th>ρ of year-to-year changes</th><th>Trend signs agree</th></tr>
+          <tr><th>Pair</th><th>Lineage</th><th>Common years</th><th>Mean difference</th><th>Spearman ρ</th><th>ρ of year-to-year changes</th><th>Direction over common years</th></tr>
         </thead>
         <tbody>
           {data.comparison.pairs.map((p) => (
@@ -131,7 +133,7 @@ export function PairTable({ data }: { data: CompareResponse }) {
               <td>{p.numerically_comparable ? (p.mean_difference === null ? "—" : `${signed(p.mean_difference, 3)} ${p.difference_units ?? ""}`) : "not compared"}</td>
               <td>{p.spearman_rho === null ? "withheld" : fmt(p.spearman_rho, 2)}</td>
               <td>{p.spearman_rho_year_to_year === null ? "withheld" : fmt(p.spearman_rho_year_to_year, 2)}</td>
-              <td>{p.slope_sign_agreement === null ? "—" : p.slope_sign_agreement ? "yes" : "no"}</td>
+              <td>{directionLabel(p)}</td>
             </tr>
           ))}
         </tbody>
@@ -145,7 +147,7 @@ export function PairTable({ data }: { data: CompareResponse }) {
           </li>
         ))}
       </ul>
-      <p className="note">Mean difference = first minus second, over common eligible years; a systematic difference, not an error. No dataset is treated as ground truth, and no p-values are given for correlations.</p>
+      <p className="note">Mean difference = first minus second, over common eligible years; a systematic difference, not an error. Directions use Theil–Sen slopes over the same common years; “descriptive” means no significance test covers that sample, so opposite directions are not an established conflict. Correlation describes association only: shared long-term trends and shared inputs can inflate it, and it does not show accuracy or causation. No dataset is treated as ground truth, and no p-values are given for correlations.</p>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../api/client";
-import type { AnalysisRequest, AnnualPoint } from "../api/types";
+import { isUnreachable, type Analysis, type AnalysisRequest, type AnnualPoint } from "../api/types";
 import { SOIL_DATASETS } from "../components/AnalysisControls";
 import { DataStatusBadge, ErrorBox, Limitations, Loading } from "../components/ResultPanels";
 import CiRuler from "../components/science/CiRuler";
@@ -89,9 +89,9 @@ function SoilMoistureComparison({ request }: { request: AnalysisRequest }) {
               </div>
             ))}
             <div className={`compare-agree ${agree === true ? "is-yes" : agree === false ? "is-no" : ""}`}>
-              <span className="compare-agree-label">Slope signs agree</span>
+              <span className="compare-agree-label">Full-period slope signs agree (descriptive)</span>
               <strong>{agree === null || agree === undefined ? "not assessable" : agree ? "yes" : "no"}</strong>
-              <span className="compare-agree-note">Units differ, so slopes are compared by sign only.</span>
+              <span className="compare-agree-note">Units differ, so slopes are compared by sign only. Each slope uses that dataset&apos;s own eligible years, so the samples can differ; this is not an established agreement or conflict. Compare Datasets compares directions over common years.</span>
             </div>
           </div>
           <ul className="bullets">{q.data.differences.map((d) => <li key={d}>{d}</li>)}</ul>
@@ -135,8 +135,9 @@ const LabArt = () => (
   </svg>
 );
 
-export default function EvaluationPage({ submitted }: { submitted: AnalysisRequest | null }) {
+export default function EvaluationPage({ submitted, snapshot, onLoadSnapshot }: { submitted: AnalysisRequest | null; snapshot?: Analysis | null; onLoadSnapshot?: () => Promise<boolean> }) {
   const query = useAnalysis(submitted);
+  const [snapshotMissing, setSnapshotMissing] = useState(false);
   const [view, setView] = useState<"evaluation" | "lab">("evaluation");
   if (!submitted)
     return (
@@ -151,9 +152,24 @@ export default function EvaluationPage({ submitted }: { submitted: AnalysisReque
         </div>
       </div>
     );
-  if (query.isFetching) return <div className="page page-control page-status"><Loading label="Waiting for the analysis…" /></div>;
-  if (query.isError) return <div className="page page-control page-status"><ErrorBox error={query.error} onRetry={() => query.refetch()} /></div>;
-  const a = query.data;
+  // A retry while offline must not hide a saved snapshot that is already loaded for this request.
+  if (query.isFetching && !snapshot) return <div className="page page-control page-status"><Loading label="Waiting for the analysis…" /></div>;
+  if (query.isError && !snapshot)
+    return (
+      <div className="page page-control page-status">
+        <ErrorBox
+          error={query.error}
+          onRetry={() => query.refetch()}
+          extra={isUnreachable(query.error) && onLoadSnapshot ? (
+            <>
+              <button type="button" className="btn btn-ghost" onClick={async () => setSnapshotMissing(!(await onLoadSnapshot()))}>Show saved snapshot</button>
+              {snapshotMissing && <span className="status-hint">No saved snapshot exists for this exact request.</span>}
+            </>
+          ) : null}
+        />
+      </div>
+    );
+  const a = query.data ?? snapshot;
   if (!a) return null;
   const t = a.trend;
   const sd = t?.serial_dependence;

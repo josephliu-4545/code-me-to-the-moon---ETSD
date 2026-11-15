@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
+import { requestIdentity } from "./selection";
 import { api } from "../api/client";
 import { isUnreachable, type Analysis, type AnalysisRequest, type VariablesResponse } from "../api/types";
 
-export const analysisKey = (r: AnalysisRequest | null) => ["analysis", r] as const;
+export const analysisKey = (r: AnalysisRequest | null) => ["analysis", requestIdentity(r)] as const;
 
 export function useAnalysis(request: AnalysisRequest | null) {
   return useQuery({
@@ -41,6 +42,8 @@ interface SnapshotIndexEntry {
   dataset?: string;
   mode: string;
   file: string;
+  radiusKm?: number;
+  bbox?: number[];
 }
 
 /** Saved snapshots of earlier live retrievals, used only when the backend is unreachable. */
@@ -54,11 +57,12 @@ export async function findSnapshot(r: AnalysisRequest): Promise<Analysis | null>
     const hit = index.entries.find(
       (e) =>
         e.variable === r.variable &&
-        Math.abs(e.latitude - r.latitude) < 1e-3 &&
-        Math.abs(e.longitude - r.longitude) < 1e-3 &&
+        e.latitude === r.latitude &&
+        e.longitude === r.longitude &&
         e.startYear === r.startYear &&
         e.endYear === r.endYear &&
         e.mode === r.mode &&
+        (r.mode !== "region" || (e.radiusKm === r.radiusKm && JSON.stringify(e.bbox) === JSON.stringify(r.bbox))) &&
         (r.variable !== "soil_moisture" || e.dataset === r.dataset),
     );
     if (!hit) return null;

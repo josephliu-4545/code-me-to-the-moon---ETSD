@@ -6,7 +6,9 @@
  * and lists the evidence it used. When the evidence cannot answer, the answer says so and names
  * the analysis that would be needed. No numbers are invented and no citations are constructed.
  */
+import type { DirectionEvidence } from "../api/compareTypes";
 import { ESTIMATOR_READING } from "../components/methodslab/MethodsLab";
+import { directionLabel } from "../lib/agreement";
 import { pText, reasonLabel } from "../lib/format";
 import type { Evidence } from "./evidence";
 import { INTENT_LABELS, type Classification, type Intent } from "./intents";
@@ -104,7 +106,8 @@ const NOT_CAUSE = "A trend analysis describes change in this dataset; it does no
 
 function snapshotNotice(e: Evidence): Section[] {
   if (e.dataStatus.kind !== "saved_snapshot") return [];
-  return [{ kind: "notice", lines: [`These results come from a saved snapshot of an earlier live NASA retrieval (captured ${e.dataStatus.snapshotCapturedAt ?? "earlier"}). They are not a fresh query, and evidence added to the application after that date (such as the Statistical Methods Lab) may be missing.`] }];
+  const missing = e.methodsLab ? "" : " Evidence added to the application after that date (such as the Statistical Methods Lab) is missing from this snapshot.";
+  return [{ kind: "notice", lines: [`These results come from a saved snapshot of an earlier live NASA retrieval (captured ${e.dataStatus.snapshotCapturedAt ?? "earlier"}). They are not a fresh query.${missing}`] }];
 }
 
 function slopeSentence(e: Evidence): string {
@@ -183,6 +186,13 @@ function answer(intent: Intent | null, status: AnswerStatus, sections: Section[]
     sources,
     suggestions: extra.length ? extra : e ? suggestedQuestions(e, null).slice(0, 3) : [],
   };
+}
+
+/** Pair direction over common eligible years, in words. */
+function pairDirectionText(d: DirectionEvidence): string {
+  if (d === "unavailable") return "direction not assessable (fewer than 3 common eligible years)";
+  if (d === "descriptive_no_direction") return "no direction (a slope over common years is exactly zero)";
+  return `${directionLabel({ direction_evidence: d, common_period_slope_sign_agreement: null }).toLowerCase()} over common years`;
 }
 
 // ---------- general background (labelled; mechanisms are possibilities, never findings) ----------
@@ -497,7 +507,7 @@ const BUILDERS: Record<Exclude<Intent, "injection" | "secrets" | "getting_starte
       { kind: "finding", lines: [`This investigation uses ${e.dataset.source} (${e.dataset.id}), the dataset selected for ${lower(e.variableName)} in Explore Earth.`, ...soil] },
       { kind: "background", lines: ["No dataset is best everywhere. The right choice depends on the period you need, the spatial footprint, and whether you want a model, reanalysis or satellite estimate."] },
       r?.comparison
-        ? { kind: "statistics", lines: [`Your Compare Datasets result for this place and period reports: ${r.comparison.agreementLevel ?? "no agreement level"}. ${r.comparison.explanation ?? r.comparison.unavailableReason ?? ""}`] }
+        ? { kind: "statistics", lines: [`Your Compare Datasets result for this place and period reports: ${r.comparison.agreementLabel ?? "no agreement level"}. ${r.comparison.explanation ?? r.comparison.unavailableReason ?? ""}`, "Agreement between datasets does not show which one is more accurate."] }
         : { kind: "next_steps", lines: [`To see whether alternative datasets agree here, run Compare Datasets for ${lower(e.variableName)} with the same place and period. Only one dataset was analysed in this investigation.`, regionNote(e)] },
     ], [datasetSource(e), { label: "Compare Datasets", detail: "Analyse several datasets side by side", href: "#compare" }], e);
   },
@@ -514,11 +524,17 @@ const BUILDERS: Record<Exclude<Intent, "injection" | "secrets" | "getting_starte
     return answer("dataset_disagreement", c.pairs.length ? "descriptive" : "not_answerable", [
       { kind: "finding", lines: [
         `Compare Datasets analysed ${c.datasets.length} datasets for this place and period: ${c.datasets.map((d) => `${d.name} (${d.outcome.replace(/_/g, " ")})`).join("; ")}.`,
-        c.agreementLevel ? `Agreement level reported: ${c.agreementLevel}. ${c.explanation ?? ""}` : `No comparison was produced: ${c.unavailableReason ?? "reason not given"}.`,
+        c.agreementLabel ? `Agreement level reported: ${c.agreementLabel}. ${c.explanation ?? ""}` : `No comparison was produced: ${c.unavailableReason ?? "reason not given"}.`,
+        c.directionCoverage === "partial" && c.pairsTotal !== null
+          ? `Only ${c.pairsWithDirection ?? 0} of ${c.pairsTotal} dataset pairs could be compared over common years, so no overall conclusion is drawn; each available pair is listed below.`
+          : "",
+        c.agreementLabel && c.directionEvidence !== "indicative" && !(c.explanation ?? "").includes("not an established")
+          ? "Directions come from descriptive slopes over each pair's common eligible years, so this is not an established agreement or conflict."
+          : "",
       ] },
-      { kind: "statistics", lines: c.pairs.map((p) => `• ${p.names[0]} vs ${p.names[1]}: ${p.lineage.replace(/_/g, " ")}; ${p.commonYears} common eligible years; ${p.numericallyComparable ? `slope signs ${p.slopeSignAgreement === null ? "not comparable" : p.slopeSignAgreement ? "agree" : "differ"}; Spearman ρ ${p.spearmanRho === null ? "unavailable" : num(p.spearmanRho)}` : `not numerically comparable${p.notComparableReason ? ` (${p.notComparableReason})` : ""}`}.`) },
+      { kind: "statistics", lines: c.pairs.map((p) => `• ${p.names[0]} vs ${p.names[1]}: ${p.lineage.replace(/_/g, " ")}; ${p.commonYears} common eligible years; ${pairDirectionText(p.direction)}; ${p.numericallyComparable ? `Spearman ρ ${p.spearmanRho === null ? "unavailable" : num(p.spearmanRho)}` : `magnitudes not compared${p.notComparableReason ? ` (${p.notComparableReason})` : ""}`}.`) },
       { kind: "background", lines: [c.pairs.map((p) => p.lineageNote).filter(Boolean)[0] ?? "Datasets with shared inputs are not independent confirmations of each other."] },
-      { kind: "limitations", lines: [c.caution ?? "", "The datasets are analysed separately and never merged."] },
+      { kind: "limitations", lines: [c.independenceNote ?? "", c.comparabilityNote ?? "", c.caution ?? "", "Correlation describes association only; it does not show accuracy or causation.", "The datasets are analysed separately and never merged."] },
     ], [{ label: "Compare Datasets result", detail: "Cached result of your comparison for this place and period", href: "#compare" }, ...c.datasets.map((d) => ({ label: d.name, detail: [d.version && `Version: ${d.version}`, d.citation && `Citation: ${d.citation}`].filter(Boolean).join(" · ") || "Catalog entry" }))], e);
   },
 

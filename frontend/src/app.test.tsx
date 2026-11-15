@@ -234,11 +234,11 @@ describe("offline handling", () => {
 });
 
 describe("region boxes", () => {
-  it("builds a centred, clipped box and sends it only for precipitation region mode", async () => {
+  it("builds a centred box without silently clipping and sends it only for precipitation region mode", async () => {
     const { selectionBox } = await import("./state/selection");
     const s = { ...DEFAULT_SELECTION, variable: "precipitation" as const, mode: "region" as const, boxSpan: 1 };
     expect(selectionBox(s)).toEqual([95.6951, 16.3661, 96.6951, 17.3661]);
-    expect(selectionBox({ ...s, latitude: 89.8, longitude: 179.9 })).toEqual([179.4, 89.3, 180, 90]);
+    expect(selectionBox({ ...s, latitude: 89.8, longitude: 179.9 })).toEqual([179.4, 89.3, 180.4, 90.3]);
     expect(toRequest(s).bbox).toEqual([95.6951, 16.3661, 96.6951, 17.3661]);
     expect(toRequest({ ...s, mode: "point" }).bbox).toBeUndefined();
     expect(toRequest({ ...s, variable: "ndvi" }).bbox).toBeUndefined();

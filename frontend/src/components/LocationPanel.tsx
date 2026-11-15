@@ -31,6 +31,10 @@ export default function LocationPanel({ latitude, longitude, placeName, onChange
     enabled: debounced.length >= 3,
     staleTime: 24 * 3600 * 1000,
   });
+  function choose(r: { latitude: number; longitude: number; name: string }) {
+    onChange(Number(r.latitude.toFixed(4)), Number(r.longitude.toFixed(4)), r.name.split(",").slice(0, 3).join(","));
+    setQuery(""); setOpen(false);
+  }
   const listOpen = open && debounced.length >= 3;
 
   return (
@@ -51,31 +55,37 @@ export default function LocationPanel({ latitude, longitude, placeName, onChange
           placeholder="Search a city or place…"
           value={query}
           autoComplete="off"
+          maxLength={120}
           onChange={(e) => {
             setQuery(e.target.value);
             setOpen(true);
           }}
           onKeyDown={(e) => {
             if (e.key === "Escape") setOpen(false);
+            if (e.key === "ArrowDown" && search.data?.results.length) {
+              e.preventDefault(); setOpen(true);
+              document.getElementById(`${id}-results`)?.querySelector<HTMLElement>('[role="option"]')?.focus();
+            }
           }}
           aria-expanded={listOpen && !!search.data?.results.length}
           aria-controls={`${id}-results`}
         />
         {listOpen && (
           <ul id={`${id}-results`} className="search-results" role="listbox" aria-label="Place search results">
-            {search.isFetching && <li className="search-note">Searching…</li>}
-            {search.isError && <li className="search-note error-text">Place search is unavailable. Enter coordinates or click the map.</li>}
+            {search.isFetching && <li role="status" className="search-note">Searching…</li>}
+            {search.isError && <li role="alert" className="search-note error-text">Place search is unavailable. Enter coordinates or click the map.</li>}
             {search.data?.results.length === 0 && !search.isFetching && <li className="search-note">No places found.</li>}
-            {search.data?.results.map((r) => (
+            {search.data?.results.map((r, index) => (
               <li key={`${r.latitude},${r.longitude},${r.name}`}>
                 <button
                   type="button"
                   role="option"
                   aria-selected={false}
-                  onClick={() => {
-                    onChange(Number(r.latitude.toFixed(4)), Number(r.longitude.toFixed(4)), r.name.split(",").slice(0, 3).join(","));
-                    setQuery("");
-                    setOpen(false);
+                  onClick={() => choose(r)}
+                  onKeyDown={(e) => {
+                    const options = document.getElementById(`${id}-results`)?.querySelectorAll<HTMLElement>('[role="option"]');
+                    if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); options?.[(index + (e.key === "ArrowDown" ? 1 : -1) + (options?.length ?? 0)) % (options?.length ?? 1)]?.focus(); }
+                    if (e.key === "Escape") { setOpen(false); document.getElementById(`${id}-q`)?.focus(); }
                   }}
                 >
                   <span>{r.name}</span>
@@ -113,11 +123,11 @@ function CoordForm({ latitude, longitude, onSubmit }: { latitude: number; longit
       <form className="coords" onSubmit={apply} aria-label="Enter coordinates">
         <label>
           <span className="field-label">Latitude</span>
-          <input className="mono" inputMode="decimal" value={lat} onChange={(e) => setLat(e.target.value)} aria-describedby={`${id}-ce`} />
+          <input className="mono" inputMode="decimal" value={lat} onChange={(e) => setLat(e.target.value)} aria-invalid={!!coordError} aria-describedby={`${id}-ce`} />
         </label>
         <label>
           <span className="field-label">Longitude</span>
-          <input className="mono" inputMode="decimal" value={lon} onChange={(e) => setLon(e.target.value)} aria-describedby={`${id}-ce`} />
+          <input className="mono" inputMode="decimal" value={lon} onChange={(e) => setLon(e.target.value)} aria-invalid={!!coordError} aria-describedby={`${id}-ce`} />
         </label>
         <button type="submit" className="btn btn-ghost">Set</button>
       </form>

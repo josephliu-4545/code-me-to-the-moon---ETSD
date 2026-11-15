@@ -1,7 +1,6 @@
 import { useState, type MouseEvent } from "react";
 import type { Analysis, AnalysisRequest } from "../api/types";
 import ConsoleCards from "../components/explore/ConsoleCards";
-import LaunchCraft from "../components/explore/LaunchCraft";
 import HistoricalDiscovery from "../components/HistoricalDiscovery";
 import SpaceBackdrop from "../components/layout/SpaceBackdrop";
 import { Cautions, DataStatusBadge, ErrorBox, Limitations, Loading, MethodNotes, ProvenanceCard, ResultSummary } from "../components/ResultPanels";
@@ -23,7 +22,7 @@ interface Props {
   onChange: (patch: Partial<Selection>) => void;
   snapshot: Analysis | null;
   onStart: (request: AnalysisRequest) => void;
-  onSnapshot: (snapshot: Analysis | null) => void;
+  onSnapshot: (snapshot: Analysis | null, request: AnalysisRequest) => void;
 }
 
 export default function InvestigationPage({ section, submitted, selection, onChange, snapshot, onStart, onSnapshot }: Props) {
@@ -43,7 +42,7 @@ export default function InvestigationPage({ section, submitted, selection, onCha
     if (saved) {
       onChange({ latitude: EXAMPLE.latitude, longitude: EXAMPLE.longitude, placeName: "Yangon, Myanmar", variable: "temperature", startYear: 2015, endYearInclusive: 2024, mode: "point" });
       onStart(EXAMPLE);
-      onSnapshot(saved);
+      onSnapshot(saved, EXAMPLE);
     } else setExampleError(true);
     setLoadingExample(false);
   }
@@ -83,7 +82,6 @@ export default function InvestigationPage({ section, submitted, selection, onCha
         <p>{isHistory ? "Inspect annual and monthly records, trace data gaps, and compare observations and periods." : "What changed, by how much, and how strong is the evidence? Follow every conclusion back to the recorded data."}</p>
       </PageHero>
       <div className={`page-body investigation-flight-deck ${actionLaunching ? "is-launching" : ""}`} onClickCapture={animateAction}>
-        <LaunchCraft phase={actionLaunching ? "launching" : "idle"} />
         <div className="row-gap investigation-page-links">
           <a className="btn btn-ghost" href="#explore">Choose location and signal</a>
           <a className="text-link" href={isHistory ? "#findings" : "#history"}>{isHistory ? "View Mission Findings" : "View Historical Discovery"}<span aria-hidden> →</span></a>
@@ -98,7 +96,7 @@ export default function InvestigationPage({ section, submitted, selection, onCha
         {analysis && <ConsoleCards analysis={analysis} />}
         {analysis && <div className="results" key={analysis.discovery?.analysis_id ?? JSON.stringify(submitted)}>
           {isHistory ? <HistoricalDiscovery analysis={analysis} request={submitted ?? undefined} /> : <>
-            <ResultSummary analysis={analysis} historyPage />
+            <ResultSummary analysis={analysis} />
             <TrendChart analysis={analysis} />
             <Cautions analysis={analysis} />
             <div className="dossier-foot"><ProvenanceCard analysis={analysis} /><div><MethodNotes analysis={analysis} /><Limitations analysis={analysis} /></div></div>

@@ -181,7 +181,7 @@ describe("Compare datasets page", () => {
     expect(await screen.findByText("Vegetation (NDVI): NDVI alternatives are planned.")).toBeInTheDocument();
     expect(screen.getByRole("radio", { name: /Vegetation/ })).toBeDisabled();
     await userEvent.click(screen.getByRole("button", { name: "Compare datasets" }));
-    expect(await screen.findByText(/Agreement: Conflicting trend direction/)).toBeInTheDocument();
+    expect(await screen.findByText(/Agreement: Opposite descriptive slope directions/)).toBeInTheDocument();
     const call = fetchMock.mock.calls.find((c) => String(c[0]).includes("/api/v2/compare"))!;
     expect(String(call[0])).toContain("datasets=a%2Cb%2Cc");
     expect(String(call[0])).toContain("end_date=2025-01-01");
@@ -205,11 +205,11 @@ describe("Compare datasets page", () => {
   it("does not present submitted comparison results as current after dataset controls change", async () => {
     renderPage(compareResponse());
     await userEvent.click(await screen.findByRole("button", { name: "Compare datasets" }));
-    expect(await screen.findByText(/Agreement: Conflicting trend direction/)).toBeInTheDocument();
+    expect(await screen.findByText(/Agreement: Opposite descriptive slope directions/)).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole("checkbox", { name: /^C/ }));
 
-    expect(screen.queryByText(/Agreement: Conflicting trend direction/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Agreement: Opposite descriptive slope directions/)).not.toBeInTheDocument();
   });
 
   it("allows a replacement comparison while the obsolete request is still fetching", async () => {

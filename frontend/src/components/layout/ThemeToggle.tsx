@@ -1,7 +1,7 @@
 import type { Theme } from "../../state/theme";
 
 export default function ThemeToggle({ theme, onToggle }: { theme: Theme; onToggle: () => void }) {
-  const next = theme === "dark" ? "Mission Briefing (light)" : "Orbit (dark)";
+  const next = theme === "dark" ? "Mission Briefing (midnight)" : "Orbit (dark)";
   return (
     <button type="button" className="theme-toggle" onClick={onToggle} aria-label={`Switch to ${next} theme`} title={`Switch to ${next} theme`}>
       <span className="tt-track" aria-hidden>

@@ -139,6 +139,7 @@ _SMAP_COMMON_LIMITATIONS = (
     "are skipped or fail quality control over frozen ground, open water, dense "
     "vegetation, urban areas, and radio-frequency interference.",
     "Monthly values are means of valid sampled days, not true monthly means.",
+    "The enhanced 9 km product spacing is not the effective radiometer sensing resolution; the displayed polygon represents the Earth Engine sampling cell, not an antenna footprint.",
     "AM (06:00 descending) overpass only; AM and PM are never averaged.",
     "Mission accuracy requirement is 0.04 m3 m-3, which can be comparable to "
     "multi-year changes.",
@@ -211,7 +212,7 @@ _SMAP_V005 = DatasetDescriptor(
     version="005",
     band="soil_moisture_am",
     qc_band="retrieval_qual_flag_am",
-    native_grid="9 km EASE-Grid 2.0 (EE geographic)",
+    native_grid="EE geographic 0.08 degree sampling grid; enhanced 9 km product grid, not effective sensing resolution",
     nominal_scale_m=9000.0,
     temporal_sampling="daily overpass (06:00 local solar time, descending), when retrieved",
     expected_slots_per_day=1,
@@ -253,7 +254,7 @@ _SMAP_V006 = DatasetDescriptor(
     version="006",
     band="soil_moisture_am",
     qc_band="retrieval_qual_flag_am",
-    native_grid="9 km EASE-Grid 2.0 (EE geographic)",
+    native_grid="EE geographic 0.08 degree sampling grid; enhanced 9 km product grid, not effective sensing resolution",
     nominal_scale_m=9000.0,
     temporal_sampling="daily overpass (06:00 local solar time, descending), when retrieved",
     expected_slots_per_day=1,

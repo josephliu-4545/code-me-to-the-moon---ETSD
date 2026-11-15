@@ -343,13 +343,14 @@ def test_constant_matched_observations_explain_undefined_correlation() -> None:
 
 
 def test_agreement_levels() -> None:
+    # Headline levels come from common-period (matched-year) directions, never full-request signs.
     assert agreement_summary([])["level"] == "not_assessable"
-    assert agreement_summary([{"slope_sign_agreement": True, "spearman_rho": 0.9}])["level"] == "consistent"
-    weak = agreement_summary([{"slope_sign_agreement": True, "spearman_rho": 0.49}])
+    assert agreement_summary([{"common_period_slope_sign_agreement": True, "spearman_rho": 0.9}])["level"] == "consistent"
+    weak = agreement_summary([{"common_period_slope_sign_agreement": True, "spearman_rho": 0.49}])
     assert weak["level"] == "same_direction_weak_covariation" and "agree" in weak["explanation"]
-    assert agreement_summary([{"slope_sign_agreement": False, "spearman_rho": 0.9}])["level"] == "conflicting_trend_direction"
-    assert agreement_summary([{"slope_sign_agreement": True, "spearman_rho": 0.9},
-                              {"slope_sign_agreement": False, "spearman_rho": 0.3}])["level"] == "mixed"
+    assert agreement_summary([{"common_period_slope_sign_agreement": False, "spearman_rho": 0.9}])["level"] == "conflicting_trend_direction"
+    assert agreement_summary([{"common_period_slope_sign_agreement": True, "spearman_rho": 0.9},
+                              {"common_period_slope_sign_agreement": False, "spearman_rho": 0.3}])["level"] == "mixed"
     assert "does not prove accuracy" in agreement_summary([])["caution"]
 
 

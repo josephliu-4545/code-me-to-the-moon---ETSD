@@ -60,7 +60,7 @@ export default function HistoricalDiscovery({ analysis, request }: { analysis: A
         </div>
       </header>
       {!monthly.length && <p className="note">No monthly observations were supplied for this investigation.</p>}
-      {mode === "annual" ? <TrendChart analysis={analysis} onSelect={select} selectedDate={current?.date} /> : <SeriesChart analysis={analysis} onSelect={select} selectedDate={current?.date} />}
+      {mode === "annual" ? <TrendChart analysis={analysis} onSelectYear={(year) => select(String(year))} focusYear={current ? Number(current.date.slice(0, 4)) : null} /> : <SeriesChart analysis={analysis} onSelect={select} selectedDate={current?.date} />}
       {current ? <>
         <div className="history-scrubber">
           <label htmlFor="history-time">Inspect {mode === "annual" ? "year" : "month"}: <strong className="mono">{current.date}</strong></label>

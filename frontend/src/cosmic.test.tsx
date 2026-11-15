@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Analysis, VariableInfo } from "./api/types";
 import LaunchCraft from "./components/explore/LaunchCraft";
 import { discoveryHeadline, fittedChange, intervalReading } from "./lib/verdict";
-import { launchReducer, LIFTOFF_MS, useLaunchSequence, type LaunchState } from "./state/launch";
+import { launchReducer, PHASE_MS, INITIAL_LAUNCH, useLaunchSequence } from "./state/launch";
 import { initialTheme, THEME_KEY } from "./state/theme";
 
 vi.mock("./components/MapView", () => ({ default: () => <div>mock map</div> }));
@@ -72,45 +72,46 @@ describe("theme system", () => {
 });
 
 describe("launch sequence", () => {
-  const start: LaunchState = { phase: "idle", outcome: null };
-  const step = (s: LaunchState, ...events: Parameters<typeof launchReducer>[1][]) => events.reduce(launchReducer, s);
-
-  it("waits in orbit while the request runs, then arrives", () => {
-    expect(step(start, { type: "launch" }).phase).toBe("launching");
-    expect(step(start, { type: "launch" }, { type: "liftoffDone" }).phase).toBe("orbiting");
-    expect(step(start, { type: "launch" }, { type: "liftoffDone" }, { type: "settled", ok: true }).phase).toBe("arrived");
+  const begin = () => launchReducer(INITIAL_LAUNCH,{type:"launch",key:"a"});
+  it("progresses through ignition, liftoff and transit into a stable holding state", () => {
+    let state = begin(); expect(state.phase).toBe("ignition");
+    for (const phase of ["liftoff","transit","holding"]) {
+      state = launchReducer(state,{type:"advance",run:1}); expect(state.phase).toBe(phase);
+    }
+    expect(launchReducer(state,{type:"advance",run:1})).toEqual(state);
   });
-
-  it("arrives straight after lift-off when the result came back early", () => {
-    expect(step(start, { type: "launch" }, { type: "settled", ok: true }).phase).toBe("launching");
-    expect(step(start, { type: "launch" }, { type: "settled", ok: true }, { type: "liftoffDone" }).phase).toBe("arrived");
+  it("docks immediately for fast success without waiting for liftoff", () => {
+    const state = launchReducer(begin(),{type:"settled",key:"a",run:1,ok:true});
+    expect(state.phase).toBe("docking");
+    expect(launchReducer(state,{type:"advance",run:1}).phase).toBe("completed");
   });
-
-  it("aborts immediately on error, during lift-off or in orbit", () => {
-    expect(step(start, { type: "launch" }, { type: "settled", ok: false }).phase).toBe("aborted");
-    expect(step(start, { type: "launch" }, { type: "liftoffDone" }, { type: "settled", ok: false }).phase).toBe("aborted");
+  it("fails and cancels immediately, ignoring subsequent settlements", () => {
+    expect(launchReducer(begin(),{type:"settled",key:"a",run:1,ok:false}).phase).toBe("failed");
+    const cancelled = launchReducer(begin(),{type:"cancel"});
+    expect(launchReducer(cancelled,{type:"settled",key:"a",run:1,ok:true}).phase).toBe("cancelled");
   });
-
-  it("skips the flight under reduced motion", () => {
-    vi.useFakeTimers();
-    mockMatchMedia({ "(prefers-reduced-motion: reduce)": true });
-    const { result } = renderHook(() => useLaunchSequence(true, false));
-    act(() => result.current.launch());
-    act(() => vi.advanceTimersByTime(1));
-    expect(result.current.phase).toBe("orbiting");
-    const { container } = render(<LaunchCraft phase={result.current.phase} />);
-    expect(container.querySelector(".launch-stage")).toBeNull();
+  it("ignores old request keys and old run timers", () => {
+    const newer = launchReducer(begin(),{type:"launch",key:"b"});
+    expect(launchReducer(newer,{type:"settled",key:"a",run:1,ok:true})).toEqual(newer);
+    expect(launchReducer(newer,{type:"advance",run:1})).toEqual(newer);
+    expect(launchReducer(newer,{type:"settled",key:"a",run:2,ok:true})).toEqual(newer);
   });
-
-  it("plays the full lift-off with motion allowed", () => {
-    vi.useFakeTimers();
-    mockMatchMedia({});
-    const { result } = renderHook(() => useLaunchSequence(true, false));
-    act(() => result.current.launch());
-    act(() => vi.advanceTimersByTime(LIFTOFF_MS - 50));
-    expect(result.current.phase).toBe("launching");
-    act(() => vi.advanceTimersByTime(60));
-    expect(result.current.phase).toBe("orbiting");
+  it("skips decorative flight and docking under reduced motion", () => {
+    mockMatchMedia({"(prefers-reduced-motion: reduce)":true});
+    const {result,rerender} = renderHook(({busy})=>useLaunchSequence(busy,false,"a",!busy),{initialProps:{busy:true}});
+    act(()=>result.current.launch("a")); expect(result.current.phase).toBe("holding");
+    const {container} = render(<LaunchCraft phase={result.current.phase} run={1} reduced origin={{current:null}} destination={{current:null}}/>);
+    expect(container.querySelector(".mission-flight")).toBeNull();
+    rerender({busy:false}); expect(result.current.phase).toBe("completed");
+  });
+  it("cleans up phase timers and holds for a slow response", () => {
+    vi.useFakeTimers(); mockMatchMedia({});
+    const {result,unmount} = renderHook(()=>useLaunchSequence(true,false,"a",false));
+    act(()=>result.current.launch("a"));
+    for (const duration of [PHASE_MS.ignition,PHASE_MS.liftoff,PHASE_MS.transit]) act(()=>vi.advanceTimersByTime(duration));
+    expect(result.current.phase).toBe("holding");
+    act(()=>result.current.cancel()); expect(result.current.phase).toBe("cancelled");
+    unmount(); expect(vi.getTimerCount()).toBe(0);
   });
 });
 
@@ -161,7 +162,7 @@ describe("Explore launch and result identity", () => {
   it("shows the result without waiting for the launch animation", async () => {
     const { container } = await renderApp();
     await userEvent.click(await screen.findByRole("button", { name: "Launch investigation" }));
-    expect(container.querySelector(".launch-stage")).not.toBeNull();
+    expect(container.querySelector(".mission-flight")).not.toBeNull();
     // The finding is rendered while the craft is still in flight (well under LIFTOFF_MS).
     expect(await screen.findByRole("heading", { name: /evidence is inconclusive/ }, { timeout: 800 })).toBeInTheDocument();
   });
@@ -174,7 +175,7 @@ describe("Explore launch and result identity", () => {
     const { container } = await renderApp();
     await userEvent.click(await screen.findByRole("button", { name: "Launch investigation" }));
     expect(await screen.findByText("Not available at this location")).toBeInTheDocument();
-    await waitFor(() => expect(container.querySelector(".launch-stage")).toBeNull());
+    await waitFor(() => expect(container.querySelector(".mission-flight")).toBeNull());
   });
 
   it("keeps findings tied to the launched request when controls change", async () => {

@@ -117,10 +117,11 @@ export function discoveryHeadline(a: Analysis): string {
 /**
  * Change implied by the fitted Theil–Sen line between the first and last eligible
  * years. This is a property of the fitted line, not the observed start-to-end difference.
+ * Not defined for the seasonal method: its slope describes qualifying months, not an annual line.
  */
 export function fittedChange(a: Analysis): { value: number; from: number; to: number } | null {
   const t = a.trend;
-  if (!t || t.slope === null || t.eligible_years.length < 2) return null;
+  if (!t || isSeasonal(a) || t.slope === null || t.eligible_years.length < 2) return null;
   const from = Math.min(...t.eligible_years);
   const to = Math.max(...t.eligible_years);
   return to > from ? { value: t.slope * (to - from), from, to } : null;

@@ -99,6 +99,9 @@ class SoilMoistureService:
     def trend_policy(self) -> TrendPolicy:
         return self._trend_policy
 
+    def cached_availability(self, key: str):
+        return self._provider.cached_availability(get_dataset(key))
+
     def availability(self, key: str):
         return self._provider.availability(get_dataset(key))
 

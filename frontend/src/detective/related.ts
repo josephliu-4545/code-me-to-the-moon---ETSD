@@ -6,14 +6,25 @@
  * starts a retrieval: if the evidence is not in the cache, the assistant says which analysis to run.
  */
 import type { CompareRequest } from "../api/compareClient";
-import type { CompareResponse } from "../api/compareTypes";
+import type { CompareResponse, DirectionEvidence } from "../api/compareTypes";
+import { agreementLabel, pairDirection } from "../lib/agreement";
 import type { RelationshipsResponse } from "../api/types";
 import { finiteOrNull, spatialMatches, type Investigation } from "./evidence";
 
 export interface ComparisonEvidence {
   variable: string;
   datasets: { key: string; name: string; outcome: string; message: string; version: string; citation: string | null }[];
+  /** Backend level identifier (kept for reference; never shown raw). */
   agreementLevel: string | null;
+  /** Plain-language, descriptive-or-indicative label for the level. */
+  agreementLabel: string | null;
+  directionEvidence: "descriptive" | "indicative" | "unavailable" | null;
+  /** Whether the headline covers every pair, only some pairs, or none. */
+  directionCoverage: "complete" | "partial" | "none" | null;
+  pairsTotal: number | null;
+  pairsWithDirection: number | null;
+  independenceNote: string | null;
+  comparabilityNote: string | null;
   explanation: string | null;
   caution: string | null;
   unavailableReason: string | null;
@@ -23,7 +34,8 @@ export interface ComparisonEvidence {
     lineageNote: string;
     numericallyComparable: boolean;
     notComparableReason: string | null;
-    slopeSignAgreement: boolean | null;
+    /** Direction over the pair's common eligible years (never the full-request sign). */
+    direction: DirectionEvidence;
     spearmanRho: number | null;
     commonYears: number;
     unavailableReasons: string[];
@@ -80,6 +92,16 @@ export function comparisonFromCache(entries: [readonly unknown[], unknown][], in
         citation: res.results[k]?.entry.citation ?? null,
       })),
       agreementLevel: res.comparison?.agreement.level ?? null,
+      agreementLabel: res.comparison ? agreementLabel(res.comparison.agreement) : null,
+      directionEvidence: res.comparison?.agreement.direction_evidence ?? null,
+      directionCoverage: res.comparison?.agreement.direction_coverage ?? null,
+      pairsTotal: res.comparison?.agreement.pairs_total ?? null,
+      pairsWithDirection: res.comparison?.agreement.pairs_with_direction ?? null,
+      independenceNote: res.comparison?.agreement.independence_note
+        ?? ((res.comparison?.pairs ?? []).some((p) => p.lineage !== "independent")
+          ? "Some datasets share inputs or lineage (not independent), so their agreement is not an independent confirmation."
+          : null),
+      comparabilityNote: res.comparison?.agreement.comparability_note ?? null,
       explanation: res.comparison?.agreement.explanation ?? null,
       caution: res.comparison?.agreement.caution ?? null,
       unavailableReason: res.comparison ? null : res.comparison_unavailable_reason ?? "No comparison was produced.",
@@ -89,7 +111,7 @@ export function comparisonFromCache(entries: [readonly unknown[], unknown][], in
         lineageNote: p.lineage_note,
         numericallyComparable: p.numerically_comparable,
         notComparableReason: p.not_comparable_reason ?? null,
-        slopeSignAgreement: p.slope_sign_agreement,
+        direction: pairDirection(p),
         spearmanRho: finiteOrNull(p.spearman_rho),
         commonYears: p.common_eligible_years.length,
         unavailableReasons: p.unavailable_reasons,
