@@ -40,12 +40,24 @@
   background:#F3F6FB;
 }
 [data-theme="light"] .view-space .space-backdrop,
-[data-theme="light"] .investigation-space .space-backdrop{opacity:.24;filter:saturate(.72) contrast(.82)}
+[data-theme="light"] .investigation-space .space-backdrop{opacity:.42;filter:saturate(.9) contrast(.88)}
+[data-theme="light"] .space-backdrop.space-history{background:radial-gradient(900px 620px at 82% 12%,rgba(255,177,91,.28),transparent 62%),radial-gradient(760px 560px at 8% 80%,rgba(114,84,168,.18),transparent 62%),linear-gradient(145deg,#fff9ef,#edf2fb 58%,#f5efff)}
+[data-theme="light"] .space-backdrop.space-findings{background:radial-gradient(900px 620px at 82% 10%,rgba(219,105,199,.25),transparent 62%),radial-gradient(760px 560px at 4% 82%,rgba(67,124,215,.22),transparent 62%),linear-gradient(145deg,#fff5fb,#edf3ff 58%,#fff8f0)!important}
+[data-theme="light"] .space-backdrop.space-evaluation{background:radial-gradient(900px 620px at 82% 10%,rgba(54,180,145,.25),transparent 62%),radial-gradient(760px 560px at 5% 84%,rgba(62,112,205,.18),transparent 62%),linear-gradient(145deg,#effdf8,#edf4ff 58%,#fbfdff)}
+[data-theme="light"] .space-backdrop.space-compare{background:radial-gradient(900px 620px at 82% 10%,rgba(92,113,224,.26),transparent 62%),radial-gradient(760px 560px at 5% 84%,rgba(239,153,79,.2),transparent 62%),linear-gradient(145deg,#f2f3ff,#fff7ef 58%,#f8fbff)}
+[data-theme="light"] .space-backdrop.space-relationships{background:radial-gradient(900px 620px at 82% 10%,rgba(224,167,72,.24),transparent 62%),radial-gradient(760px 560px at 5% 84%,rgba(130,91,190,.2),transparent 62%),linear-gradient(145deg,#fff9e9,#f5f0ff 58%,#f5f9ff)}
+[data-theme="light"] .space-backdrop.space-detective{background:radial-gradient(900px 620px at 75% 5%,rgba(53,195,154,.24),transparent 62%),radial-gradient(760px 560px at 5% 84%,rgba(118,82,205,.2),transparent 62%),linear-gradient(145deg,#edfff9,#f3efff 58%,#f4f9ff)}
+[data-theme="light"] .space-backdrop.space-science{background:radial-gradient(900px 620px at 82% 10%,rgba(134,91,205,.24),transparent 62%),radial-gradient(760px 560px at 5% 84%,rgba(49,130,194,.2),transparent 62%),linear-gradient(145deg,#f6f0ff,#eef8ff 58%,#fffaf2)}
 [data-theme="light"] .view-space :is(.page,.hero),
 [data-theme="light"] .investigation-space :is(.page,.hero){background:transparent}
 [data-theme="light"] :is(.view-space,.investigation-space) :is(.sheet,.disclosure,.empty-state,.chart-plot,.assumption-card,.chapter,.cmp-banner,.cmp-dataset,.compare-pair,.context-strip,.dt-answer,.dt-how,.eval-quality-card,.eval-views,.method-card,.relation-findings,.system-picker,.toc,.uncertainty,.gauge,.cautions){
-  background:rgba(255,255,255,.9);border-color:var(--border);box-shadow:0 18px 45px -34px rgba(28,49,80,.36);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)
+  background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(244,248,255,.88));border-color:var(--border);box-shadow:0 18px 45px -30px rgba(28,49,80,.3),inset 0 3px 0 color-mix(in srgb,var(--accent) 24%,transparent);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)
 }
+[data-theme="light"] :is(.view-space,.investigation-space) :is(.sheet,.chapter,.method-card,.eval-quality-card,.compare-pair,.dt-answer):hover{border-color:color-mix(in srgb,var(--accent) 48%,transparent);box-shadow:0 24px 55px -30px color-mix(in srgb,var(--accent) 42%,transparent),inset 0 3px 0 color-mix(in srgb,var(--accent) 42%,transparent)}
+[data-theme="light"] :is(.view-space,.investigation-space) .kicker{color:#315F9B}
+[data-theme="light"] :is(.view-space,.investigation-space) .page-body::before{content:"";position:absolute;inset:120px 4% auto auto;width:180px;height:180px;border:1px solid rgba(49,95,155,.13);border-radius:50%;box-shadow:0 0 0 28px rgba(114,84,168,.035),0 0 0 58px rgba(23,111,159,.025);pointer-events:none}
+[data-theme="light"] :is(.view-space,.investigation-space) .chart-plot{background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(237,244,252,.9))}
+[data-theme="light"] :is(.view-space,.investigation-space) .context-strip{background:linear-gradient(105deg,rgba(49,95,155,.1),rgba(114,84,168,.08),rgba(23,111,159,.08))}
 [data-theme="light"] :is(.view-space,.investigation-space) .hero::after{opacity:.2}
 [data-theme="light"] :is(.view-space,.investigation-space) .hero-title em{
   background:linear-gradient(100deg,#315F9B,#7254A8,#176F9F);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent
