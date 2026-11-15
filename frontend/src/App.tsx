@@ -3,6 +3,7 @@ import type { Analysis, AnalysisRequest } from "./api/types";
 import SiteHeader, { type NavItem } from "./components/layout/SiteHeader";
 import Wordmark from "./components/layout/Wordmark";
 import Starfield from "./components/layout/Starfield";
+import SpaceBackdrop from "./components/layout/SpaceBackdrop";
 import { ErrorBox, Loading } from "./components/ResultPanels";
 import CompareDatasetsPage from "./pages/CompareDatasetsPage";
 import DetectivePage from "./pages/DetectivePage";
@@ -30,6 +31,7 @@ const TABS = [
 ] as const satisfies readonly NavItem[];
 type Tab = Exclude<(typeof TABS)[number]["id"], "living">;
 const ROUTES: Tab[] = ["explore", "history", "findings", "evaluation", "compare", "relationships", "detective", "science"];
+const SPACE_TABS: Tab[] = ["evaluation", "compare", "relationships", "detective", "science"];
 
 function currentTab(): Tab {
   const h = window.location.hash.replace("#", "") as Tab;
@@ -123,7 +125,8 @@ export default function App() {
           </div>
         )}
         {variables.data && (
-          <div className="view" key={tab}>
+          <div className={SPACE_TABS.includes(tab) ? "view view-space" : "view"} key={tab}>
+            {SPACE_TABS.includes(tab) && <SpaceBackdrop tone={tab} />}
             {tab === "explore" && (
               <ExplorePage
                 variables={variables.data.variables}

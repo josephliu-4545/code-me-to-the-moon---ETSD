@@ -1,5 +1,26 @@
 /* Shared space treatment for Evaluation, Compare, Relationships, Detective and Field Guide.
    Uses the app colour tokens and fonts; decorative layers are aria-hidden and stop under reduced motion. */
+.view-space,
+.investigation-space {
+  --bg:#070D1B;--bg-deep:#050A15;
+  --surface:#101D35;--surface-raised:#1C304C;
+  --surface-glass:rgba(12,22,42,.84);--surface-solid:#0C1730;--surface-sunken:#0A1428;
+  --surface-hover:rgba(169,184,206,.07);--overlay:rgba(5,10,21,.72);
+  --text-primary:#F6F0E6;--text-secondary:#A9B8CE;--text-muted:#8798B0;--text-on-accent:#101625;
+  --accent:#E7AE68;--accent-hover:#F0C38A;--accent-soft:rgba(231,174,104,.12);--accent-line:rgba(231,174,104,.45);--focus:#F0C38A;
+  --border:rgba(169,184,206,.16);--border-strong:rgba(169,184,206,.3);
+  --data-primary:#74B7E7;--data-secondary:#B3A0E8;--trend:#E7AE68;
+  --valid:#78C5A6;--warning:#E49A75;--unavailable:#99A9BB;--warning-soft:rgba(228,154,117,.12);
+  --chart-surface:#0D1930;--chart-obs:#3E97DD;--chart-trend:#C9822D;--chart-excluded:#8E9DB2;
+  --chart-grid:rgba(169,184,206,.1);--chart-axis:rgba(169,184,206,.32);--chart-tick:#A9B8CE;
+  --chart-band:rgba(116,183,231,.1);--chart-gap:rgba(169,184,206,.05);--chart-gap-line:rgba(169,184,206,.2);
+  --font-display:"Instrument Serif","Iowan Old Style",Georgia,serif;
+  --font-brand:"Space Grotesk Variable","Space Grotesk",ui-sans-serif,system-ui,sans-serif;
+  --font-body:"DM Sans Variable","DM Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color:var(--text-primary);
+  font-family:var(--font-body);
+}
 .view-space{position:relative;isolation:isolate;overflow:hidden}
 .space-evaluation{background:radial-gradient(1000px 620px at 85% 8%,rgba(30,70,110,.3),transparent 62%),radial-gradient(900px 600px at 5% 70%,rgba(40,60,120,.2),transparent 60%),#03050b}
 .space-compare{background:radial-gradient(1000px 620px at 15% 6%,rgba(60,50,130,.28),transparent 62%),radial-gradient(900px 600px at 95% 70%,rgba(24,84,96,.2),transparent 60%),#03050b}
