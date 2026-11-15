@@ -166,7 +166,7 @@
 :is(.app-history,.app-findings) .page.investigation-space::before{content:"";position:absolute;inset:0;z-index:-1;background-image:linear-gradient(rgba(146,192,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(146,192,255,.03) 1px,transparent 1px);background-size:72px 72px;mask-image:linear-gradient(#000 0 58%,transparent 86%);pointer-events:none}
 .space-backdrop{background:radial-gradient(850px 620px at 74% 22%,rgba(24,126,169,.22),transparent 64%),radial-gradient(780px 520px at 7% 42%,rgba(93,50,164,.17),transparent 64%),#03060c}
 .space-findings{background:radial-gradient(850px 620px at 74% 22%,rgba(124,60,167,.24),transparent 64%),radial-gradient(780px 520px at 7% 42%,rgba(25,126,127,.16),transparent 64%),#03060c}
-.app-findings 
+.app-findings
 :is(.app-history,.app-findings) .hero-inner{min-height:500px;padding-top:58px;padding-bottom:48px}
 :is(.app-history,.app-findings) .hero-text{max-width:520px}
 :is(.app-history,.app-findings) .hero-title{font-size:clamp(42px,4vw,68px);line-height:.98;letter-spacing:-.035em;text-transform:none;text-wrap:balance}
@@ -189,7 +189,7 @@
 @media(max-width:760px){:is(.app-history,.app-findings) .hero-inner{min-height:430px;padding-top:44px}:is(.app-history,.app-findings) .hero-title{font-size:clamp(39px,12vw,58px)}.console-card{border-radius:16px}}
 
 /* Real-Earth mission hero and cinematic route transition. */
-.app-findings 
+.app-findings
 :is(.app-history,.app-findings) :is(.investigation-page-links a.btn,.empty-state .row-gap .btn:first-child,.period-comparison .btn-primary,.error-box .btn)::after{content:"↗";display:grid;place-items:center;width:25px;height:25px;border:1px solid currentColor;border-radius:50%;background:transparent!important;-webkit-mask:none!important;mask:none!important;font:600 14px/1 var(--font-body);transition:transform .3s cubic-bezier(.2,.8,.2,1),background .25s ease}
 :is(.app-history,.app-findings) :is(.investigation-page-links a.btn,.empty-state .row-gap .btn:first-child,.period-comparison .btn-primary,.error-box .btn):hover:not(:disabled)::after{animation:none;transform:translate(3px,-3px) rotate(8deg);background:rgba(255,255,255,.2)!important}
 :is(.app-history,.app-findings) :is(.investigation-page-links a.btn,.empty-state .row-gap .btn:first-child,.period-comparison .btn-primary,.error-box .btn):active:not(:disabled)::after{transform:translate(12px,-12px) rotate(12deg);opacity:0}

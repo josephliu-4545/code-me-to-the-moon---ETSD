@@ -13,7 +13,7 @@ import InvestigationPage from "./pages/InvestigationPage";
 import RelationshipsPage from "./pages/RelationshipsPage";
 import SciencePage from "./pages/SciencePage";
 import { readStoredInvestigation, storeInvestigation, type StoredInvestigation } from "./state/investigation";
-import { requestIdentity, toRequest, useSelection } from "./state/selection";
+import { patchSelection, requestIdentity, toRequest, useSelection, type Selection } from "./state/selection";
 import { useTheme } from "./state/theme";
 import { useConversationStore } from "./detective/conversation";
 import { findSnapshot, useVariables } from "./state/useAnalysis";
@@ -26,10 +26,9 @@ const TABS = [
   { id: "compare", label: "Compare Datasets", short: "Compare" },
   { id: "relationships", label: "Earth System Relationships", short: "Relationships" },
   { id: "detective", label: "AI Earth Detective", short: "Detective" },
-  { id: "living", label: "Living Environment", short: "Living Environment", planned: true },
   { id: "science", label: "Scientific Information", short: "Field Guide" },
 ] as const satisfies readonly NavItem[];
-type Tab = Exclude<(typeof TABS)[number]["id"], "living">;
+type Tab = (typeof TABS)[number]["id"];
 const ROUTES: Tab[] = ["explore", "history", "findings", "evaluation", "compare", "relationships", "detective", "science"];
 const SPACE_TABS: Tab[] = ["evaluation", "compare", "relationships", "detective", "science"];
 
@@ -69,6 +68,15 @@ export default function App() {
   const conversations = useConversationStore();
   const variables = useVariables();
   const [theme, , toggleTheme] = useTheme();
+
+  function startInvestigation(patch: Partial<Selection>) {
+    const clean = Object.fromEntries(Object.entries(patch).filter(([, value]) => value !== undefined)) as Partial<Selection>;
+    const next = patchSelection(selection, clean);
+    update(clean);
+    execute(toRequest(next), next.placeName);
+    window.location.hash = "explore";
+    setTab("explore");
+  }
 
   useEffect(() => {
     const onHash = () => setTab(currentTab());
@@ -155,7 +163,7 @@ export default function App() {
             {tab === "evaluation" && <EvaluationPage submitted={submitted} snapshot={snapshot} onLoadSnapshot={loadSnapshot} />}
             {tab === "compare" && <CompareDatasetsPage selection={selection} />}
             {tab === "relationships" && <RelationshipsPage variables={variables.data.variables} selection={selection} />}
-            {tab === "detective" && <DetectivePage submitted={submitted} place={submittedPlace} variables={variables.data.variables} conversations={conversations} snapshot={snapshot} onLoadSnapshot={loadSnapshot} />}
+            {tab === "detective" && <DetectivePage submitted={submitted} place={submittedPlace} variables={variables.data.variables} conversations={conversations} onStartInvestigation={startInvestigation} snapshot={snapshot} onLoadSnapshot={loadSnapshot} />}
             {tab === "science" && <SciencePage variables={variables.data.variables} caveats={variables.data.caveats} />}
           </div>
         )}

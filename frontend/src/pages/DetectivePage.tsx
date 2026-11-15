@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { api } from "../api/client";
 import { isUnreachable, type Analysis, type AnalysisRequest, type VariableInfo } from "../api/types";
 import AnswerCard from "../components/detective/AnswerCard";
 import "../components/detective/detective.css";
@@ -10,10 +11,12 @@ import { answerQuestion, num, suggestedQuestions, type Answer } from "../detecti
 import { newTurnId, type ConversationApi, type Turn } from "../detective/conversation";
 import { analysisMatches, buildEvidence, toInvestigation, type Evidence, type Investigation } from "../detective/evidence";
 import { classify } from "../detective/intents";
+import { planInvestigationQuestion } from "../detective/planner";
 import { comparisonFromCache, relationshipsFromCache, type RelatedEvidence } from "../detective/related";
 import { cleanQuestion, MAX_QUESTION_CHARS } from "../detective/safety";
 import { fmtCoord, pText } from "../lib/format";
 import { useAnalysis } from "../state/useAnalysis";
+import type { Selection } from "../state/selection";
 
 /** Conversation bucket used before any investigation exists (only "how do I start" style guidance). */
 const NO_INVESTIGATION: Investigation = { key: "__none__", variable: "", variableName: "No investigation", place: "", latitude: 0, longitude: 0, startYear: 0, endYearInclusive: 0, mode: "point", dataset: null, radiusKm: null, bbox: null };
@@ -68,11 +71,12 @@ function Transcript({ turns, prefix }: { turns: Turn[]; prefix: string }) {
   );
 }
 
-export default function DetectivePage({ submitted, place, variables, conversations, snapshot = null, onLoadSnapshot }: {
+export default function DetectivePage({ submitted, place, variables, conversations, snapshot = null, onLoadSnapshot, onStartInvestigation = () => undefined }: {
   submitted: AnalysisRequest | null;
   place: string;
   variables: VariableInfo[];
   conversations: ConversationApi;
+  onStartInvestigation?: (selection: Partial<Selection>) => void;
   /** The saved snapshot shared by every page for this exact request (App), never fetched separately here. */
   snapshot?: Analysis | null;
   onLoadSnapshot?: () => Promise<boolean>;
@@ -83,6 +87,8 @@ export default function DetectivePage({ submitted, place, variables, conversatio
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState("");
   const [announcement, setAnnouncement] = useState("");
+  const [planning, setPlanning] = useState(false);
+  const [planningError, setPlanningError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   const variableName = variables.find((v) => v.id === submitted?.variable)?.name ?? submitted?.variable ?? "";
@@ -103,9 +109,38 @@ export default function DetectivePage({ submitted, place, variables, conversatio
     };
   }
 
-  function ask(raw: string) {
+  async function ask(raw: string) {
     const q = cleanQuestion(raw);
     if (q.empty) return;
+    const plan = !inv ? planInvestigationQuestion(q.text, variables) : null;
+    if (plan) {
+      setPlanning(true);
+      setPlanningError("");
+      try {
+        const geocoded = await api.geocode(plan.placeQuery);
+        const match = geocoded.results[0];
+        if (!match) {
+          setPlanningError(`No supported place matched “${plan.placeQuery}”. Try a city, country, or coordinates in Explore Earth.`);
+          return;
+        }
+        onStartInvestigation({
+          variable: plan.variable,
+          latitude: match.latitude,
+          longitude: match.longitude,
+          placeName: match.name,
+          startYear: plan.startYear,
+          endYearInclusive: plan.endYearInclusive,
+          mode: "point",
+          dataset: plan.dataset,
+        });
+        setDraft("");
+      } catch (error) {
+        setPlanningError(error instanceof Error ? error.message : "The place search did not complete.");
+      } finally {
+        setPlanning(false);
+      }
+      return;
+    }
     const c = classify(q.text, conversation?.lastIntent ?? null);
     const a: Answer = answerQuestion(c, evidence, related());
     conversations.append(inv ?? NO_INVESTIGATION, [
@@ -136,7 +171,7 @@ export default function DetectivePage({ submitted, place, variables, conversatio
 
         {!submitted && (
           <EmptyState title="No investigation yet." action={<a className="btn btn-ink" href="#explore">Go to Explore Earth →</a>}>
-            <p>Launch an investigation in Explore Earth, then come back to ask about it. You can still ask how to get started.</p>
+            <p>Ask a question with one environmental signal and place, such as “Has precipitation changed in Singapore?” The detective will resolve the place, apply that dataset’s supported default period, and launch a real investigation.</p>
           </EmptyState>
         )}
 
@@ -170,6 +205,8 @@ export default function DetectivePage({ submitted, place, variables, conversatio
             <Transcript turns={turns} prefix="cur" />
           </div>
           <p className="sr-only" role="status" aria-live="polite">{announcement}</p>
+          {planning && <Loading label="Resolving the place and preparing a real NASA-backed investigation…" />}
+          {planningError && <p className="error-text" role="alert">{planningError}</p>}
 
           {ready && (
             <div className="dt-suggestions" role="group" aria-label="Suggested questions">
@@ -177,7 +214,7 @@ export default function DetectivePage({ submitted, place, variables, conversatio
             </div>
           )}
 
-          <form className="dt-form" onSubmit={(ev) => { ev.preventDefault(); ask(draft); }}>
+          <form className="dt-form" onSubmit={(ev) => { ev.preventDefault(); void ask(draft); }}>
             <label htmlFor="dt-q" className="sr-only">Your question</label>
             <input
               id="dt-q"
@@ -187,11 +224,11 @@ export default function DetectivePage({ submitted, place, variables, conversatio
               maxLength={MAX_QUESTION_CHARS}
               onChange={(ev) => setDraft(ev.target.value)}
               placeholder={evidence ? `Ask about ${inv?.variableName.toLowerCase()} in ${inv?.place}…` : "Ask a question…"}
-              disabled={!ready}
+              disabled={!ready || planning}
               autoComplete="off"
               aria-describedby="dt-q-hint"
             />
-            <button type="submit" className="btn btn-ink" disabled={!ready || cleanQuestion(draft).empty}>Ask</button>
+            <button type="submit" className="btn btn-ink" disabled={!ready || planning || cleanQuestion(draft).empty}>{!submitted ? "Investigate" : "Ask"}</button>
             <button type="button" className="btn btn-ghost" disabled={turns.length === 0} onClick={() => { conversations.clear(inv?.key ?? NO_INVESTIGATION.key); setAnnouncement("New conversation started."); inputRef.current?.focus(); }}>New conversation</button>
             <p id="dt-q-hint" className="dt-hint">{draft.length}/{MAX_QUESTION_CHARS} characters. Questions are not sent to any external service.</p>
           </form>

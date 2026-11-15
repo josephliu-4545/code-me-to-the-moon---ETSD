@@ -65,9 +65,9 @@ describe("Mission Findings traceability", () => {
   it("exposes actual test values and links findings to observations", async () => {
     const a = fixture();
     render(<ResultSummary analysis={a} />);
-    await userEvent.click(screen.getByText("Why do we say this?"));
+    await userEvent.click(screen.getByText("Full scientific statement"));
     expect(screen.getByText(/Kendall: p = 1, alpha = 0.05/)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Explore the supporting observations" })).toHaveAttribute("href", "#historical-discovery");
+    expect(screen.getByRole("link", { name: "Explore the supporting observations" })).toHaveAttribute("href", "#history");
     expect(screen.getByText(/This is not a prediction interval/)).toBeInTheDocument();
   });
 
@@ -81,6 +81,6 @@ describe("Mission Findings traceability", () => {
 
   it("always explains causality and forecasting limits regardless of caveat ordering", () => {
     render(<Cautions analysis={{ ...fixture(), caveats: ["Other note", "Unrelated caveat"] }} />);
-    expect(screen.getByText(/It is not a forecast, does not identify a cause/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /A trend is not a cause/ })).toBeInTheDocument();
   });
 });
