@@ -175,6 +175,9 @@ export default function App() {
             <Wordmark />
             <p className="footer-mission">Earth System Trend Detective · NASA Space Apps Challenge 2026</p>
           </div>
+          <nav className="footer-nav" aria-label="Footer navigation">
+            {TABS.map((item) => <a href={`#${item.id}`} key={item.id}>{item.short}</a>)}
+          </nav>
           <p className="footer-data">Data: NASA POWER, GPM IMERG, MODIS, GLDAS and SMAP via NASA services and Google Earth Engine. Values describe grid cells or sampling areas, not exact addresses. Statistical results are descriptive or indicative; see Scientific Information.</p>
         </div>
       </footer>

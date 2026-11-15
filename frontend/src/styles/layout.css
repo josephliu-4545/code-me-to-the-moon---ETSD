@@ -81,7 +81,11 @@ main > .view { flex: 1; display: flex; flex-direction: column; }
 .footer-inner { max-width: var(--page-max); margin: 0 auto; padding: var(--s6) clamp(var(--s4), 2.5vw, var(--s6)); display: grid; grid-template-columns: auto auto 1fr; gap: var(--s3) var(--s6); align-items: center; font-size: var(--fs-xs); color: var(--text-muted); line-height: 1.6; }
 .footer-art { width: 88px; height: 88px; border-radius: var(--r-md); object-fit: cover; box-shadow: var(--shadow-soft); }
 .footer-brand { display: grid; gap: 4px; }
+.footer-brand .wordmark { font-size: .92rem; letter-spacing: .02em; }
 .footer-mission { font-family: var(--font-brand); letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.66rem; color: var(--text-secondary); }
+.footer-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; max-width: 420px; }
+.footer-nav a { color: var(--text-secondary); font-family: var(--font-brand); font-size: .68rem; letter-spacing: .04em; text-decoration: none; white-space: nowrap; transition: color var(--dur) var(--ease); }
+.footer-nav a:hover, .footer-nav a:focus-visible { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
 .footer-data { max-width: 70ch; justify-self: end; }
 
 .wordmark { display: inline-flex; align-items: baseline; font-family: var(--font-brand); font-weight: 600; font-size: 1.35rem; letter-spacing: -0.01em; color: var(--text-primary); white-space: nowrap; }
