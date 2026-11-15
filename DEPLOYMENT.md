@@ -1,6 +1,6 @@
 # Deployment guide: Google Cloud Run
 
-This guide prepares the Earth System Trend Detective for hosting as **one container on Google Cloud Run**. FastAPI serves the API at `/api/*` and the built React app at `/app/` from the same origin.
+This guide prepares EarthLens for hosting as **one container on Google Cloud Run**. FastAPI serves the API at `/api/*` and the built React app at `/app/` from the same origin.
 
 > **Status: not deployed.** Nothing in this guide has been run against a cloud project. The container and its safety checks are verified locally and in CI (see [What is verified](#what-is-verified)). Hosted Earth Engine authentication, proxy-header behaviour on Cloud Run, performance and cost are **not verified** until someone with authorisation deploys and validates them. Deploying, enabling billing, creating service accounts and granting IAM roles are separate, explicitly authorised operations.
 

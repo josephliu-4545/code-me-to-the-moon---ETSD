@@ -26,10 +26,10 @@ export default function SiteHeader({ items, current, theme, onToggleTheme }: { i
 
   return (
     <header className={`topbar ${open ? "menu-open" : ""}`}>
-      <a className="brand" href="#explore" aria-label="Earth System Trend Detective by Code Me to the Moon — Explore Earth">
+      <a className="brand" href="#explore" aria-label="EarthLens by Code Me to the Moon — Explore Earth">
         <Logo size={34} />
         <span className="brand-text" aria-hidden>
-          <span className="brand-name">Earth System Trend Detective</span>
+          <span className="brand-name">EarthLens</span>
           <span className="brand-team">Code Me to the Moon · NASA Space Apps 2026</span>
         </span>
       </a>

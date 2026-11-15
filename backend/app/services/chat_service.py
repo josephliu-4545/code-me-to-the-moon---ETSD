@@ -4,7 +4,7 @@ from typing import Any
 import httpx
 
 
-SYSTEM_INSTRUCTIONS = """You are Mission Scientist, the assistant inside Earth System Trend Detective.
+SYSTEM_INSTRUCTIONS = """You are Mission Scientist, the assistant inside EarthLens.
 Explain the supplied NASA-derived analysis accurately and in plain language.
 Treat the analysis context as the source of truth. Never invent values, significance, causes, or certainty.
 Distinguish trends from causes and grid-cell estimates from weather-station measurements.

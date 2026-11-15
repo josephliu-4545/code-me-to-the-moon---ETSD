@@ -13,7 +13,7 @@ async def test_homepage_reports_application_status() -> None:
 
     assert response.status_code == 200
     assert response.json() == {
-        "name": "NASA Earth System Trend Detective API",
+        "name": "EarthLens API",
         "version": "0.1.0",
         "status": "ok",
     }

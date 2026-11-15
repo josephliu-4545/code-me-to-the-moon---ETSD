@@ -11,7 +11,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    app_name: str = "NASA Earth System Trend Detective API"
+    app_name: str = "EarthLens API"
     app_version: str = "0.1.0"
     ee_project_id: str | None = None
     # Shared deployments: path to a service-account JSON key kept OUTSIDE the repository.

@@ -1,4 +1,4 @@
-# NASA Earth System Trend Detective Backend
+# EarthLens Backend
 
 FastAPI backend for retrieving quality-filtered NASA MODIS MOD13Q1.061 NDVI
 observations through Google Earth Engine.

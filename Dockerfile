@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 #
-# Earth System Trend Detective: one container, one origin.
+# EarthLens: one container, one origin.
 # FastAPI serves the API at /api/* and the built React app at /app/.
 # Build:  docker build -t estd .
 # Run:    docker run --rm -p 8080:8080 -e EE_PROJECT_ID=... estd   then open http://127.0.0.1:8080/app/

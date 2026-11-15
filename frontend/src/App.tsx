@@ -176,7 +176,7 @@ export default function App() {
           <img className="footer-art" src={POSTER} width={112} height={112} alt="" loading="lazy" />
           <div className="footer-brand">
             <Wordmark />
-            <p className="footer-mission">Earth System Trend Detective · NASA Space Apps Challenge 2026</p>
+            <p className="footer-mission">EarthLens · NASA Space Apps Challenge 2026</p>
           </div>
           <nav className="footer-nav" aria-label="Footer navigation">
             {TABS.map((item) => <a href={`#${item.id}`} key={item.id}>{item.short}</a>)}

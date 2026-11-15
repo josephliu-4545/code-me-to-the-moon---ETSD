@@ -1,2 +1,2 @@
-"""NASA Earth System Trend Detective backend."""
+"""EarthLens backend."""
 

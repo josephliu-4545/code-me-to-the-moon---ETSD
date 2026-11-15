@@ -1,4 +1,4 @@
-# Earth System Trend Detective
+# EarthLens
 
 A web application for exploring long-term environmental change anywhere on Earth using NASA data, with the statistics, data quality and limitations shown in plain view.
 
