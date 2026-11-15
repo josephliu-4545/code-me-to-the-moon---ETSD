@@ -365,6 +365,29 @@
   [data-theme="light"] :is(.app-history,.app-findings) .investigation-page-links>a{min-height:54px;padding-inline:18px}
 }
 
+/* Mission Findings follows the same left-aligned page rhythm as the other evidence pages. */
+.space-page-findings .hero-inner{align-items:flex-start;text-align:left;min-height:500px}
+.space-page-findings .hero-text{max-width:520px;justify-items:start}
+.space-page-findings .hero-lede{border-left:1px solid var(--accent-line);padding-left:18px;margin-inline:0}
+.space-page-findings .investigation-page-links{max-width:620px;justify-content:flex-start;margin-top:0;margin-bottom:48px}
+.space-page-findings .stat-rail{
+  position:absolute;inset:clamp(130px,17vw,210px) clamp(14px,2.4vw,40px) auto auto;
+  width:104px;margin:0;grid-auto-flow:row;grid-auto-columns:auto;border-radius:30px;padding:10px 6px
+}
+.space-page-findings .stat-rail-item{padding:20px 6px}
+.space-page-findings .stat-rail-item+.stat-rail-item{border-left:0;border-top:1px solid var(--border)}
+.space-page-findings>.page-body{padding-top:28px;margin-inline:auto}
+@media(max-width:1100px){
+  .space-page-findings .stat-rail{position:relative;inset:auto;width:auto;margin:0 clamp(20px,5vw,72px) 28px;grid-auto-flow:column;grid-auto-columns:1fr;border-radius:22px;padding:4px}
+  .space-page-findings .stat-rail-item{padding:14px 6px}
+  .space-page-findings .stat-rail-item+.stat-rail-item{border-top:0;border-left:1px solid var(--border)}
+}
+@media(max-width:760px){
+  .space-page-findings .hero-inner{min-height:430px;text-align:left;align-items:flex-start}
+  .space-page-findings .hero-text{max-width:100%;justify-items:start}
+  .space-page-findings .investigation-page-links{max-width:100%;margin-bottom:36px}
+}
+
 /* ── Depth layer: colour and motion through the middle and bottom of every page (both themes) ── */
 .space-backdrop{--c1:120,150,255;--c2:200,130,255;--c3:90,210,190;--c4:255,170,110}
 .space-history{--c1:255,170,90;--c2:140,120,255;--c3:255,120,120;--c4:120,180,255}

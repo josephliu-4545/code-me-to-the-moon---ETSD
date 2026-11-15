@@ -3,7 +3,7 @@ import type { Analysis, AnalysisRequest } from "../api/types";
 import ConsoleCards from "../components/explore/ConsoleCards";
 import HistoricalDiscovery from "../components/HistoricalDiscovery";
 import SpaceBackdrop from "../components/layout/SpaceBackdrop";
-import { Cautions, DataStatusBadge, ErrorBox, Limitations, Loading, MethodNotes, ProvenanceCard, ResultSummary } from "../components/ResultPanels";
+import { Cautions, ErrorBox, Limitations, Loading, MethodNotes, ProvenanceCard, ResultSummary } from "../components/ResultPanels";
 import TrendChart from "../components/TrendChart";
 import EmptyState from "../components/ui/EmptyState";
 import PageHero from "../components/ui/PageHero";
@@ -77,7 +77,6 @@ export default function InvestigationPage({ section, submitted, selection, onCha
         title={isHistory
           ? <><span className="title-line">Time travel</span><span className="title-line">through</span><em className="title-line">evidence.</em></>
           : <><span className="title-line">Explain</span><span className="title-line">the</span><em className="title-line">discovery.</em></>}
-        aside={analysis ? <DataStatusBadge analysis={analysis} /> : undefined}
       >
         <p>{isHistory ? "Inspect annual and monthly records, trace data gaps, and compare observations and periods." : "What changed, by how much, and how strong is the evidence? Follow every conclusion back to the recorded data."}</p>
       </PageHero>
