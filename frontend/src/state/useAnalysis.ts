@@ -5,11 +5,11 @@ import { isUnreachable, type Analysis, type AnalysisRequest, type VariablesRespo
 
 export const analysisKey = (r: AnalysisRequest | null) => ["analysis", requestIdentity(r)] as const;
 
-export function useAnalysis(request: AnalysisRequest | null) {
+export function useAnalysis(request: AnalysisRequest | null, enabled = request !== null) {
   return useQuery({
     queryKey: analysisKey(request),
     queryFn: ({ signal }) => api.analysis(request!, signal),
-    enabled: request !== null,
+    enabled: request !== null && enabled,
   });
 }
 

@@ -1,5 +1,16 @@
 /* Compare datasets page. Uses the design tokens from styles/tokens.css (works in both themes). */
 .compare-page .block { display: block; }
+.compare-lab-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0 0 var(--s5); padding: 6px; border: 1px solid var(--border); border-radius: var(--r-lg); background: var(--surface); }
+.compare-lab-tabs button { min-height: 46px; border: 1px solid transparent; border-radius: var(--r-md); background: transparent; color: var(--text-secondary); font: inherit; font-weight: 650; cursor: pointer; }
+.compare-lab-tabs button.active { background: var(--accent); color: var(--text-on-accent); }
+.compare-lab-tabs button:hover:not(.active) { border-color: var(--border-strong); color: var(--text-primary); }
+.compare-lab-tabs button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.compare-method-empty { padding: clamp(24px, 6vw, 64px); border: 1px dashed var(--border-strong); border-radius: var(--r-lg); background: var(--surface); text-align: center; }
+.compare-method-empty .btn { margin-top: var(--s3); }
+.method-context-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; margin: 0; overflow: hidden; border: 1px solid var(--border); border-radius: var(--r-md); background: var(--border); }
+.method-context-grid div { min-width: 0; padding: 12px 14px; background: var(--surface); }
+.method-context-grid dt { color: var(--text-secondary); font-size: var(--fs-xs); font-weight: 650; text-transform: uppercase; letter-spacing: .04em; }
+.method-context-grid dd { margin: 4px 0 0; overflow-wrap: anywhere; }
 .cmp-variables { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
 .cmp-variables .variable-chip:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 .cmp-dataset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
@@ -67,6 +78,7 @@ button.eval-cell { cursor: help; }
 .eval-pair-select { max-width: 520px; margin-bottom: var(--s3); }
 .eval-difference-chart { min-height: 300px; }
 @media (max-width: 620px) {
+  .method-context-grid { grid-template-columns: 1fr; }
   .eval-matrix th:first-child { min-width: 120px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
   .eval-metrics th[scope="row"] { min-width: 145px; }
 }

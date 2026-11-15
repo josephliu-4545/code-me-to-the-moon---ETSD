@@ -109,6 +109,22 @@ describe("Statistical Methods Lab", () => {
     expect(screen.queryByText(/OLS.*significant/i)).not.toBeInTheDocument();
   });
 
+  it("opens on the estimator centerpiece when requested and independently toggles fitted lines", async () => {
+    render(<MethodsLab analysis={analysis(annualLab())} initialTab="estimators" />);
+    expect(screen.getByRole("tab", { name: "OLS vs Theil–Sen" })).toHaveAttribute("aria-selected", "true");
+    const chart = screen.getByRole("figure", { name: /showing Theil–Sen and OLS fitted lines/i });
+    const olsToggle = screen.getByRole("checkbox", { name: "Show OLS fitted line" });
+    const theilToggle = screen.getByRole("checkbox", { name: "Show Theil–Sen fitted line" });
+    expect(olsToggle).toBeChecked();
+    expect(theilToggle).toBeChecked();
+    await userEvent.click(olsToggle);
+    expect(chart).toHaveAccessibleName(/showing Theil–Sen fitted line; OLS fitted line hidden/i);
+    expect(theilToggle).toBeChecked();
+    await userEvent.click(theilToggle);
+    expect(chart).toHaveAccessibleName(/both fitted lines hidden/i);
+    expect(screen.getByText(/Both estimators use the same 4 eligible observations/)).toBeInTheDocument();
+  });
+
   it("keeps excluded years out of the fitted lines", () => {
     const rows = buildComparisonRows(annualLab());
     const r2017 = rows.find((r) => r.year === 2017)!;
@@ -203,6 +219,7 @@ describe("Scientific Evaluation integration", () => {
     const t = { ...analysis(annualLab()), annual: [{ year: 2015, value: 27, eligible: true, reasons: [], complete_calendar_year: true, coverage_percentage: 100, represented_months: [], missing_months: [], extra: {} }] };
     const n = { ...analysis(seasonalLab(), "Vegetation (NDVI)"), variable: { id: "ndvi", name: "Vegetation (NDVI)", description: "", annual_value_definition: "m" } };
     const { rerenderWith } = renderPage(req("temperature"), { temperature: t, ndvi: n });
+    expect(await screen.findByText(/Open the Statistical Methods Lab to compare Theil–Sen with descriptive OLS/)).toBeInTheDocument();
     await userEvent.click(await screen.findByRole("button", { name: "Statistical Methods Lab" }));
     expect(screen.getByRole("tab", { name: "OLS vs Theil–Sen" })).toBeInTheDocument();
     rerenderWith(req("ndvi"));

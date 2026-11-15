@@ -15,7 +15,7 @@ export const LAB_TABS = [
   { id: "simulation", label: "Outlier experiment" },
   { id: "assumptions", label: "Assumptions" },
 ] as const;
-type TabId = (typeof LAB_TABS)[number]["id"];
+export type TabId = (typeof LAB_TABS)[number]["id"];
 
 /**
  * Descriptive reading of the OLS–Theil–Sen difference. The Theil–Sen interval is an interval for the
@@ -96,6 +96,7 @@ function Estimators({ lab, a }: { lab: Lab; a: Analysis }) {
   const c = lab.comparison;
   return (
     <>
+      <MethodComparisonChart lab={lab} units={a.units.annual_value} />
       <div className="table-wrap">
         <table className="table" data-testid="estimator-table">
           <thead><tr><th>Estimator</th><th>Slope</th><th>Eligible years</th><th>Extra</th></tr></thead>
@@ -121,7 +122,7 @@ function Estimators({ lab, a }: { lab: Lab; a: Analysis }) {
             OLS minus Theil–Sen: <strong className="mono">{signed(c.slope_difference, 4)} {c.slope_units}</strong> on the same {c.n} eligible years.{" "}
             {ESTIMATOR_READING}
           </p>
-          <MethodComparisonChart lab={lab} units={a.units.annual_value} />
+          <p className="note">Both estimators use the same {c.n} eligible observations and their actual calendar years. Theil–Sen uses the median pairwise slope; OLS minimizes squared residuals. Neither method is automatically more accurate.</p>
           <p className="note">{o.inference_note}</p>
         </>
       ) : (
@@ -220,8 +221,8 @@ function Assumptions() {
   );
 }
 
-export default function MethodsLab({ analysis }: { analysis: Analysis }) {
-  const [tab, setTab] = useState<TabId>("overview");
+export default function MethodsLab({ analysis, initialTab = "overview" }: { analysis: Analysis; initialTab?: TabId }) {
+  const [tab, setTab] = useState<TabId>(initialTab);
   const refs = useRef<Record<string, HTMLButtonElement | null>>({});
   const lab = analysis.methods_lab;
   if (!lab) return <Unavailable>This analysis response does not include Statistical Methods Lab data. Re-run the investigation.</Unavailable>;
