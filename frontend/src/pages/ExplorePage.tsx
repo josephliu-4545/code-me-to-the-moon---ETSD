@@ -129,14 +129,6 @@ export default function ExplorePage({ variables, selection, onChange, submitted,
       <h1 className="sr-only">Explore Earth</h1>
       <p className="sr-only" role="status" aria-live="polite">{statusText}</p>
       <section className="stage" aria-label="Earth from orbit and investigation controls">
-        <div className="space-decor" aria-hidden="true">
-          <span className="space-satellite space-satellite-a"><i /><b /></span>
-          <span className="space-satellite space-satellite-b"><i /><b /></span>
-          <span className="space-comet" />
-          <span className="space-particle space-particle-a" />
-          <span className="space-particle space-particle-b" />
-          <span className="space-particle space-particle-c" />
-        </div>
         <div className="stage-map">
           <Starfield className="stage-stars" />
           <svg className="stage-orbits" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice" aria-hidden>
