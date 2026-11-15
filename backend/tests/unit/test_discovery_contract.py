@@ -85,6 +85,20 @@ class DiscoveryContractTests(unittest.TestCase):
         self.assertEqual(f["slope_method"], "Seasonal Sen slope")
         self.assertEqual(f["test_method"], "Seasonal Kendall")
 
+    def test_seasonal_ndvi_does_not_expose_an_annual_fitted_change(self):
+        self.a["variable"]["id"] = "ndvi"
+        self.a["trend"]["method"] = "seasonal_kendall"
+
+        seasonal = findings(self.a)
+
+        self.assertIsNone(seasonal["fitted_change"])
+        self.a["trend"]["method"] = "mann_kendall"
+        annual = findings(self.a)
+        expected = self.a["trend"]["slope"] * (
+            max(self.a["trend"]["eligible_years"]) - min(self.a["trend"]["eligible_years"])
+        )
+        self.assertAlmostEqual(annual["fitted_change"], expected)
+
     def test_period_means_not_sum_of_yearly_totals(self):
         for p in self.a["annual"]:
             p["value"] = 10 if p["year"] <= 2019 else 20
