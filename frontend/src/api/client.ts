@@ -3,6 +3,7 @@ import {
   type Analysis,
   type AnalysisRequest,
   type ComparisonWindow,
+  type ChatMessage,
   type GeocodeResult,
   type PeriodComparison,
   type RelationshipsResponse,
@@ -69,6 +70,29 @@ export function analysisParams(r: AnalysisRequest) {
   };
 }
 
+export async function postJson<T>(path: string, body: unknown, signal?: AbortSignal): Promise<T> {
+  let response: Response;
+  try {
+    const key = readAccessKey();
+    response = await fetch(`${BASE}${path}`, {
+      method: "POST",
+      signal,
+      headers: { "Content-Type": "application/json", ...(key ? { "X-API-Key": key } : {}) },
+      body: JSON.stringify(body),
+    });
+  } catch (err) {
+    if ((err as Error).name === "AbortError") throw err;
+    throw new ApiError(0, "The backend could not be reached. Check that the API server is running.");
+  }
+  let payload: unknown = null;
+  try { payload = await response.json(); } catch { /* handled below */ }
+  if (!response.ok) {
+    const { message, reason } = describe((payload as { detail?: unknown } | null)?.detail);
+    throw new ApiError(response.status, message, reason, payload !== null);
+  }
+  return payload as T;
+}
+
 export const api = {
   variables: (signal?: AbortSignal, verify = false) => getJson<VariablesResponse>("/api/v2/variables", verify ? { verify_availability: "true" } : {}, signal),
   analysis: (r: AnalysisRequest, signal?: AbortSignal) =>
@@ -119,6 +143,8 @@ export const api = {
     ),
   geocode: (q: string, signal?: AbortSignal) =>
     getJson<{ results: GeocodeResult[]; attribution?: string }>("/api/v2/geocode", { q }, signal),
+  chat: (messages: ChatMessage[], context?: Analysis, signal?: AbortSignal) =>
+    postJson<{ answer: string }>("/api/v2/chat", { messages, context }, signal),
 };
 
 /** Reject malformed scientific payloads rather than displaying invented defaults. */

@@ -212,6 +212,11 @@ export interface AnalysisRequest {
   bbox?: [number, number, number, number];
 }
 
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
 export interface RelationshipsResponse {
   variables: [VariableId, VariableId];
   results: Record<string, Analysis>;

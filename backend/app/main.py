@@ -14,6 +14,7 @@ from app.services.imerg_region_service import ImergRegionService
 from app.api.routes.unified import ResultCache, router as unified_router
 from app.api.routes.comparison import router as comparison_router
 from app.api.routes.status import router as status_router
+from app.api.routes.chat import ChatService, router as chat_router
 from app.core.access import AccessControlMiddleware, TokenBucket, parse_keys, parse_proxy_trust
 from app.core.ee_credentials import earth_engine_module
 from app.core.config import Settings, get_settings
@@ -36,6 +37,7 @@ from app.services.precipitation_service import PrecipitationService
 from app.precipitation.models import PrecipitationPolicy
 from app.services.soil_moisture_provider import EarthEngineSoilMoistureProvider
 from app.services.soil_moisture_service import SoilMoistureService
+from app.services.chat_service import GeminiChatService
 from app.soil_moisture.models import SupportPolicy
 
 
@@ -52,6 +54,7 @@ def create_app(
     precipitation_service: PrecipitationService | None = None,
     soil_moisture_service: SoilMoistureService | None = None,
     imerg_region_service: ImergRegionService | None = None,
+    chat_service: ChatService | None = None,
 ) -> FastAPI:
     resolved_settings = settings or get_settings()
     resolved_manager = ee_manager or EarthEngineManager(
@@ -175,6 +178,16 @@ def create_app(
     application.include_router(unified_router)
     application.include_router(comparison_router)
     application.include_router(status_router)
+    application.include_router(chat_router)
+    application.state.chat_service = chat_service or (
+        GeminiChatService(
+            resolved_settings.gemini_api_key,
+            resolved_settings.gemini_model,
+            resolved_settings.gemini_timeout_seconds,
+        )
+        if resolved_settings.gemini_api_key
+        else None
+    )
     keys = parse_keys(resolved_settings.api_keys)
     proxy_trust = parse_proxy_trust(
         resolved_settings.trust_proxy_headers, resolved_settings.trusted_proxy_ips, resolved_settings.trusted_proxy_hops
@@ -201,7 +214,7 @@ def create_app(
     origins = [o.strip() for o in resolved_settings.cors_allow_origins.split(",") if o.strip()]
     if origins:
         application.add_middleware(
-            CORSMiddleware, allow_origins=origins, allow_methods=["GET"], allow_headers=["*"]
+            CORSMiddleware, allow_origins=origins, allow_methods=["GET", "POST"], allow_headers=["*"]
         )
 
     return application
