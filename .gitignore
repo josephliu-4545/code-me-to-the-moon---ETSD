@@ -88,3 +88,7 @@ artifacts/
 
 # Internal documentation (kept out of the public repository)
 /docs/
+/reports/
+/research_notes/
+/test_earth_engine.py
+/backend/scripts/mc_trend_methods.py
