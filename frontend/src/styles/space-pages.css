@@ -463,6 +463,8 @@
 .depth-comet{position:absolute;width:190px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,rgba(var(--c1),.2),#fff);transform:rotate(-28deg);opacity:0;filter:drop-shadow(0 0 7px rgba(var(--c1),.9));animation:meteor 10s linear infinite}
 .depth-comet-1{left:22%;top:46%;animation-delay:2s}.depth-comet-2{left:54%;top:78%;animation-delay:6.5s;animation-duration:13s}
 .depth-horizon{position:absolute;left:-25%;right:-25%;bottom:-760px;height:900px;border-radius:50%;background:radial-gradient(ellipse at 50% 0,rgba(var(--c1),.34),rgba(var(--c2),.12) 30%,transparent 55%),#02040a;box-shadow:0 -2px 0 rgba(var(--c1),.7),0 -24px 80px rgba(var(--c1),.38),0 -70px 160px rgba(var(--c2),.22);animation:horizon-glow 8s ease-in-out infinite alternate}
+/* The oversized horizon arc crosses page copy at shorter viewport heights; keep the background clean. */
+.depth-horizon,.horizon{display:none!important}
 @keyframes orb-float{from{transform:translate(0,0) scale(1)}to{transform:translate(6%,-5%) scale(1.15)}}
 @keyframes ring-spin{to{transform:rotate(360deg)}}
 @keyframes horizon-glow{from{opacity:.75}to{opacity:1}}
