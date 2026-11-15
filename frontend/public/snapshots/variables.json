@@ -1,1 +1,438 @@
-{"variables":[{"name":"Air temperature (2 m)","short_name":"Temperature","description":"Annual mean of daily mean 2 m air temperature.","annual_value":"annual mean of 12 monthly means","units":"°C","slope_units":"°C/year","dataset":{"source":"NASA POWER","id":"POWER daily T2M (AG community)","version":"POWER API v2 (MERRA-2 based)","provenance":"reanalysis-based model estimate","doi":null},"spatial_resolution":"0.5° × 0.625° grid cell","temporal_resolution":"daily → monthly → annual","available_from":"1981-01-01","max_years":50,"default_period":[2015,2025],"modes":{"point":true,"region":false},"region_unsupported_reason":"NASA POWER is served here as daily point time series for one grid cell; a region-wide statistic would require many cells and is not implemented.","id":"temperature"},{"name":"Relative humidity (2 m)","short_name":"Humidity","description":"Annual mean of daily 2 m relative humidity.","annual_value":"annual mean of 12 monthly means","units":"%","slope_units":"percentage points/year","dataset":{"source":"NASA POWER","id":"POWER daily RH2M (AG community)","version":"POWER API v2 (MERRA-2 based)","provenance":"reanalysis-based model estimate","doi":null},"spatial_resolution":"0.5° × 0.625° grid cell","temporal_resolution":"daily → monthly → annual","available_from":"1981-01-01","max_years":50,"default_period":[2015,2025],"modes":{"point":true,"region":false},"region_unsupported_reason":"NASA POWER is served here as daily point time series for one grid cell; region-wide analysis is not implemented.","id":"relative_humidity"},{"name":"Extreme heat frequency","short_name":"Extreme heat","description":"Share of days whose maximum temperature exceeds the local 1991–2020 calendar-day 90th percentile (bootstrap-adjusted inside the reference period).","annual_value":"percentage of valid days above the local 90th-percentile threshold","units":"% of days","slope_units":"percentage points/year","dataset":{"source":"NASA POWER","id":"POWER daily T2M_MAX (AG community)","version":"POWER API v2 (MERRA-2 based)","provenance":"reanalysis-based model estimate","doi":null},"spatial_resolution":"0.5° × 0.625° grid cell","temporal_resolution":"daily → annual exceedance frequency","available_from":"1981-01-01","max_years":50,"default_period":[2015,2025],"modes":{"point":true,"region":false},"region_unsupported_reason":"Thresholds are local to one NASA POWER grid cell; a regional exceedance statistic is not implemented.","id":"extreme_heat"},{"name":"Precipitation","short_name":"Precipitation","description":"Annual total precipitation from twelve monthly accumulations.","annual_value":"sum of 12 monthly accumulations","units":"mm/year","slope_units":"mm/year²","dataset":{"source":"NASA GPM IMERG","id":"NASA/GPM_L3/IMERG_MONTHLY_V07","version":"V07 Final (monthly)","provenance":"satellite–gauge merged estimate","doi":"10.5067/GPM/IMERG/3B-MONTH/07"},"spatial_resolution":"0.1° grid cell (≈11 km)","temporal_resolution":"monthly → annual","available_from":"2000-06-01","max_years":10,"default_period":[2015,2025],"modes":{"point":true,"region":false},"region_unsupported_reason":"Region-wide IMERG analysis (area-weighted, mask-aware) is planned but not yet implemented; point analysis uses the native 0.1° cell.","id":"precipitation"},{"name":"Vegetation greenness (NDVI)","short_name":"NDVI","description":"Annual mean of quality-filtered MODIS NDVI averaged over a circular area.","annual_value":"equal-weight mean of monthly means of quality-filtered 16-day composites","units":"NDVI (unitless)","slope_units":"NDVI units/year","dataset":{"source":"NASA MODIS","id":"MODIS/061/MOD13Q1","version":"Collection 6.1","provenance":"satellite observation","doi":"10.5067/MODIS/MOD13Q1.061"},"spatial_resolution":"250 m pixels averaged over a circle (radius_km)","temporal_resolution":"16-day → monthly → annual","available_from":"2000-02-18","max_years":10,"default_period":[2015,2025],"modes":{"point":true,"region":true},"region_shape":"circle","default_radius_km":5,"max_radius_km":100.0,"region_unsupported_reason":null,"id":"ndvi"},{"name":"Soil moisture","short_name":"Soil moisture","description":"Monthly soil moisture from one dataset at a time: GLDAS-2.1 Noah 0–10 cm model layer, or SMAP L3 Enhanced (≈0–5 cm satellite retrieval), version 005 or 006.","annual_value":"equal-weight mean of 12 usable monthly means","units":"dataset-specific (kg m-2 or m3 m-3)","slope_units":"dataset-specific per year","dataset":{"source":"NASA GLDAS / NASA SMAP","id":"see datasets","version":"see datasets","provenance":"model (GLDAS) or satellite retrieval (SMAP)","doi":null},"datasets":["gldas_2_1_noah_0_10cm","smap_l3e_v005_am","smap_l3e_v006_am"],"default_dataset":"gldas_2_1_noah_0_10cm","spatial_resolution":"0.25° (GLDAS) or 9 km (SMAP) native grid cell","temporal_resolution":"3-hourly or daily → monthly → annual","available_from":"2000-01-01","max_years":27,"default_period":[2015,2025],"modes":{"point":true,"region":false},"region_unsupported_reason":"Soil moisture uses the native grid cell containing the point; region-wide analysis is not implemented.","id":"soil_moisture"}],"caveats":["Mann-Kendall significance is reported only after a lag-1 serial-dependence screen. An independent Monte Carlo check (5,000 replications) found that this screened test can reject a true no-trend hypothesis more often than the nominal 5% when annual values are autocorrelated (about 10.5% at n = 45, lag-1 autocorrelation 0.3). Treat 'statistically significant' as indicative, not as a guaranteed 5% false-positive rate."],"api_version":"2"}
+{
+ "variables": [
+  {
+   "name": "Air temperature (2 m)",
+   "short_name": "Temperature",
+   "description": "Annual mean of daily mean 2 m air temperature.",
+   "annual_value": "annual mean of 12 monthly means",
+   "units": "°C",
+   "slope_units": "°C/year",
+   "dataset": {
+    "source": "NASA POWER",
+    "id": "POWER daily T2M (AG community)",
+    "version": "POWER API v2 (MERRA-2 based)",
+    "provenance": "reanalysis-based model estimate",
+    "doi": null
+   },
+   "spatial_resolution": "0.5° × 0.625° grid cell",
+   "temporal_resolution": "daily → monthly → annual",
+   "available_from": "1981-01-01",
+   "max_years": 50,
+   "default_period": [
+    2015,
+    2025
+   ],
+   "modes": {
+    "point": true,
+    "region": false
+   },
+   "region_unsupported_reason": "NASA POWER is served here as daily point time series for one grid cell; a region-wide statistic would require many cells and is not implemented.",
+   "id": "temperature",
+   "availability": {
+    "documented_first": "1981-01-01",
+    "documented_last": null,
+    "latest_observation": null,
+    "latest_complete_year": null,
+    "verification": "documented_only",
+    "provisional": "Recent observations may be incomplete or provisional; eligibility is evaluated after retrieval."
+   },
+   "sampling": {
+    "point_radius_km": null,
+    "approximate": true
+   },
+   "geographic_limitations": [
+    "Coverage and quality masks can leave locations without usable observations."
+   ]
+  },
+  {
+   "name": "Relative humidity (2 m)",
+   "short_name": "Humidity",
+   "description": "Annual mean of daily 2 m relative humidity.",
+   "annual_value": "annual mean of 12 monthly means",
+   "units": "%",
+   "slope_units": "percentage points/year",
+   "dataset": {
+    "source": "NASA POWER",
+    "id": "POWER daily RH2M (AG community)",
+    "version": "POWER API v2 (MERRA-2 based)",
+    "provenance": "reanalysis-based model estimate",
+    "doi": null
+   },
+   "spatial_resolution": "0.5° × 0.625° grid cell",
+   "temporal_resolution": "daily → monthly → annual",
+   "available_from": "1981-01-01",
+   "max_years": 50,
+   "default_period": [
+    2015,
+    2025
+   ],
+   "modes": {
+    "point": true,
+    "region": false
+   },
+   "region_unsupported_reason": "NASA POWER is served here as daily point time series for one grid cell; region-wide analysis is not implemented.",
+   "id": "relative_humidity",
+   "availability": {
+    "documented_first": "1981-01-01",
+    "documented_last": null,
+    "latest_observation": null,
+    "latest_complete_year": null,
+    "verification": "documented_only",
+    "provisional": "Recent observations may be incomplete or provisional; eligibility is evaluated after retrieval."
+   },
+   "sampling": {
+    "point_radius_km": null,
+    "approximate": true
+   },
+   "geographic_limitations": [
+    "Coverage and quality masks can leave locations without usable observations."
+   ]
+  },
+  {
+   "name": "Extreme heat frequency",
+   "short_name": "Extreme heat",
+   "description": "Share of days whose maximum temperature exceeds the local 1991–2020 calendar-day 90th percentile (bootstrap-adjusted inside the reference period).",
+   "annual_value": "percentage of valid days above the local 90th-percentile threshold",
+   "units": "% of days",
+   "slope_units": "percentage points/year",
+   "dataset": {
+    "source": "NASA POWER",
+    "id": "POWER daily T2M_MAX (AG community)",
+    "version": "POWER API v2 (MERRA-2 based)",
+    "provenance": "reanalysis-based model estimate",
+    "doi": null
+   },
+   "spatial_resolution": "0.5° × 0.625° grid cell",
+   "temporal_resolution": "daily → annual exceedance frequency",
+   "available_from": "1981-01-01",
+   "max_years": 50,
+   "default_period": [
+    2015,
+    2025
+   ],
+   "modes": {
+    "point": true,
+    "region": false
+   },
+   "region_unsupported_reason": "Thresholds are local to one NASA POWER grid cell; a regional exceedance statistic is not implemented.",
+   "id": "extreme_heat",
+   "availability": {
+    "documented_first": "1981-01-01",
+    "documented_last": null,
+    "latest_observation": null,
+    "latest_complete_year": null,
+    "verification": "documented_only",
+    "provisional": "Recent observations may be incomplete or provisional; eligibility is evaluated after retrieval."
+   },
+   "sampling": {
+    "point_radius_km": null,
+    "approximate": true
+   },
+   "geographic_limitations": [
+    "Coverage and quality masks can leave locations without usable observations."
+   ]
+  },
+  {
+   "name": "Precipitation",
+   "short_name": "Precipitation",
+   "description": "Annual total precipitation from twelve monthly accumulations.",
+   "annual_value": "sum of 12 monthly accumulations",
+   "units": "mm/year",
+   "slope_units": "mm/year²",
+   "dataset": {
+    "source": "NASA GPM IMERG",
+    "id": "NASA/GPM_L3/IMERG_MONTHLY_V07",
+    "version": "V07 Final (monthly)",
+    "provenance": "satellite–gauge merged estimate",
+    "doi": "10.5067/GPM/IMERG/3B-MONTH/07"
+   },
+   "spatial_resolution": "0.1° grid cell (≈11 km)",
+   "temporal_resolution": "monthly → annual",
+   "available_from": "2000-06-01",
+   "max_years": 30,
+   "default_period": [
+    2015,
+    2025
+   ],
+   "modes": {
+    "point": true,
+    "region": true
+   },
+   "region_shape": "bbox",
+   "default_region_span_degrees": 1.0,
+   "max_region_span_degrees": 5.0,
+   "region_description": "Area-weighted mean over valid IMERG cells; months need at least 95% valid area. Antimeridian crossing is unsupported.",
+   "region_unsupported_reason": null,
+   "id": "precipitation",
+   "availability": {
+    "documented_first": "2000-06-01",
+    "documented_last": null,
+    "latest_observation": null,
+    "latest_complete_year": null,
+    "verification": "documented_only",
+    "provisional": "Recent observations may be incomplete or provisional; eligibility is evaluated after retrieval."
+   },
+   "sampling": {
+    "point_radius_km": null,
+    "approximate": false
+   },
+   "geographic_limitations": [
+    "Coverage and quality masks can leave locations without usable observations."
+   ],
+   "min_region_span_degrees": 0.1
+  },
+  {
+   "name": "Vegetation greenness (NDVI)",
+   "short_name": "NDVI",
+   "description": "Annual mean of quality-filtered MODIS NDVI averaged over a circular area.",
+   "annual_value": "equal-weight mean of monthly means of quality-filtered 16-day composites",
+   "units": "NDVI units",
+   "slope_units": "NDVI units/year",
+   "dataset": {
+    "source": "NASA MODIS",
+    "id": "MODIS/061/MOD13Q1",
+    "version": "Collection 6.1",
+    "provenance": "satellite observation",
+    "doi": "10.5067/MODIS/MOD13Q1.061"
+   },
+   "spatial_resolution": "250 m pixels averaged over a circle around the point",
+   "temporal_resolution": "16-day → monthly → annual",
+   "available_from": "2000-02-18",
+   "max_years": 30,
+   "default_period": [
+    2015,
+    2025
+   ],
+   "modes": {
+    "point": true,
+    "region": true
+   },
+   "region_shape": "circle",
+   "default_radius_km": 5,
+   "max_radius_km": 100.0,
+   "region_unsupported_reason": null,
+   "id": "ndvi",
+   "availability": {
+    "documented_first": "2000-02-18",
+    "documented_last": null,
+    "latest_observation": null,
+    "latest_complete_year": null,
+    "verification": "documented_only",
+    "provisional": "Recent observations may be incomplete or provisional; eligibility is evaluated after retrieval."
+   },
+   "sampling": {
+    "point_radius_km": 0.25,
+    "approximate": false
+   },
+   "geographic_limitations": [
+    "Coverage and quality masks can leave locations without usable observations."
+   ]
+  },
+  {
+   "name": "Soil moisture",
+   "short_name": "Soil moisture",
+   "description": "Monthly soil moisture from one dataset at a time: GLDAS-2.1 Noah 0–10 cm model layer, or SMAP L3 Enhanced (≈0–5 cm satellite retrieval), version 005 or 006.",
+   "annual_value": "equal-weight mean of 12 usable monthly means",
+   "units": "dataset-specific (kg m-2 or m3 m-3)",
+   "slope_units": "dataset-specific per year",
+   "dataset": {
+    "source": "NASA GLDAS / NASA SMAP",
+    "id": "see datasets",
+    "version": "see datasets",
+    "provenance": "model (GLDAS) or satellite retrieval (SMAP)",
+    "doi": null
+   },
+   "datasets": [
+    "gldas_2_1_noah_0_10cm",
+    "smap_l3e_v005_am",
+    "smap_l3e_v006_am"
+   ],
+   "default_dataset": "gldas_2_1_noah_0_10cm",
+   "spatial_resolution": "0.25° GLDAS grid; SMAP enhanced 9 km product sampled on the EE geographic grid (not sensing resolution)",
+   "temporal_resolution": "3-hourly or daily → monthly → annual",
+   "available_from": "2000-01-01",
+   "max_years": 27,
+   "default_period": [
+    2015,
+    2025
+   ],
+   "modes": {
+    "point": true,
+    "region": false
+   },
+   "region_unsupported_reason": "Soil moisture uses the native grid cell containing the point; region-wide analysis is not implemented.",
+   "id": "soil_moisture",
+   "availability": {
+    "documented_first": "2000-01-01",
+    "documented_last": null,
+    "latest_observation": null,
+    "latest_complete_year": null,
+    "verification": "documented_only",
+    "provisional": "Recent observations may be incomplete or provisional; eligibility is evaluated after retrieval."
+   },
+   "sampling": {
+    "point_radius_km": null,
+    "approximate": false
+   },
+   "geographic_limitations": [
+    "GLDAS: modelled land, 60°S–90°N; Greenland screening and water/ice masks apply.",
+    "SMAP: approximately 85°S–85°N; swath and retrieval-quality masks apply."
+   ],
+   "products": [
+    {
+     "key": "gldas_2_1_noah_0_10cm",
+     "title": "GLDAS-2.1 Noah land surface model, 0-10 cm soil moisture (3-hourly, 0.25 degree)",
+     "variable": "soil_moisture",
+     "product_type": "land_surface_model_open_loop",
+     "provenance": "model",
+     "quantity_kind": "layer_water_storage",
+     "native_units": "kg m-2",
+     "derived_units": "m3 m-3",
+     "depth": {
+      "top_cm": 0.0,
+      "bottom_cm": 10.0,
+      "semantics": "model_layer"
+     },
+     "collection_id": "NASA/GLDAS/V021/NOAH/G025/T3H",
+     "version": "2.1",
+     "band": "SoilMoi0_10cm_inst",
+     "qc_band": null,
+     "native_grid": "0.25 degree",
+     "nominal_scale_m": 27830.0,
+     "temporal_sampling": "3-hourly instantaneous (00, 03, ..., 21 UTC)",
+     "documented_availability": {
+      "first": "2000-01-01",
+      "last": null,
+      "as_of": "2026-11-13"
+     },
+     "doi": "10.5067/E7TYRXPJKWOQ",
+     "citation": "Beaudoing, H. and M. Rodell, NASA/GSFC/HSL (2020), GLDAS Noah Land Surface Model L4 3 hourly 0.25 x 0.25 degree V2.1, Greenbelt, Maryland, USA, Goddard Earth Sciences Data and Information Services Center (GES DISC). https://doi.org/10.5067/E7TYRXPJKWOQ",
+     "is_primary": true,
+     "limitations": [
+      "Land surface model output driven by meteorological forcing; not an observation.",
+      "Layer water storage in kg m-2 (1 kg m-2 = 1 mm of water in the 0-10 cm layer).",
+      "The derived m3 m-3 value (storage / 100) is a 0-10 cm model layer mean. It is not equivalent to SMAP's approximately 0-5 cm satellite retrieval.",
+      "Forcing changes can create artificial trends: an unexplained shift in AGRMET climatology after 2011, and a radiation-forcing switch to GALWEM on 2025-06-09.",
+      "Recent months may be Early-stream products without GPCP precipitation that are later superseded; they are provisional and excluded from trend inference.",
+      "Whether soil moisture includes frozen water is not stated in the product documentation (unverified).",
+      "Coverage is 60S-90N over modelled land; ocean, inland water, Antarctica, and ice sheets are not supported.",
+      "Errors are largest where forcing is uncertain: high latitudes, high altitudes, and regions with sparse rain gauges."
+     ],
+     "availability": {
+      "documented_first": "2000-01-01",
+      "documented_last": null,
+      "latest_observation": "2026-10-15",
+      "latest_complete_year": 2025,
+      "verification": "live_catalog_cached",
+      "as_of": "2026-11-13",
+      "provisional": "GLDAS provisional months are excluded from inference."
+     }
+    },
+    {
+     "key": "smap_l3e_v005_am",
+     "title": "SMAP Enhanced L3 Radiometer Global and Polar Grid Daily 9 km EASE-Grid Soil Moisture, Version 5 (AM overpass)",
+     "variable": "soil_moisture",
+     "product_type": "satellite_retrieval",
+     "provenance": "satellite",
+     "quantity_kind": "volumetric_water_content",
+     "native_units": "m3 m-3",
+     "derived_units": null,
+     "depth": {
+      "top_cm": 0.0,
+      "bottom_cm": 5.0,
+      "semantics": "approximate_sensing_depth"
+     },
+     "collection_id": "NASA/SMAP/SPL3SMP_E/005",
+     "version": "005",
+     "band": "soil_moisture_am",
+     "qc_band": "retrieval_qual_flag_am",
+     "native_grid": "EE geographic 0.08 degree sampling grid; enhanced 9 km product grid, not effective sensing resolution",
+     "nominal_scale_m": 9000.0,
+     "temporal_sampling": "daily overpass (06:00 local solar time, descending), when retrieved",
+     "documented_availability": {
+      "first": "2015-03-31",
+      "last": "2023-12-02",
+      "as_of": "2026-11-13"
+     },
+     "doi": "10.5067/4DQ54OUIJ9DL",
+     "citation": "O'Neill, P. E., Chan, S., Njoku, E. G., Jackson, T., Bindlish, R., Chaubell, J. & Colliander, A. (2021). SMAP Enhanced L3 Radiometer Global and Polar Grid Daily 9 km EASE-Grid Soil Moisture. (SPL3SMP_E, Version 5). Boulder, Colorado USA. NASA National Snow and Ice Data Center Distributed Active Archive Center. https://doi.org/10.5067/4DQ54OUIJ9DL",
+     "is_primary": false,
+     "limitations": [
+      "Satellite retrieval from L-band brightness temperature; values are retrieved volumetric content of roughly the top 5 cm, an approximate sensing depth rather than a sharp layer boundary.",
+      "Not equivalent to GLDAS 0-10 cm soil moisture, including GLDAS values converted to m3 m-3: depth, footprint (9 km vs 0.25 degree), and method (retrieval vs model) all differ.",
+      "Missing data are non-random: no retrieval outside the daily swath, and retrievals are skipped or fail quality control over frozen ground, open water, dense vegetation, urban areas, and radio-frequency interference.",
+      "Monthly values are means of valid sampled days, not true monthly means.",
+      "The enhanced 9 km product spacing is not the effective radiometer sensing resolution; the displayed polygon represents the Earth Engine sampling cell, not an antenna footprint.",
+      "AM (06:00 descending) overpass only; AM and PM are never averaged.",
+      "Mission accuracy requirement is 0.04 m3 m-3, which can be comparable to multi-year changes.",
+      "Version 005 only. Months after this collection ends are never filled from version 006, and the two versions are never concatenated or averaged.",
+      "Version 005 is retired at NSIDC; the record ends in December 2023."
+     ],
+     "availability": {
+      "documented_first": "2015-03-31",
+      "documented_last": "2023-12-02",
+      "latest_observation": null,
+      "latest_complete_year": 2022,
+      "verification": "documented_only",
+      "as_of": "2026-11-13",
+      "provisional": "Quality-filtered sampled days; missing observations remain missing."
+     }
+    },
+    {
+     "key": "smap_l3e_v006_am",
+     "title": "SMAP Enhanced L3 Radiometer Global and Polar Grid Daily 9 km EASE-Grid Soil Moisture, Version 6 (AM overpass)",
+     "variable": "soil_moisture",
+     "product_type": "satellite_retrieval",
+     "provenance": "satellite",
+     "quantity_kind": "volumetric_water_content",
+     "native_units": "m3 m-3",
+     "derived_units": null,
+     "depth": {
+      "top_cm": 0.0,
+      "bottom_cm": 5.0,
+      "semantics": "approximate_sensing_depth"
+     },
+     "collection_id": "NASA/SMAP/SPL3SMP_E/006",
+     "version": "006",
+     "band": "soil_moisture_am",
+     "qc_band": "retrieval_qual_flag_am",
+     "native_grid": "EE geographic 0.08 degree sampling grid; enhanced 9 km product grid, not effective sensing resolution",
+     "nominal_scale_m": 9000.0,
+     "temporal_sampling": "daily overpass (06:00 local solar time, descending), when retrieved",
+     "documented_availability": {
+      "first": "2015-03-31",
+      "last": null,
+      "as_of": "2026-11-13"
+     },
+     "doi": "10.5067/M20OXIZHY3RJ",
+     "citation": "O'Neill, P. E., Chan, S., Njoku, E. G., Jackson, T., Bindlish, R., Chaubell, J. & Colliander, A. (2023). SMAP Enhanced L3 Radiometer Global and Polar Grid Daily 9 km EASE-Grid Soil Moisture. (SPL3SMP_E, Version 6). Boulder, Colorado USA. NASA National Snow and Ice Data Center Distributed Active Archive Center. https://doi.org/10.5067/M20OXIZHY3RJ",
+     "is_primary": false,
+     "limitations": [
+      "Satellite retrieval from L-band brightness temperature; values are retrieved volumetric content of roughly the top 5 cm, an approximate sensing depth rather than a sharp layer boundary.",
+      "Not equivalent to GLDAS 0-10 cm soil moisture, including GLDAS values converted to m3 m-3: depth, footprint (9 km vs 0.25 degree), and method (retrieval vs model) all differ.",
+      "Missing data are non-random: no retrieval outside the daily swath, and retrievals are skipped or fail quality control over frozen ground, open water, dense vegetation, urban areas, and radio-frequency interference.",
+      "Monthly values are means of valid sampled days, not true monthly means.",
+      "The enhanced 9 km product spacing is not the effective radiometer sensing resolution; the displayed polygon represents the Earth Engine sampling cell, not an antenna footprint.",
+      "AM (06:00 descending) overpass only; AM and PM are never averaged.",
+      "Mission accuracy requirement is 0.04 m3 m-3, which can be comparable to multi-year changes.",
+      "Version 006 only. Gaps are never filled from version 005, and the two versions are never concatenated or averaged.",
+      "Version 006 was reprocessed back to 2015-03-31 (NSIDC and Earth Engine), so it overlaps Version 005 for 2015-2023; earlier Earth Engine releases started on 2023-12-04. Values in the overlap can differ between versions."
+     ],
+     "availability": {
+      "documented_first": "2015-03-31",
+      "documented_last": null,
+      "latest_observation": "2026-11-11",
+      "latest_complete_year": 2025,
+      "verification": "live_catalog_cached",
+      "as_of": "2026-11-13",
+      "provisional": "Quality-filtered sampled days; missing observations remain missing."
+     }
+    }
+   ]
+  }
+ ],
+ "caveats": [
+  "Mann-Kendall significance is reported only after a lag-1 serial-dependence screen. An independent Monte Carlo check (5,000 replications) found that this screened test can reject a true no-trend hypothesis more often than the nominal 5% when annual values are autocorrelated (about 10.5% at n = 45, lag-1 autocorrelation 0.3). Treat 'statistically significant' as indicative, not as a guaranteed 5% false-positive rate."
+ ],
+ "api_version": "2"
+}

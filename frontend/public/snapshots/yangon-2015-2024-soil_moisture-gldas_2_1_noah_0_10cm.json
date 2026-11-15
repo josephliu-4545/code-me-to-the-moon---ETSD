@@ -1,1 +1,1766 @@
-{"variable":{"id":"soil_moisture","name":"Soil moisture","description":"Monthly soil moisture from one dataset at a time: GLDAS-2.1 Noah 0–10 cm model layer, or SMAP L3 Enhanced (≈0–5 cm satellite retrieval), version 005 or 006.","annual_value_definition":"equal-weight mean of 12 usable monthly means"},"dataset":{"source":"NASA GLDAS","id":"NASA/GLDAS/V021/NOAH/G025/T3H","version":"2.1","key":"gldas_2_1_noah_0_10cm","title":"GLDAS-2.1 Noah land surface model, 0-10 cm soil moisture (3-hourly, 0.25 degree)","provenance":"land_surface_model_open_loop","doi":"10.5067/E7TYRXPJKWOQ","citation":"Beaudoing, H. and M. Rodell, NASA/GSFC/HSL (2020), GLDAS Noah Land Surface Model L4 3 hourly 0.25 x 0.25 degree V2.1, Greenbelt, Maryland, USA, Goddard Earth Sciences Data and Information Services Center (GES DISC). https://doi.org/10.5067/E7TYRXPJKWOQ","depth":{"top_cm":0.0,"bottom_cm":10.0,"semantics":"model_layer"}},"spatial_support":{"mode":"point","type":"native_grid_cell","description":"Native grid cell containing the point (no substitution)","native_grid":"0.25 degree","cell":{"id":"gldas:292:1104","center":[16.875,96.125],"bounds":{"south":16.75,"north":17.0,"west":96.0,"east":96.25},"size_degrees":0.25,"crs":"EPSG:4326","approximate":false},"cell_status":"ok","coastal_proximity":false,"resolution":"0.25 degree","requested":{"latitude":16.8661,"longitude":96.1951}},"period":{"start":"2015-01-01","end_exclusive":"2025-01-01"},"units":{"annual_value":"kg m-2","slope":"kg m-2/year"},"annual":[{"year":2015,"value":30.91170342763265,"eligible":true,"reasons":[],"complete_calendar_year":true,"coverage_percentage":100.0,"represented_months":[1,2,3,4,5,6,7,8,9,10,11,12],"missing_months":[],"extra":{"mean_spatial_coverage_percentage":null,"minimum_spatial_coverage_percentage":null,"valid_observations":12,"expected_observations":12,"derived_volumetric":0.3091170342763265}},{"year":2016,"value":29.776473681132,"eligible":true,"reasons":[],"complete_calendar_year":true,"coverage_percentage":100.0,"represented_months":[1,2,3,4,5,6,7,8,9,10,11,12],"missing_months":[],"extra":{"mean_spatial_coverage_percentage":null,"minimum_spatial_coverage_percentage":null,"valid_observations":12,"expected_observations":12,"derived_volumetric":0.29776473681132}},{"year":2017,"value":31.01251729329427,"eligible":true,"reasons":[],"complete_calendar_year":true,"coverage_percentage":100.0,"represented_months":[1,2,3,4,5,6,7,8,9,10,11,12],"missing_months":[],"extra":{"mean_spatial_coverage_percentage":null,"minimum_spatial_coverage_percentage":null,"valid_observations":12,"expected_observations":12,"derived_volumetric":0.3101251729329427}},{"year":2018,"value":31.121385256449383,"eligible":true,"reasons":[],"complete_calendar_year":true,"coverage_percentage":100.0,"represented_months":[1,2,3,4,5,6,7,8,9,10,11,12],"missing_months":[],"extra":{"mean_spatial_coverage_percentage":null,"minimum_spatial_coverage_percentage":null,"valid_observations":12,"expected_observations":12,"derived_volumetric":0.3112138525644938}},{"year":2019,"value":30.20167303085327,"eligible":true,"reasons":[],"complete_calendar_year":true,"coverage_percentage":100.0,"represented_months":[1,2,3,4,5,6,7,8,9,10,11,12],"missing_months":[],"extra":{"mean_spatial_coverage_percentage":null,"minimum_spatial_coverage_percentage":null,"valid_observations":12,"expected_observations":12,"derived_volumetric":0.3020167303085327}},{"year":2020,"value":30.93680747350057,"eligible":true,"reasons":[],"complete_calendar_year":true,"coverage_percentage":100.0,"represented_months":[1,2,3,4,5,6,7,8,9,10,11,12],"missing_months":[],"extra":{"mean_spatial_coverage_percentage":null,"minimum_spatial_coverage_percentage":null,"valid_observations":12,"expected_observations":12,"derived_volumetric":0.3093680747350057}},{"year":2021,"value":32.03747399648031,"eligible":true,"reasons":[],"complete_calendar_year":true,"coverage_percentage":100.0,"represented_months":[1,2,3,4,5,6,7,8,9,10,11,12],"missing_months":[],"extra":{"mean_spatial_coverage_percentage":null,"minimum_spatial_coverage_percentage":null,"valid_observations":12,"expected_observations":12,"derived_volumetric":0.32037473996480303}},{"year":2022,"value":33.10219637552897,"eligible":true,"reasons":[],"complete_calendar_year":true,"coverage_percentage":100.0,"represented_months":[1,2,3,4,5,6,7,8,9,10,11,12],"missing_months":[],"extra":{"mean_spatial_coverage_percentage":null,"minimum_spatial_coverage_percentage":null,"valid_observations":12,"expected_observations":12,"derived_volumetric":0.3310219637552897}},{"year":2023,"value":31.765402634938557,"eligible":true,"reasons":[],"complete_calendar_year":true,"coverage_percentage":100.0,"represented_months":[1,2,3,4,5,6,7,8,9,10,11,12],"missing_months":[],"extra":{"mean_spatial_coverage_percentage":null,"minimum_spatial_coverage_percentage":null,"valid_observations":12,"expected_observations":12,"derived_volumetric":0.31765402634938555}},{"year":2024,"value":32.09933455785116,"eligible":true,"reasons":[],"complete_calendar_year":true,"coverage_percentage":100.0,"represented_months":[1,2,3,4,5,6,7,8,9,10,11,12],"missing_months":[],"extra":{"mean_spatial_coverage_percentage":null,"minimum_spatial_coverage_percentage":null,"valid_observations":12,"expected_observations":12,"derived_volumetric":0.32099334557851156}}],"series":[{"date":"2015-01-01","value":23.80919647216797,"status":"valid","descriptive_value":23.80919647216797,"usable":true},{"date":"2015-02-01","value":21.178133010864258,"status":"valid","descriptive_value":21.178133010864258,"usable":true},{"date":"2015-03-01","value":21.366592407226562,"status":"valid","descriptive_value":21.366592407226562,"usable":true},{"date":"2015-04-01","value":24.175312042236328,"status":"valid","descriptive_value":24.175312042236328,"usable":true},{"date":"2015-05-01","value":29.057863235473633,"status":"valid","descriptive_value":29.057863235473633,"usable":true},{"date":"2015-06-01","value":38.94629669189453,"status":"valid","descriptive_value":38.94629669189453,"usable":true},{"date":"2015-07-01","value":39.7307243347168,"status":"valid","descriptive_value":39.7307243347168,"usable":true},{"date":"2015-08-01","value":39.03955078125,"status":"valid","descriptive_value":39.03955078125,"usable":true},{"date":"2015-09-01","value":39.21675491333008,"status":"valid","descriptive_value":39.21675491333008,"usable":true},{"date":"2015-10-01","value":37.3835334777832,"status":"valid","descriptive_value":37.3835334777832,"usable":true},{"date":"2015-11-01","value":31.398012161254883,"status":"valid","descriptive_value":31.398012161254883,"usable":true},{"date":"2015-12-01","value":25.638471603393555,"status":"valid","descriptive_value":25.638471603393555,"usable":true},{"date":"2016-01-01","value":22.388887405395508,"status":"valid","descriptive_value":22.388887405395508,"usable":true},{"date":"2016-02-01","value":21.514219284057617,"status":"valid","descriptive_value":21.514219284057617,"usable":true},{"date":"2016-03-01","value":19.881576538085938,"status":"valid","descriptive_value":19.881576538085938,"usable":true},{"date":"2016-04-01","value":18.679250717163086,"status":"valid","descriptive_value":18.679250717163086,"usable":true},{"date":"2016-05-01","value":25.090456008911133,"status":"valid","descriptive_value":25.090456008911133,"usable":true},{"date":"2016-06-01","value":35.986595153808594,"status":"valid","descriptive_value":35.986595153808594,"usable":true},{"date":"2016-07-01","value":38.467041015625,"status":"valid","descriptive_value":38.467041015625,"usable":true},{"date":"2016-08-01","value":38.692848205566406,"status":"valid","descriptive_value":38.692848205566406,"usable":true},{"date":"2016-09-01","value":38.60084533691406,"status":"valid","descriptive_value":38.60084533691406,"usable":true},{"date":"2016-10-01","value":37.819549560546875,"status":"valid","descriptive_value":37.819549560546875,"usable":true},{"date":"2016-11-01","value":33.29030990600586,"status":"valid","descriptive_value":33.29030990600586,"usable":true},{"date":"2016-12-01","value":26.906105041503906,"status":"valid","descriptive_value":26.906105041503906,"usable":true},{"date":"2017-01-01","value":24.219270706176758,"status":"valid","descriptive_value":24.219270706176758,"usable":true},{"date":"2017-02-01","value":20.664955139160156,"status":"valid","descriptive_value":20.664955139160156,"usable":true},{"date":"2017-03-01","value":19.3381290435791,"status":"valid","descriptive_value":19.3381290435791,"usable":true},{"date":"2017-04-01","value":22.740882873535156,"status":"valid","descriptive_value":22.740882873535156,"usable":true},{"date":"2017-05-01","value":27.470766067504883,"status":"valid","descriptive_value":27.470766067504883,"usable":true},{"date":"2017-06-01","value":36.31452941894531,"status":"valid","descriptive_value":36.31452941894531,"usable":true},{"date":"2017-07-01","value":38.747859954833984,"status":"valid","descriptive_value":38.747859954833984,"usable":true},{"date":"2017-08-01","value":39.95482635498047,"status":"valid","descriptive_value":39.95482635498047,"usable":true},{"date":"2017-09-01","value":39.467567443847656,"status":"valid","descriptive_value":39.467567443847656,"usable":true},{"date":"2017-10-01","value":38.78749084472656,"status":"valid","descriptive_value":38.78749084472656,"usable":true},{"date":"2017-11-01","value":35.188323974609375,"status":"valid","descriptive_value":35.188323974609375,"usable":true},{"date":"2017-12-01","value":29.255605697631836,"status":"valid","descriptive_value":29.255605697631836,"usable":true},{"date":"2018-01-01","value":23.869552612304688,"status":"valid","descriptive_value":23.869552612304688,"usable":true},{"date":"2018-02-01","value":20.64647674560547,"status":"valid","descriptive_value":20.64647674560547,"usable":true},{"date":"2018-03-01","value":19.479076385498047,"status":"valid","descriptive_value":19.479076385498047,"usable":true},{"date":"2018-04-01","value":19.119657516479492,"status":"valid","descriptive_value":19.119657516479492,"usable":true},{"date":"2018-05-01","value":31.555673599243164,"status":"valid","descriptive_value":31.555673599243164,"usable":true},{"date":"2018-06-01","value":39.23714065551758,"status":"valid","descriptive_value":39.23714065551758,"usable":true},{"date":"2018-07-01","value":40.31263732910156,"status":"valid","descriptive_value":40.31263732910156,"usable":true},{"date":"2018-08-01","value":40.78960418701172,"status":"valid","descriptive_value":40.78960418701172,"usable":true},{"date":"2018-09-01","value":39.157718658447266,"status":"valid","descriptive_value":39.157718658447266,"usable":true},{"date":"2018-10-01","value":37.13685989379883,"status":"valid","descriptive_value":37.13685989379883,"usable":true},{"date":"2018-11-01","value":33.24337387084961,"status":"valid","descriptive_value":33.24337387084961,"usable":true},{"date":"2018-12-01","value":28.908851623535156,"status":"valid","descriptive_value":28.908851623535156,"usable":true},{"date":"2019-01-01","value":26.343414306640625,"status":"valid","descriptive_value":26.343414306640625,"usable":true},{"date":"2019-02-01","value":21.27052116394043,"status":"valid","descriptive_value":21.27052116394043,"usable":true},{"date":"2019-03-01","value":19.591777801513672,"status":"valid","descriptive_value":19.591777801513672,"usable":true},{"date":"2019-04-01","value":19.01347541809082,"status":"valid","descriptive_value":19.01347541809082,"usable":true},{"date":"2019-05-01","value":24.09958839416504,"status":"valid","descriptive_value":24.09958839416504,"usable":true},{"date":"2019-06-01","value":37.1295280456543,"status":"valid","descriptive_value":37.1295280456543,"usable":true},{"date":"2019-07-01","value":40.010826110839844,"status":"valid","descriptive_value":40.010826110839844,"usable":true},{"date":"2019-08-01","value":39.935157775878906,"status":"valid","descriptive_value":39.935157775878906,"usable":true},{"date":"2019-09-01","value":39.29735565185547,"status":"valid","descriptive_value":39.29735565185547,"usable":true},{"date":"2019-10-01","value":35.601871490478516,"status":"valid","descriptive_value":35.601871490478516,"usable":true},{"date":"2019-11-01","value":33.958858489990234,"status":"valid","descriptive_value":33.958858489990234,"usable":true},{"date":"2019-12-01","value":26.167701721191406,"status":"valid","descriptive_value":26.167701721191406,"usable":true},{"date":"2020-01-01","value":22.675064086914062,"status":"valid","descriptive_value":22.675064086914062,"usable":true},{"date":"2020-02-01","value":20.34710693359375,"status":"valid","descriptive_value":20.34710693359375,"usable":true},{"date":"2020-03-01","value":19.717805862426758,"status":"valid","descriptive_value":19.717805862426758,"usable":true},{"date":"2020-04-01","value":20.60070037841797,"status":"valid","descriptive_value":20.60070037841797,"usable":true},{"date":"2020-05-01","value":28.126794815063477,"status":"valid","descriptive_value":28.126794815063477,"usable":true},{"date":"2020-06-01","value":39.02776336669922,"status":"valid","descriptive_value":39.02776336669922,"usable":true},{"date":"2020-07-01","value":39.21616744995117,"status":"valid","descriptive_value":39.21616744995117,"usable":true},{"date":"2020-08-01","value":39.805084228515625,"status":"valid","descriptive_value":39.805084228515625,"usable":true},{"date":"2020-09-01","value":39.11686325073242,"status":"valid","descriptive_value":39.11686325073242,"usable":true},{"date":"2020-10-01","value":38.69510269165039,"status":"valid","descriptive_value":38.69510269165039,"usable":true},{"date":"2020-11-01","value":35.41934585571289,"status":"valid","descriptive_value":35.41934585571289,"usable":true},{"date":"2020-12-01","value":28.4938907623291,"status":"valid","descriptive_value":28.4938907623291,"usable":true},{"date":"2021-01-01","value":22.55600357055664,"status":"valid","descriptive_value":22.55600357055664,"usable":true},{"date":"2021-02-01","value":20.468463897705078,"status":"valid","descriptive_value":20.468463897705078,"usable":true},{"date":"2021-03-01","value":19.939556121826172,"status":"valid","descriptive_value":19.939556121826172,"usable":true},{"date":"2021-04-01","value":28.98464584350586,"status":"valid","descriptive_value":28.98464584350586,"usable":true},{"date":"2021-05-01","value":31.284616470336914,"status":"valid","descriptive_value":31.284616470336914,"usable":true},{"date":"2021-06-01","value":39.20221710205078,"status":"valid","descriptive_value":39.20221710205078,"usable":true},{"date":"2021-07-01","value":39.85165023803711,"status":"valid","descriptive_value":39.85165023803711,"usable":true},{"date":"2021-08-01","value":38.970550537109375,"status":"valid","descriptive_value":38.970550537109375,"usable":true},{"date":"2021-09-01","value":39.9230842590332,"status":"valid","descriptive_value":39.9230842590332,"usable":true},{"date":"2021-10-01","value":38.7139892578125,"status":"valid","descriptive_value":38.7139892578125,"usable":true},{"date":"2021-11-01","value":35.5173225402832,"status":"valid","descriptive_value":35.5173225402832,"usable":true},{"date":"2021-12-01","value":29.037588119506836,"status":"valid","descriptive_value":29.037588119506836,"usable":true},{"date":"2022-01-01","value":25.691669464111328,"status":"valid","descriptive_value":25.691669464111328,"usable":true},{"date":"2022-02-01","value":23.54962921142578,"status":"valid","descriptive_value":23.54962921142578,"usable":true},{"date":"2022-03-01","value":25.110828399658203,"status":"valid","descriptive_value":25.110828399658203,"usable":true},{"date":"2022-04-01","value":24.894975662231445,"status":"valid","descriptive_value":24.894975662231445,"usable":true},{"date":"2022-05-01","value":35.34244918823242,"status":"valid","descriptive_value":35.34244918823242,"usable":true},{"date":"2022-06-01","value":39.15833282470703,"status":"valid","descriptive_value":39.15833282470703,"usable":true},{"date":"2022-07-01","value":40.008758544921875,"status":"valid","descriptive_value":40.008758544921875,"usable":true},{"date":"2022-08-01","value":40.21918487548828,"status":"valid","descriptive_value":40.21918487548828,"usable":true},{"date":"2022-09-01","value":39.79175567626953,"status":"valid","descriptive_value":39.79175567626953,"usable":true},{"date":"2022-10-01","value":37.766693115234375,"status":"valid","descriptive_value":37.766693115234375,"usable":true},{"date":"2022-11-01","value":34.554901123046875,"status":"valid","descriptive_value":34.554901123046875,"usable":true},{"date":"2022-12-01","value":31.137178421020508,"status":"valid","descriptive_value":31.137178421020508,"usable":true},{"date":"2023-01-01","value":23.860902786254883,"status":"valid","descriptive_value":23.860902786254883,"usable":true},{"date":"2023-02-01","value":22.244579315185547,"status":"valid","descriptive_value":22.244579315185547,"usable":true},{"date":"2023-03-01","value":21.970172882080078,"status":"valid","descriptive_value":21.970172882080078,"usable":true},{"date":"2023-04-01","value":19.839887619018555,"status":"valid","descriptive_value":19.839887619018555,"usable":true},{"date":"2023-05-01","value":28.669504165649414,"status":"valid","descriptive_value":28.669504165649414,"usable":true},{"date":"2023-06-01","value":39.96562957763672,"status":"valid","descriptive_value":39.96562957763672,"usable":true},{"date":"2023-07-01","value":40.02505874633789,"status":"valid","descriptive_value":40.02505874633789,"usable":true},{"date":"2023-08-01","value":39.858760833740234,"status":"valid","descriptive_value":39.858760833740234,"usable":true},{"date":"2023-09-01","value":40.25123596191406,"status":"valid","descriptive_value":40.25123596191406,"usable":true},{"date":"2023-10-01","value":39.30695724487305,"status":"valid","descriptive_value":39.30695724487305,"usable":true},{"date":"2023-11-01","value":35.548248291015625,"status":"valid","descriptive_value":35.548248291015625,"usable":true},{"date":"2023-12-01","value":29.64389419555664,"status":"valid","descriptive_value":29.64389419555664,"usable":true},{"date":"2024-01-01","value":24.64986228942871,"status":"valid","descriptive_value":24.64986228942871,"usable":true},{"date":"2024-02-01","value":23.10160255432129,"status":"valid","descriptive_value":23.10160255432129,"usable":true},{"date":"2024-03-01","value":22.926523208618164,"status":"valid","descriptive_value":22.926523208618164,"usable":true},{"date":"2024-04-01","value":21.057266235351562,"status":"valid","descriptive_value":21.057266235351562,"usable":true},{"date":"2024-05-01","value":29.100645065307617,"status":"valid","descriptive_value":29.100645065307617,"usable":true},{"date":"2024-06-01","value":39.75819778442383,"status":"valid","descriptive_value":39.75819778442383,"usable":true},{"date":"2024-07-01","value":39.8905143737793,"status":"valid","descriptive_value":39.8905143737793,"usable":true},{"date":"2024-08-01","value":39.506988525390625,"status":"valid","descriptive_value":39.506988525390625,"usable":true},{"date":"2024-09-01","value":39.428462982177734,"status":"valid","descriptive_value":39.428462982177734,"usable":true},{"date":"2024-10-01","value":38.48274612426758,"status":"valid","descriptive_value":38.48274612426758,"usable":true},{"date":"2024-11-01","value":36.49224090576172,"status":"valid","descriptive_value":36.49224090576172,"usable":true},{"date":"2024-12-01","value":30.796964645385742,"status":"valid","descriptive_value":30.796964645385742,"usable":true}],"series_definition":"monthly mean (kg m-2)","trend":{"result_level":"statistical_inference","result_level_label":"Slope with significance test (indicative; see caveat)","eligible_years":[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"excluded_years":[],"missing_years":[],"slope":0.2562391757965097,"intercept":-486.4080642461795,"slope_units":"kg m-2/year","confidence_interval":[0.05040693283081055,0.4179358164469399],"confidence_interval_unavailable_reason":null,"mann_kendall":{"s":27,"variance":125.0,"z":2.3255106965997814,"tau":0.6,"p_value":0.020044668622627437,"alpha":0.05,"alternative":"two-sided","is_statistically_significant":true,"direction":"increasing"},"serial_dependence":{"adjacent_pair_count":9,"lag1_spearman_rho":-0.13333333333333333,"diagnostic_p_value":0.7323675052362973,"status":"not_detected_with_caveat","caveat":"Failure to detect lag-1 autocorrelation does not prove independence; the diagnostic may have low power.","supported_for_standard_inference":true,"unavailable_reason":null},"slope_unavailable_reason":null,"significance_unavailable_reason":null},"coverage":{"years_requested":10,"eligible_years":10,"excluded_years":[]},"methodology":{"source":{"value_definition":"mean of 3-hourly instantaneous layer states","annual_aggregation":"equal-weight mean of monthly means","monthly_support_policy":{"gldas_min_slot_coverage":0.9,"gldas_provisional_recent_months":4,"smap_min_valid_days":8,"smap_min_valid_days_per_third":1,"status":"provisional_pending_live_validation"},"annual_policy":{"minimum_represented_months":12,"minimum_valid_slot_coverage":1.0,"require_all_quarters":true,"exclude_partial_calendar_years_from_inference":true,"minimum_observation_spatial_coverage":null},"trend_policy":{"minimum_slope_years":3,"minimum_significance_years":8,"alpha":0.05,"minimum_adjacent_residual_pairs":6,"material_lag1_rho":0.3},"thresholds_are_universal_standards":false,"missing_values":"retained as missing; never zero, interpolated, or filled from another dataset or version","provisional_months":"months with any non-permanent catalog image (or, if status is unknown, within the configured window before the latest image) are shown but excluded from trends","trend_method":{"slope":"Theil-Sen median of pairwise slopes (SciPy theilslopes, method='separate')","significance":"two-sided Mann-Kendall test with tie correction, alpha from policy","serial_dependence_screen":"lag-1 Spearman correlation of Theil-Sen residuals","confidence_interval":"Theil-Sen 95% interval, reported only when inference is supported","inference_caveat":"Mann-Kendall significance is reported only after a lag-1 serial-dependence screen. An independent Monte Carlo check (5,000 replications) found that this screened test can reject a true no-trend hypothesis more often than the nominal 5% when annual values are autocorrelated (about 10.5% at n = 45, lag-1 autocorrelation 0.3). Treat 'statistically significant' as indicative, not as a guaranteed 5% false-positive rate.","descriptive_slope_note":"The Theil-Sen slope is a robust descriptive rate of change over the eligible years only. It is not a forecast and does not identify a cause."}},"trend_method":{"slope":"Theil-Sen median of pairwise slopes (SciPy theilslopes, method='separate')","significance":"two-sided Mann-Kendall test with tie correction, alpha from policy","serial_dependence_screen":"lag-1 Spearman correlation of Theil-Sen residuals","confidence_interval":"Theil-Sen 95% interval, reported only when inference is supported","inference_caveat":"Mann-Kendall significance is reported only after a lag-1 serial-dependence screen. An independent Monte Carlo check (5,000 replications) found that this screened test can reject a true no-trend hypothesis more often than the nominal 5% when annual values are autocorrelated (about 10.5% at n = 45, lag-1 autocorrelation 0.3). Treat 'statistically significant' as indicative, not as a guaranteed 5% false-positive rate.","descriptive_slope_note":"The Theil-Sen slope is a robust descriptive rate of change over the eligible years only. It is not a forecast and does not identify a cause."}},"caveats":["Mann-Kendall significance is reported only after a lag-1 serial-dependence screen. An independent Monte Carlo check (5,000 replications) found that this screened test can reject a true no-trend hypothesis more often than the nominal 5% when annual values are autocorrelated (about 10.5% at n = 45, lag-1 autocorrelation 0.3). Treat 'statistically significant' as indicative, not as a guaranteed 5% false-positive rate.","The Theil-Sen slope is a robust descriptive rate of change over the eligible years only. It is not a forecast and does not identify a cause."],"limitations":["Land surface model output driven by meteorological forcing; not an observation.","Layer water storage in kg m-2 (1 kg m-2 = 1 mm of water in the 0-10 cm layer).","The derived m3 m-3 value (storage / 100) is a 0-10 cm model layer mean. It is not equivalent to SMAP's approximately 0-5 cm satellite retrieval.","Forcing changes can create artificial trends: an unexplained shift in AGRMET climatology after 2011, and a radiation-forcing switch to GALWEM on 2025-06-09.","Recent months may be Early-stream products without GPCP precipitation that are later superseded; they are provisional and excluded from trend inference.","Whether soil moisture includes frozen water is not stated in the product documentation (unverified).","Coverage is 60S-90N over modelled land; ocean, inland water, Antarctica, and ice sheets are not supported.","Errors are largest where forcing is uncertain: high latitudes, high altitudes, and regions with sparse rain gauges."],"extra":{"derived_trend":{"result_level":"statistical_inference","result_level_label":"Slope with significance test (indicative; see caveat)","eligible_years":[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"excluded_years":[],"missing_years":[],"slope":0.002562391757965077,"intercept":-4.864080642461754,"slope_units":"m3 m-3/year","confidence_interval":[0.0005040693283081266,0.004179358164469393],"confidence_interval_unavailable_reason":null,"mann_kendall":{"s":27,"variance":125.0,"z":2.3255106965997814,"tau":0.6,"p_value":0.020044668622627437,"alpha":0.05,"alternative":"two-sided","is_statistically_significant":true,"direction":"increasing"},"serial_dependence":{"adjacent_pair_count":9,"lag1_spearman_rho":-0.19999999999999998,"diagnostic_p_value":0.6059012741795534,"status":"not_detected_with_caveat","caveat":"Failure to detect lag-1 autocorrelation does not prove independence; the diagnostic may have low power.","supported_for_standard_inference":true,"unavailable_reason":null},"slope_unavailable_reason":null,"significance_unavailable_reason":null},"units":{"primary":"kg m-2","derived":"m3 m-3","derivation":"theta = S / (1000 kg m-3 x 0.10 m)","derived_is_layer_mean_not_equivalent_to_smap":true},"diagnostics":{"frozen_layer_possible_months":[]},"year_support":[{"year":2015,"is_complete_calendar_year":true,"requested_months":12,"usable_months":12,"missing_months":[]},{"year":2016,"is_complete_calendar_year":true,"requested_months":12,"usable_months":12,"missing_months":[]},{"year":2017,"is_complete_calendar_year":true,"requested_months":12,"usable_months":12,"missing_months":[]},{"year":2018,"is_complete_calendar_year":true,"requested_months":12,"usable_months":12,"missing_months":[]},{"year":2019,"is_complete_calendar_year":true,"requested_months":12,"usable_months":12,"missing_months":[]},{"year":2020,"is_complete_calendar_year":true,"requested_months":12,"usable_months":12,"missing_months":[]},{"year":2021,"is_complete_calendar_year":true,"requested_months":12,"usable_months":12,"missing_months":[]},{"year":2022,"is_complete_calendar_year":true,"requested_months":12,"usable_months":12,"missing_months":[]},{"year":2023,"is_complete_calendar_year":true,"requested_months":12,"usable_months":12,"missing_months":[]},{"year":2024,"is_complete_calendar_year":true,"requested_months":12,"usable_months":12,"missing_months":[]}]},"data_status":"saved_snapshot"}
+{
+ "variable": {
+  "id": "soil_moisture",
+  "name": "Soil moisture",
+  "description": "Monthly soil moisture from one dataset at a time: GLDAS-2.1 Noah 0–10 cm model layer, or SMAP L3 Enhanced (≈0–5 cm satellite retrieval), version 005 or 006.",
+  "annual_value_definition": "equal-weight mean of 12 usable monthly means"
+ },
+ "dataset": {
+  "source": "NASA GLDAS",
+  "id": "NASA/GLDAS/V021/NOAH/G025/T3H",
+  "version": "2.1",
+  "key": "gldas_2_1_noah_0_10cm",
+  "title": "GLDAS-2.1 Noah land surface model, 0-10 cm soil moisture (3-hourly, 0.25 degree)",
+  "provenance": "land_surface_model_open_loop",
+  "doi": "10.5067/E7TYRXPJKWOQ",
+  "citation": "Beaudoing, H. and M. Rodell, NASA/GSFC/HSL (2020), GLDAS Noah Land Surface Model L4 3 hourly 0.25 x 0.25 degree V2.1, Greenbelt, Maryland, USA, Goddard Earth Sciences Data and Information Services Center (GES DISC). https://doi.org/10.5067/E7TYRXPJKWOQ",
+  "depth": {
+   "top_cm": 0.0,
+   "bottom_cm": 10.0,
+   "semantics": "model_layer"
+  }
+ },
+ "spatial_support": {
+  "mode": "point",
+  "type": "native_grid_cell",
+  "description": "Native grid cell containing the point (no substitution)",
+  "native_grid": "0.25 degree",
+  "cell": {
+   "id": "gldas:292:1104",
+   "center": [
+    16.875,
+    96.125
+   ],
+   "bounds": {
+    "south": 16.75,
+    "north": 17.0,
+    "west": 96.0,
+    "east": 96.25
+   },
+   "size_degrees": 0.25,
+   "crs": "EPSG:4326",
+   "approximate": false
+  },
+  "cell_status": "ok",
+  "coastal_proximity": false,
+  "resolution": "0.25 degree",
+  "requested": {
+   "latitude": 16.8661,
+   "longitude": 96.1951
+  }
+ },
+ "period": {
+  "start": "2015-01-01",
+  "end_exclusive": "2025-01-01",
+  "catalog_first_image": "2000-01-01",
+  "catalog_last_image": "2026-10-15"
+ },
+ "annual": [
+  {
+   "year": 2015,
+   "value": 30.91170342763265,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": true,
+   "coverage_percentage": 100.0,
+   "represented_months": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "missing_months": [],
+   "extra": {
+    "mean_spatial_coverage_percentage": null,
+    "minimum_spatial_coverage_percentage": null,
+    "valid_observations": 12,
+    "expected_observations": 12,
+    "derived_volumetric": 0.3091170342763265
+   }
+  },
+  {
+   "year": 2016,
+   "value": 29.776473681132,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": true,
+   "coverage_percentage": 100.0,
+   "represented_months": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "missing_months": [],
+   "extra": {
+    "mean_spatial_coverage_percentage": null,
+    "minimum_spatial_coverage_percentage": null,
+    "valid_observations": 12,
+    "expected_observations": 12,
+    "derived_volumetric": 0.29776473681132
+   }
+  },
+  {
+   "year": 2017,
+   "value": 31.01251729329427,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": true,
+   "coverage_percentage": 100.0,
+   "represented_months": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "missing_months": [],
+   "extra": {
+    "mean_spatial_coverage_percentage": null,
+    "minimum_spatial_coverage_percentage": null,
+    "valid_observations": 12,
+    "expected_observations": 12,
+    "derived_volumetric": 0.3101251729329427
+   }
+  },
+  {
+   "year": 2018,
+   "value": 31.121385256449383,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": true,
+   "coverage_percentage": 100.0,
+   "represented_months": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "missing_months": [],
+   "extra": {
+    "mean_spatial_coverage_percentage": null,
+    "minimum_spatial_coverage_percentage": null,
+    "valid_observations": 12,
+    "expected_observations": 12,
+    "derived_volumetric": 0.3112138525644938
+   }
+  },
+  {
+   "year": 2019,
+   "value": 30.20167303085327,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": true,
+   "coverage_percentage": 100.0,
+   "represented_months": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "missing_months": [],
+   "extra": {
+    "mean_spatial_coverage_percentage": null,
+    "minimum_spatial_coverage_percentage": null,
+    "valid_observations": 12,
+    "expected_observations": 12,
+    "derived_volumetric": 0.3020167303085327
+   }
+  },
+  {
+   "year": 2020,
+   "value": 30.93680747350057,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": true,
+   "coverage_percentage": 100.0,
+   "represented_months": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "missing_months": [],
+   "extra": {
+    "mean_spatial_coverage_percentage": null,
+    "minimum_spatial_coverage_percentage": null,
+    "valid_observations": 12,
+    "expected_observations": 12,
+    "derived_volumetric": 0.3093680747350057
+   }
+  },
+  {
+   "year": 2021,
+   "value": 32.03747399648031,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": true,
+   "coverage_percentage": 100.0,
+   "represented_months": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "missing_months": [],
+   "extra": {
+    "mean_spatial_coverage_percentage": null,
+    "minimum_spatial_coverage_percentage": null,
+    "valid_observations": 12,
+    "expected_observations": 12,
+    "derived_volumetric": 0.32037473996480303
+   }
+  },
+  {
+   "year": 2022,
+   "value": 33.10219637552897,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": true,
+   "coverage_percentage": 100.0,
+   "represented_months": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "missing_months": [],
+   "extra": {
+    "mean_spatial_coverage_percentage": null,
+    "minimum_spatial_coverage_percentage": null,
+    "valid_observations": 12,
+    "expected_observations": 12,
+    "derived_volumetric": 0.3310219637552897
+   }
+  },
+  {
+   "year": 2023,
+   "value": 31.765402634938557,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": true,
+   "coverage_percentage": 100.0,
+   "represented_months": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "missing_months": [],
+   "extra": {
+    "mean_spatial_coverage_percentage": null,
+    "minimum_spatial_coverage_percentage": null,
+    "valid_observations": 12,
+    "expected_observations": 12,
+    "derived_volumetric": 0.31765402634938555
+   }
+  },
+  {
+   "year": 2024,
+   "value": 32.09933455785116,
+   "eligible": true,
+   "reasons": [],
+   "complete_calendar_year": true,
+   "coverage_percentage": 100.0,
+   "represented_months": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "missing_months": [],
+   "extra": {
+    "mean_spatial_coverage_percentage": null,
+    "minimum_spatial_coverage_percentage": null,
+    "valid_observations": 12,
+    "expected_observations": 12,
+    "derived_volumetric": 0.32099334557851156
+   }
+  }
+ ],
+ "series": [
+  {
+   "date": "2015-01-01",
+   "value": 23.80919647216797,
+   "status": "valid",
+   "descriptive_value": 23.80919647216797,
+   "usable": true
+  },
+  {
+   "date": "2015-02-01",
+   "value": 21.178133010864258,
+   "status": "valid",
+   "descriptive_value": 21.178133010864258,
+   "usable": true
+  },
+  {
+   "date": "2015-03-01",
+   "value": 21.366592407226562,
+   "status": "valid",
+   "descriptive_value": 21.366592407226562,
+   "usable": true
+  },
+  {
+   "date": "2015-04-01",
+   "value": 24.175312042236328,
+   "status": "valid",
+   "descriptive_value": 24.175312042236328,
+   "usable": true
+  },
+  {
+   "date": "2015-05-01",
+   "value": 29.057863235473633,
+   "status": "valid",
+   "descriptive_value": 29.057863235473633,
+   "usable": true
+  },
+  {
+   "date": "2015-06-01",
+   "value": 38.94629669189453,
+   "status": "valid",
+   "descriptive_value": 38.94629669189453,
+   "usable": true
+  },
+  {
+   "date": "2015-07-01",
+   "value": 39.7307243347168,
+   "status": "valid",
+   "descriptive_value": 39.7307243347168,
+   "usable": true
+  },
+  {
+   "date": "2015-08-01",
+   "value": 39.03955078125,
+   "status": "valid",
+   "descriptive_value": 39.03955078125,
+   "usable": true
+  },
+  {
+   "date": "2015-09-01",
+   "value": 39.21675491333008,
+   "status": "valid",
+   "descriptive_value": 39.21675491333008,
+   "usable": true
+  },
+  {
+   "date": "2015-10-01",
+   "value": 37.3835334777832,
+   "status": "valid",
+   "descriptive_value": 37.3835334777832,
+   "usable": true
+  },
+  {
+   "date": "2015-11-01",
+   "value": 31.398012161254883,
+   "status": "valid",
+   "descriptive_value": 31.398012161254883,
+   "usable": true
+  },
+  {
+   "date": "2015-12-01",
+   "value": 25.638471603393555,
+   "status": "valid",
+   "descriptive_value": 25.638471603393555,
+   "usable": true
+  },
+  {
+   "date": "2016-01-01",
+   "value": 22.388887405395508,
+   "status": "valid",
+   "descriptive_value": 22.388887405395508,
+   "usable": true
+  },
+  {
+   "date": "2016-02-01",
+   "value": 21.514219284057617,
+   "status": "valid",
+   "descriptive_value": 21.514219284057617,
+   "usable": true
+  },
+  {
+   "date": "2016-03-01",
+   "value": 19.881576538085938,
+   "status": "valid",
+   "descriptive_value": 19.881576538085938,
+   "usable": true
+  },
+  {
+   "date": "2016-04-01",
+   "value": 18.679250717163086,
+   "status": "valid",
+   "descriptive_value": 18.679250717163086,
+   "usable": true
+  },
+  {
+   "date": "2016-05-01",
+   "value": 25.090456008911133,
+   "status": "valid",
+   "descriptive_value": 25.090456008911133,
+   "usable": true
+  },
+  {
+   "date": "2016-06-01",
+   "value": 35.986595153808594,
+   "status": "valid",
+   "descriptive_value": 35.986595153808594,
+   "usable": true
+  },
+  {
+   "date": "2016-07-01",
+   "value": 38.467041015625,
+   "status": "valid",
+   "descriptive_value": 38.467041015625,
+   "usable": true
+  },
+  {
+   "date": "2016-08-01",
+   "value": 38.692848205566406,
+   "status": "valid",
+   "descriptive_value": 38.692848205566406,
+   "usable": true
+  },
+  {
+   "date": "2016-09-01",
+   "value": 38.60084533691406,
+   "status": "valid",
+   "descriptive_value": 38.60084533691406,
+   "usable": true
+  },
+  {
+   "date": "2016-10-01",
+   "value": 37.819549560546875,
+   "status": "valid",
+   "descriptive_value": 37.819549560546875,
+   "usable": true
+  },
+  {
+   "date": "2016-11-01",
+   "value": 33.29030990600586,
+   "status": "valid",
+   "descriptive_value": 33.29030990600586,
+   "usable": true
+  },
+  {
+   "date": "2016-12-01",
+   "value": 26.906105041503906,
+   "status": "valid",
+   "descriptive_value": 26.906105041503906,
+   "usable": true
+  },
+  {
+   "date": "2017-01-01",
+   "value": 24.219270706176758,
+   "status": "valid",
+   "descriptive_value": 24.219270706176758,
+   "usable": true
+  },
+  {
+   "date": "2017-02-01",
+   "value": 20.664955139160156,
+   "status": "valid",
+   "descriptive_value": 20.664955139160156,
+   "usable": true
+  },
+  {
+   "date": "2017-03-01",
+   "value": 19.3381290435791,
+   "status": "valid",
+   "descriptive_value": 19.3381290435791,
+   "usable": true
+  },
+  {
+   "date": "2017-04-01",
+   "value": 22.740882873535156,
+   "status": "valid",
+   "descriptive_value": 22.740882873535156,
+   "usable": true
+  },
+  {
+   "date": "2017-05-01",
+   "value": 27.470766067504883,
+   "status": "valid",
+   "descriptive_value": 27.470766067504883,
+   "usable": true
+  },
+  {
+   "date": "2017-06-01",
+   "value": 36.31452941894531,
+   "status": "valid",
+   "descriptive_value": 36.31452941894531,
+   "usable": true
+  },
+  {
+   "date": "2017-07-01",
+   "value": 38.747859954833984,
+   "status": "valid",
+   "descriptive_value": 38.747859954833984,
+   "usable": true
+  },
+  {
+   "date": "2017-08-01",
+   "value": 39.95482635498047,
+   "status": "valid",
+   "descriptive_value": 39.95482635498047,
+   "usable": true
+  },
+  {
+   "date": "2017-09-01",
+   "value": 39.467567443847656,
+   "status": "valid",
+   "descriptive_value": 39.467567443847656,
+   "usable": true
+  },
+  {
+   "date": "2017-10-01",
+   "value": 38.78749084472656,
+   "status": "valid",
+   "descriptive_value": 38.78749084472656,
+   "usable": true
+  },
+  {
+   "date": "2017-11-01",
+   "value": 35.188323974609375,
+   "status": "valid",
+   "descriptive_value": 35.188323974609375,
+   "usable": true
+  },
+  {
+   "date": "2017-12-01",
+   "value": 29.255605697631836,
+   "status": "valid",
+   "descriptive_value": 29.255605697631836,
+   "usable": true
+  },
+  {
+   "date": "2018-01-01",
+   "value": 23.869552612304688,
+   "status": "valid",
+   "descriptive_value": 23.869552612304688,
+   "usable": true
+  },
+  {
+   "date": "2018-02-01",
+   "value": 20.64647674560547,
+   "status": "valid",
+   "descriptive_value": 20.64647674560547,
+   "usable": true
+  },
+  {
+   "date": "2018-03-01",
+   "value": 19.479076385498047,
+   "status": "valid",
+   "descriptive_value": 19.479076385498047,
+   "usable": true
+  },
+  {
+   "date": "2018-04-01",
+   "value": 19.119657516479492,
+   "status": "valid",
+   "descriptive_value": 19.119657516479492,
+   "usable": true
+  },
+  {
+   "date": "2018-05-01",
+   "value": 31.555673599243164,
+   "status": "valid",
+   "descriptive_value": 31.555673599243164,
+   "usable": true
+  },
+  {
+   "date": "2018-06-01",
+   "value": 39.23714065551758,
+   "status": "valid",
+   "descriptive_value": 39.23714065551758,
+   "usable": true
+  },
+  {
+   "date": "2018-07-01",
+   "value": 40.31263732910156,
+   "status": "valid",
+   "descriptive_value": 40.31263732910156,
+   "usable": true
+  },
+  {
+   "date": "2018-08-01",
+   "value": 40.78960418701172,
+   "status": "valid",
+   "descriptive_value": 40.78960418701172,
+   "usable": true
+  },
+  {
+   "date": "2018-09-01",
+   "value": 39.157718658447266,
+   "status": "valid",
+   "descriptive_value": 39.157718658447266,
+   "usable": true
+  },
+  {
+   "date": "2018-10-01",
+   "value": 37.13685989379883,
+   "status": "valid",
+   "descriptive_value": 37.13685989379883,
+   "usable": true
+  },
+  {
+   "date": "2018-11-01",
+   "value": 33.24337387084961,
+   "status": "valid",
+   "descriptive_value": 33.24337387084961,
+   "usable": true
+  },
+  {
+   "date": "2018-12-01",
+   "value": 28.908851623535156,
+   "status": "valid",
+   "descriptive_value": 28.908851623535156,
+   "usable": true
+  },
+  {
+   "date": "2019-01-01",
+   "value": 26.343414306640625,
+   "status": "valid",
+   "descriptive_value": 26.343414306640625,
+   "usable": true
+  },
+  {
+   "date": "2019-02-01",
+   "value": 21.27052116394043,
+   "status": "valid",
+   "descriptive_value": 21.27052116394043,
+   "usable": true
+  },
+  {
+   "date": "2019-03-01",
+   "value": 19.591777801513672,
+   "status": "valid",
+   "descriptive_value": 19.591777801513672,
+   "usable": true
+  },
+  {
+   "date": "2019-04-01",
+   "value": 19.01347541809082,
+   "status": "valid",
+   "descriptive_value": 19.01347541809082,
+   "usable": true
+  },
+  {
+   "date": "2019-05-01",
+   "value": 24.09958839416504,
+   "status": "valid",
+   "descriptive_value": 24.09958839416504,
+   "usable": true
+  },
+  {
+   "date": "2019-06-01",
+   "value": 37.1295280456543,
+   "status": "valid",
+   "descriptive_value": 37.1295280456543,
+   "usable": true
+  },
+  {
+   "date": "2019-07-01",
+   "value": 40.010826110839844,
+   "status": "valid",
+   "descriptive_value": 40.010826110839844,
+   "usable": true
+  },
+  {
+   "date": "2019-08-01",
+   "value": 39.935157775878906,
+   "status": "valid",
+   "descriptive_value": 39.935157775878906,
+   "usable": true
+  },
+  {
+   "date": "2019-09-01",
+   "value": 39.29735565185547,
+   "status": "valid",
+   "descriptive_value": 39.29735565185547,
+   "usable": true
+  },
+  {
+   "date": "2019-10-01",
+   "value": 35.601871490478516,
+   "status": "valid",
+   "descriptive_value": 35.601871490478516,
+   "usable": true
+  },
+  {
+   "date": "2019-11-01",
+   "value": 33.958858489990234,
+   "status": "valid",
+   "descriptive_value": 33.958858489990234,
+   "usable": true
+  },
+  {
+   "date": "2019-12-01",
+   "value": 26.167701721191406,
+   "status": "valid",
+   "descriptive_value": 26.167701721191406,
+   "usable": true
+  },
+  {
+   "date": "2020-01-01",
+   "value": 22.675064086914062,
+   "status": "valid",
+   "descriptive_value": 22.675064086914062,
+   "usable": true
+  },
+  {
+   "date": "2020-02-01",
+   "value": 20.34710693359375,
+   "status": "valid",
+   "descriptive_value": 20.34710693359375,
+   "usable": true
+  },
+  {
+   "date": "2020-03-01",
+   "value": 19.717805862426758,
+   "status": "valid",
+   "descriptive_value": 19.717805862426758,
+   "usable": true
+  },
+  {
+   "date": "2020-04-01",
+   "value": 20.60070037841797,
+   "status": "valid",
+   "descriptive_value": 20.60070037841797,
+   "usable": true
+  },
+  {
+   "date": "2020-05-01",
+   "value": 28.126794815063477,
+   "status": "valid",
+   "descriptive_value": 28.126794815063477,
+   "usable": true
+  },
+  {
+   "date": "2020-06-01",
+   "value": 39.02776336669922,
+   "status": "valid",
+   "descriptive_value": 39.02776336669922,
+   "usable": true
+  },
+  {
+   "date": "2020-07-01",
+   "value": 39.21616744995117,
+   "status": "valid",
+   "descriptive_value": 39.21616744995117,
+   "usable": true
+  },
+  {
+   "date": "2020-08-01",
+   "value": 39.805084228515625,
+   "status": "valid",
+   "descriptive_value": 39.805084228515625,
+   "usable": true
+  },
+  {
+   "date": "2020-09-01",
+   "value": 39.11686325073242,
+   "status": "valid",
+   "descriptive_value": 39.11686325073242,
+   "usable": true
+  },
+  {
+   "date": "2020-10-01",
+   "value": 38.69510269165039,
+   "status": "valid",
+   "descriptive_value": 38.69510269165039,
+   "usable": true
+  },
+  {
+   "date": "2020-11-01",
+   "value": 35.41934585571289,
+   "status": "valid",
+   "descriptive_value": 35.41934585571289,
+   "usable": true
+  },
+  {
+   "date": "2020-12-01",
+   "value": 28.4938907623291,
+   "status": "valid",
+   "descriptive_value": 28.4938907623291,
+   "usable": true
+  },
+  {
+   "date": "2021-01-01",
+   "value": 22.55600357055664,
+   "status": "valid",
+   "descriptive_value": 22.55600357055664,
+   "usable": true
+  },
+  {
+   "date": "2021-02-01",
+   "value": 20.468463897705078,
+   "status": "valid",
+   "descriptive_value": 20.468463897705078,
+   "usable": true
+  },
+  {
+   "date": "2021-03-01",
+   "value": 19.939556121826172,
+   "status": "valid",
+   "descriptive_value": 19.939556121826172,
+   "usable": true
+  },
+  {
+   "date": "2021-04-01",
+   "value": 28.98464584350586,
+   "status": "valid",
+   "descriptive_value": 28.98464584350586,
+   "usable": true
+  },
+  {
+   "date": "2021-05-01",
+   "value": 31.284616470336914,
+   "status": "valid",
+   "descriptive_value": 31.284616470336914,
+   "usable": true
+  },
+  {
+   "date": "2021-06-01",
+   "value": 39.20221710205078,
+   "status": "valid",
+   "descriptive_value": 39.20221710205078,
+   "usable": true
+  },
+  {
+   "date": "2021-07-01",
+   "value": 39.85165023803711,
+   "status": "valid",
+   "descriptive_value": 39.85165023803711,
+   "usable": true
+  },
+  {
+   "date": "2021-08-01",
+   "value": 38.970550537109375,
+   "status": "valid",
+   "descriptive_value": 38.970550537109375,
+   "usable": true
+  },
+  {
+   "date": "2021-09-01",
+   "value": 39.9230842590332,
+   "status": "valid",
+   "descriptive_value": 39.9230842590332,
+   "usable": true
+  },
+  {
+   "date": "2021-10-01",
+   "value": 38.7139892578125,
+   "status": "valid",
+   "descriptive_value": 38.7139892578125,
+   "usable": true
+  },
+  {
+   "date": "2021-11-01",
+   "value": 35.5173225402832,
+   "status": "valid",
+   "descriptive_value": 35.5173225402832,
+   "usable": true
+  },
+  {
+   "date": "2021-12-01",
+   "value": 29.037588119506836,
+   "status": "valid",
+   "descriptive_value": 29.037588119506836,
+   "usable": true
+  },
+  {
+   "date": "2022-01-01",
+   "value": 25.691669464111328,
+   "status": "valid",
+   "descriptive_value": 25.691669464111328,
+   "usable": true
+  },
+  {
+   "date": "2022-02-01",
+   "value": 23.54962921142578,
+   "status": "valid",
+   "descriptive_value": 23.54962921142578,
+   "usable": true
+  },
+  {
+   "date": "2022-03-01",
+   "value": 25.110828399658203,
+   "status": "valid",
+   "descriptive_value": 25.110828399658203,
+   "usable": true
+  },
+  {
+   "date": "2022-04-01",
+   "value": 24.894975662231445,
+   "status": "valid",
+   "descriptive_value": 24.894975662231445,
+   "usable": true
+  },
+  {
+   "date": "2022-05-01",
+   "value": 35.34244918823242,
+   "status": "valid",
+   "descriptive_value": 35.34244918823242,
+   "usable": true
+  },
+  {
+   "date": "2022-06-01",
+   "value": 39.15833282470703,
+   "status": "valid",
+   "descriptive_value": 39.15833282470703,
+   "usable": true
+  },
+  {
+   "date": "2022-07-01",
+   "value": 40.008758544921875,
+   "status": "valid",
+   "descriptive_value": 40.008758544921875,
+   "usable": true
+  },
+  {
+   "date": "2022-08-01",
+   "value": 40.21918487548828,
+   "status": "valid",
+   "descriptive_value": 40.21918487548828,
+   "usable": true
+  },
+  {
+   "date": "2022-09-01",
+   "value": 39.79175567626953,
+   "status": "valid",
+   "descriptive_value": 39.79175567626953,
+   "usable": true
+  },
+  {
+   "date": "2022-10-01",
+   "value": 37.766693115234375,
+   "status": "valid",
+   "descriptive_value": 37.766693115234375,
+   "usable": true
+  },
+  {
+   "date": "2022-11-01",
+   "value": 34.554901123046875,
+   "status": "valid",
+   "descriptive_value": 34.554901123046875,
+   "usable": true
+  },
+  {
+   "date": "2022-12-01",
+   "value": 31.137178421020508,
+   "status": "valid",
+   "descriptive_value": 31.137178421020508,
+   "usable": true
+  },
+  {
+   "date": "2023-01-01",
+   "value": 23.860902786254883,
+   "status": "valid",
+   "descriptive_value": 23.860902786254883,
+   "usable": true
+  },
+  {
+   "date": "2023-02-01",
+   "value": 22.244579315185547,
+   "status": "valid",
+   "descriptive_value": 22.244579315185547,
+   "usable": true
+  },
+  {
+   "date": "2023-03-01",
+   "value": 21.970172882080078,
+   "status": "valid",
+   "descriptive_value": 21.970172882080078,
+   "usable": true
+  },
+  {
+   "date": "2023-04-01",
+   "value": 19.839887619018555,
+   "status": "valid",
+   "descriptive_value": 19.839887619018555,
+   "usable": true
+  },
+  {
+   "date": "2023-05-01",
+   "value": 28.669504165649414,
+   "status": "valid",
+   "descriptive_value": 28.669504165649414,
+   "usable": true
+  },
+  {
+   "date": "2023-06-01",
+   "value": 39.96562957763672,
+   "status": "valid",
+   "descriptive_value": 39.96562957763672,
+   "usable": true
+  },
+  {
+   "date": "2023-07-01",
+   "value": 40.02505874633789,
+   "status": "valid",
+   "descriptive_value": 40.02505874633789,
+   "usable": true
+  },
+  {
+   "date": "2023-08-01",
+   "value": 39.858760833740234,
+   "status": "valid",
+   "descriptive_value": 39.858760833740234,
+   "usable": true
+  },
+  {
+   "date": "2023-09-01",
+   "value": 40.25123596191406,
+   "status": "valid",
+   "descriptive_value": 40.25123596191406,
+   "usable": true
+  },
+  {
+   "date": "2023-10-01",
+   "value": 39.30695724487305,
+   "status": "valid",
+   "descriptive_value": 39.30695724487305,
+   "usable": true
+  },
+  {
+   "date": "2023-11-01",
+   "value": 35.548248291015625,
+   "status": "valid",
+   "descriptive_value": 35.548248291015625,
+   "usable": true
+  },
+  {
+   "date": "2023-12-01",
+   "value": 29.64389419555664,
+   "status": "valid",
+   "descriptive_value": 29.64389419555664,
+   "usable": true
+  },
+  {
+   "date": "2024-01-01",
+   "value": 24.64986228942871,
+   "status": "valid",
+   "descriptive_value": 24.64986228942871,
+   "usable": true
+  },
+  {
+   "date": "2024-02-01",
+   "value": 23.10160255432129,
+   "status": "valid",
+   "descriptive_value": 23.10160255432129,
+   "usable": true
+  },
+  {
+   "date": "2024-03-01",
+   "value": 22.926523208618164,
+   "status": "valid",
+   "descriptive_value": 22.926523208618164,
+   "usable": true
+  },
+  {
+   "date": "2024-04-01",
+   "value": 21.057266235351562,
+   "status": "valid",
+   "descriptive_value": 21.057266235351562,
+   "usable": true
+  },
+  {
+   "date": "2024-05-01",
+   "value": 29.100645065307617,
+   "status": "valid",
+   "descriptive_value": 29.100645065307617,
+   "usable": true
+  },
+  {
+   "date": "2024-06-01",
+   "value": 39.75819778442383,
+   "status": "valid",
+   "descriptive_value": 39.75819778442383,
+   "usable": true
+  },
+  {
+   "date": "2024-07-01",
+   "value": 39.8905143737793,
+   "status": "valid",
+   "descriptive_value": 39.8905143737793,
+   "usable": true
+  },
+  {
+   "date": "2024-08-01",
+   "value": 39.506988525390625,
+   "status": "valid",
+   "descriptive_value": 39.506988525390625,
+   "usable": true
+  },
+  {
+   "date": "2024-09-01",
+   "value": 39.428462982177734,
+   "status": "valid",
+   "descriptive_value": 39.428462982177734,
+   "usable": true
+  },
+  {
+   "date": "2024-10-01",
+   "value": 38.48274612426758,
+   "status": "valid",
+   "descriptive_value": 38.48274612426758,
+   "usable": true
+  },
+  {
+   "date": "2024-11-01",
+   "value": 36.49224090576172,
+   "status": "valid",
+   "descriptive_value": 36.49224090576172,
+   "usable": true
+  },
+  {
+   "date": "2024-12-01",
+   "value": 30.796964645385742,
+   "status": "valid",
+   "descriptive_value": 30.796964645385742,
+   "usable": true
+  }
+ ],
+ "trend": {
+  "result_level": "statistical_inference",
+  "result_level_label": "Slope with significance test (indicative; see caveat)",
+  "eligible_years": [
+   2015,
+   2016,
+   2017,
+   2018,
+   2019,
+   2020,
+   2021,
+   2022,
+   2023,
+   2024
+  ],
+  "excluded_years": [],
+  "missing_years": [],
+  "slope": 0.2562391757965097,
+  "intercept": -486.4080642461795,
+  "slope_units": "kg m-2/year",
+  "confidence_interval": [
+   0.05040693283081055,
+   0.4179358164469399
+  ],
+  "confidence_interval_unavailable_reason": null,
+  "mann_kendall": {
+   "s": 27,
+   "variance": 125.0,
+   "z": 2.3255106965997814,
+   "tau": 0.6,
+   "p_value": 0.020044668622627437,
+   "alpha": 0.05,
+   "alternative": "two-sided",
+   "is_statistically_significant": true,
+   "direction": "increasing"
+  },
+  "serial_dependence": {
+   "adjacent_pair_count": 9,
+   "lag1_spearman_rho": -0.13333333333333333,
+   "diagnostic_p_value": 0.7323675052362973,
+   "status": "not_detected_with_caveat",
+   "caveat": "Failure to detect lag-1 autocorrelation does not prove independence; the diagnostic may have low power.",
+   "supported_for_standard_inference": true,
+   "unavailable_reason": null
+  },
+  "slope_unavailable_reason": null,
+  "significance_unavailable_reason": null,
+  "change_point": {
+   "status": "none",
+   "last_year_before": 2020,
+   "first_year_after": 2021,
+   "mean_before": 30.660093360477024,
+   "mean_after": 32.251101891199745,
+   "shift": 1.5910085307227213,
+   "pettitt_p_value": 0.08640834680851252,
+   "step_fits_better_than_line": true
+  }
+ },
+ "investigation": {
+  "id": "2c9dd48935cf9f2d51193ef0",
+  "request": {
+   "variable": "soil_moisture",
+   "dataset": "NASA/GLDAS/V021/NOAH/G025/T3H",
+   "version": "2.1",
+   "latitude": 16.8661,
+   "longitude": 96.1951,
+   "mode": "point",
+   "radius_km": null,
+   "bbox": null,
+   "start_date": "2015-01-01",
+   "end_date": "2025-01-01"
+  },
+  "requested_period": {
+   "start": "2015-01-01",
+   "end_exclusive": "2025-01-01"
+  },
+  "effective_years": [
+   2015,
+   2016,
+   2017,
+   2018,
+   2019,
+   2020,
+   2021,
+   2022,
+   2023,
+   2024
+  ],
+  "source": "NASA GLDAS",
+  "method": "theil_sen",
+  "retrieved_at": "2026-11-14T19:22:21+00:00",
+  "provenance_status": "live_nasa_retrieval"
+ },
+ "data_status": "saved_snapshot",
+ "units": {
+  "annual_value": "kg m-2",
+  "slope": "kg m-2/year"
+ },
+ "series_definition": "monthly mean (kg m-2)",
+ "coverage": {
+  "years_requested": 10,
+  "eligible_years": 10,
+  "excluded_years": []
+ },
+ "methodology": {
+  "source": {
+   "value_definition": "mean of 3-hourly instantaneous layer states",
+   "annual_aggregation": "equal-weight mean of monthly means",
+   "monthly_support_policy": {
+    "gldas_min_slot_coverage": 0.9,
+    "gldas_provisional_recent_months": 4,
+    "smap_min_valid_days": 8,
+    "smap_min_valid_days_per_third": 1,
+    "status": "provisional_pending_live_validation"
+   },
+   "annual_policy": {
+    "minimum_represented_months": 12,
+    "minimum_valid_slot_coverage": 1.0,
+    "require_all_quarters": true,
+    "exclude_partial_calendar_years_from_inference": true,
+    "minimum_observation_spatial_coverage": null
+   },
+   "trend_policy": {
+    "minimum_slope_years": 3,
+    "minimum_significance_years": 8,
+    "alpha": 0.05,
+    "minimum_adjacent_residual_pairs": 6,
+    "material_lag1_rho": 0.3
+   },
+   "thresholds_are_universal_standards": false,
+   "missing_values": "retained as missing; never zero, interpolated, or filled from another dataset or version",
+   "provisional_months": "months with any non-permanent catalog image (or, if status is unknown, within the configured window before the latest image) are shown but excluded from trends",
+   "trend_method": {
+    "slope": "Theil-Sen median of pairwise slopes (SciPy theilslopes, method='separate')",
+    "significance": "two-sided Mann-Kendall test with tie correction, alpha from policy",
+    "serial_dependence_screen": "lag-1 Spearman correlation of Theil-Sen residuals",
+    "confidence_interval": "Theil-Sen 95% interval, reported only when inference is supported",
+    "inference_caveat": "Mann-Kendall significance is reported only after a lag-1 serial-dependence screen. An independent Monte Carlo check (5,000 replications) found that this screened test can reject a true no-trend hypothesis more often than the nominal 5% when annual values are autocorrelated (about 10.5% at n = 45, lag-1 autocorrelation 0.3). Treat 'statistically significant' as indicative, not as a guaranteed 5% false-positive rate.",
+    "descriptive_slope_note": "The Theil-Sen slope is a robust descriptive rate of change over the eligible years only. It is not a forecast and does not identify a cause."
+   }
+  },
+  "trend_method": {
+   "slope": "Theil-Sen median of pairwise slopes (SciPy theilslopes, method='separate')",
+   "significance": "two-sided Mann-Kendall test with tie correction, alpha from policy",
+   "serial_dependence_screen": "lag-1 Spearman correlation of Theil-Sen residuals",
+   "confidence_interval": "Theil-Sen 95% interval, reported only when inference is supported",
+   "inference_caveat": "Mann-Kendall significance is reported only after a lag-1 serial-dependence screen. An independent Monte Carlo check (5,000 replications) found that this screened test can reject a true no-trend hypothesis more often than the nominal 5% when annual values are autocorrelated (about 10.5% at n = 45, lag-1 autocorrelation 0.3). Treat 'statistically significant' as indicative, not as a guaranteed 5% false-positive rate.",
+   "descriptive_slope_note": "The Theil-Sen slope is a robust descriptive rate of change over the eligible years only. It is not a forecast and does not identify a cause."
+  }
+ },
+ "caveats": [
+  "Mann-Kendall significance is reported only after a lag-1 serial-dependence screen. An independent Monte Carlo check (5,000 replications) found that this screened test can reject a true no-trend hypothesis more often than the nominal 5% when annual values are autocorrelated (about 10.5% at n = 45, lag-1 autocorrelation 0.3). Treat 'statistically significant' as indicative, not as a guaranteed 5% false-positive rate.",
+  "The Theil-Sen slope is a robust descriptive rate of change over the eligible years only. It is not a forecast and does not identify a cause."
+ ],
+ "limitations": [
+  "Land surface model output driven by meteorological forcing; not an observation.",
+  "Layer water storage in kg m-2 (1 kg m-2 = 1 mm of water in the 0-10 cm layer).",
+  "The derived m3 m-3 value (storage / 100) is a 0-10 cm model layer mean. It is not equivalent to SMAP's approximately 0-5 cm satellite retrieval.",
+  "Forcing changes can create artificial trends: an unexplained shift in AGRMET climatology after 2011, and a radiation-forcing switch to GALWEM on 2025-06-09.",
+  "Recent months may be Early-stream products without GPCP precipitation that are later superseded; they are provisional and excluded from trend inference.",
+  "Whether soil moisture includes frozen water is not stated in the product documentation (unverified).",
+  "Coverage is 60S-90N over modelled land; ocean, inland water, Antarctica, and ice sheets are not supported.",
+  "Errors are largest where forcing is uncertain: high latitudes, high altitudes, and regions with sparse rain gauges."
+ ],
+ "extra": {
+  "derived_trend": {
+   "result_level": "statistical_inference",
+   "result_level_label": "Slope with significance test (indicative; see caveat)",
+   "eligible_years": [
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024
+   ],
+   "excluded_years": [],
+   "missing_years": [],
+   "slope": 0.002562391757965077,
+   "intercept": -4.864080642461754,
+   "slope_units": "m3 m-3/year",
+   "confidence_interval": [
+    0.0005040693283081266,
+    0.004179358164469393
+   ],
+   "confidence_interval_unavailable_reason": null,
+   "mann_kendall": {
+    "s": 27,
+    "variance": 125.0,
+    "z": 2.3255106965997814,
+    "tau": 0.6,
+    "p_value": 0.020044668622627437,
+    "alpha": 0.05,
+    "alternative": "two-sided",
+    "is_statistically_significant": true,
+    "direction": "increasing"
+   },
+   "serial_dependence": {
+    "adjacent_pair_count": 9,
+    "lag1_spearman_rho": -0.19999999999999998,
+    "diagnostic_p_value": 0.6059012741795534,
+    "status": "not_detected_with_caveat",
+    "caveat": "Failure to detect lag-1 autocorrelation does not prove independence; the diagnostic may have low power.",
+    "supported_for_standard_inference": true,
+    "unavailable_reason": null
+   },
+   "slope_unavailable_reason": null,
+   "significance_unavailable_reason": null
+  },
+  "units": {
+   "primary": "kg m-2",
+   "derived": "m3 m-3",
+   "derivation": "theta = S / (1000 kg m-3 x 0.10 m)",
+   "derived_is_layer_mean_not_equivalent_to_smap": true
+  },
+  "diagnostics": {
+   "frozen_layer_possible_months": []
+  },
+  "year_support": [
+   {
+    "year": 2015,
+    "is_complete_calendar_year": true,
+    "requested_months": 12,
+    "usable_months": 12,
+    "missing_months": []
+   },
+   {
+    "year": 2016,
+    "is_complete_calendar_year": true,
+    "requested_months": 12,
+    "usable_months": 12,
+    "missing_months": []
+   },
+   {
+    "year": 2017,
+    "is_complete_calendar_year": true,
+    "requested_months": 12,
+    "usable_months": 12,
+    "missing_months": []
+   },
+   {
+    "year": 2018,
+    "is_complete_calendar_year": true,
+    "requested_months": 12,
+    "usable_months": 12,
+    "missing_months": []
+   },
+   {
+    "year": 2019,
+    "is_complete_calendar_year": true,
+    "requested_months": 12,
+    "usable_months": 12,
+    "missing_months": []
+   },
+   {
+    "year": 2020,
+    "is_complete_calendar_year": true,
+    "requested_months": 12,
+    "usable_months": 12,
+    "missing_months": []
+   },
+   {
+    "year": 2021,
+    "is_complete_calendar_year": true,
+    "requested_months": 12,
+    "usable_months": 12,
+    "missing_months": []
+   },
+   {
+    "year": 2022,
+    "is_complete_calendar_year": true,
+    "requested_months": 12,
+    "usable_months": 12,
+    "missing_months": []
+   },
+   {
+    "year": 2023,
+    "is_complete_calendar_year": true,
+    "requested_months": 12,
+    "usable_months": 12,
+    "missing_months": []
+   },
+   {
+    "year": 2024,
+    "is_complete_calendar_year": true,
+    "requested_months": 12,
+    "usable_months": 12,
+    "missing_months": []
+   }
+  ]
+ },
+ "methods_lab": {
+  "applicable": {
+   "annual_comparison": true,
+   "seasonal": false
+  },
+  "requirements": {
+   "minimum_years_for_slope": 3,
+   "minimum_years_for_significance": 8,
+   "alpha": 0.05,
+   "dependence_screen": "lag-1 Spearman ρ ≥ 0.3 or p < 0.05 withholds significance; at least 6 adjacent residual pairs needed"
+  },
+  "mann_kendall": {
+   "s": 27,
+   "variance": 125.0,
+   "z": 2.3255106965997814,
+   "tau": 0.6,
+   "p_value": 0.020044668622627437,
+   "alpha": 0.05,
+   "alternative": "two-sided",
+   "is_statistically_significant": true,
+   "direction": "increasing"
+  },
+  "significance_unavailable_reason": null,
+  "serial_dependence": {
+   "adjacent_pair_count": 9,
+   "lag1_spearman_rho": -0.13333333333333333,
+   "diagnostic_p_value": 0.7323675052362973,
+   "status": "not_detected_with_caveat",
+   "caveat": "Failure to detect lag-1 autocorrelation does not prove independence; the diagnostic may have low power.",
+   "supported_for_standard_inference": true,
+   "unavailable_reason": null
+  },
+  "change_point": {
+   "status": "none",
+   "last_year_before": 2020,
+   "first_year_after": 2021,
+   "mean_before": 30.660093360477024,
+   "mean_after": 32.251101891199745,
+   "shift": 1.5910085307227213,
+   "pettitt_p_value": 0.08640834680851252,
+   "step_fits_better_than_line": true
+  },
+  "methods": {
+   "ols": {
+    "name": "Ordinary least squares (descriptive)",
+    "definition": "Slope b and intercept a minimising Σ(yᵢ − a − b·xᵢ)², with x = calendar year and y = eligible annual value; b = Σ(x−x̄)(y−ȳ) / Σ(x−x̄)².",
+    "role": "Descriptive comparison only. No p-value or confidence interval is reported because they require independent, normally distributed, constant-variance residuals."
+   },
+   "theil_sen": {
+    "name": "Theil–Sen estimator",
+    "definition": "Median of the slopes (yⱼ − yᵢ)/(xⱼ − xᵢ) over all pairs of eligible years (SciPy theilslopes, method='separate').",
+    "role": "The project's trend estimator; robust to outliers."
+   },
+   "mann_kendall": {
+    "name": "Mann–Kendall trend test",
+    "definition": "S = Σ_{i<j} sign(yⱼ − yᵢ); tie-corrected variance; continuity-corrected Z; two-sided p-value; Kendall τ = S / √(n₀(n₀ − n₁)), where n₀ = n(n − 1)/2 is the number of pairs and n₁ = Σ t(t − 1)/2 counts pairs tied in value (tie-adjusted τ-b; years never tie).",
+    "role": "Tests for evidence of a monotonic trend; reported only after the lag-1 dependence screen and with enough eligible years."
+   },
+   "serial_dependence": {
+    "name": "Lag-1 residual dependence screen",
+    "definition": "Spearman correlation between consecutive Theil–Sen residuals (adjacent years only).",
+    "role": "Withholds standard significance when material dependence is detected."
+   },
+   "seasonal_kendall": {
+    "name": "Seasonal Kendall test and seasonal Sen slope",
+    "definition": "Mann–Kendall S and variance computed within each calendar month across years and summed; τ = summed S / total number of within-month pairs (no tie adjustment); slope = median of all within-month pairwise slopes (Hirsch, Slack & Smith 1982).",
+    "role": "Used for NDVI, where cloud gaps leave few complete years."
+   },
+   "deseasonalized_ols": {
+    "name": "Deseasonalized OLS (descriptive)",
+    "definition": "OLS slope of monthly anomalies (value minus that calendar month's mean) against decimal year, using the same months and years as the seasonal Sen slope.",
+    "role": "Descriptive comparison with the seasonal Sen slope on the same monthly observations."
+   },
+   "change_point": {
+    "name": "Pettitt change-point check",
+    "definition": "Pettitt (1979) statistic for the most likely single shift; a step is reported only if p < α and a two-mean step model fits better than a straight line.",
+    "role": "Flags abrupt shifts (for example data-source changes) that a gradual trend line would misrepresent."
+   }
+  },
+  "observations": {
+   "basis": "eligible annual values (the observations the trend used)",
+   "eligible": [
+    {
+     "year": 2015,
+     "value": 30.91170342763265
+    },
+    {
+     "year": 2016,
+     "value": 29.776473681132
+    },
+    {
+     "year": 2017,
+     "value": 31.01251729329427
+    },
+    {
+     "year": 2018,
+     "value": 31.121385256449383
+    },
+    {
+     "year": 2019,
+     "value": 30.20167303085327
+    },
+    {
+     "year": 2020,
+     "value": 30.93680747350057
+    },
+    {
+     "year": 2021,
+     "value": 32.03747399648031
+    },
+    {
+     "year": 2022,
+     "value": 33.10219637552897
+    },
+    {
+     "year": 2023,
+     "value": 31.765402634938557
+    },
+    {
+     "year": 2024,
+     "value": 32.09933455785116
+    }
+   ],
+   "excluded": []
+  },
+  "ols": {
+   "available": true,
+   "n": 10,
+   "slope": 0.23359381165167306,
+   "intercept": -440.4462058577877,
+   "r_squared": 0.5251707878251404,
+   "r_squared_unavailable_reason": null,
+   "residuals": [
+    {
+     "year": 2015,
+     "residual": 0.6663788072991288
+    },
+    {
+     "year": 2016,
+     "residual": -0.7024447508532212
+    },
+    {
+     "year": 2017,
+     "residual": 0.30000504965740404
+    },
+    {
+     "year": 2018,
+     "residual": 0.17527920116081575
+    },
+    {
+     "year": 2019,
+     "residual": -0.97802683608694
+    },
+    {
+     "year": 2020,
+     "residual": -0.4764862050913443
+    },
+    {
+     "year": 2021,
+     "residual": 0.39058650623675106
+    },
+    {
+     "year": 2022,
+     "residual": 1.2217150736337103
+    },
+    {
+     "year": 2023,
+     "residual": -0.3486724786083464
+    },
+    {
+     "year": 2024,
+     "residual": -0.24833436734744652
+    }
+   ],
+   "unavailable_reason": null,
+   "slope_units": "kg m-2/year",
+   "inference": null,
+   "inference_note": "Descriptive comparison only. No p-value or confidence interval is reported because they require independent, normally distributed, constant-variance residuals."
+  },
+  "theil_sen": {
+   "available": true,
+   "n": 10,
+   "slope": 0.2562391757965097,
+   "intercept": -486.4080642461795,
+   "slope_units": "kg m-2/year",
+   "confidence_interval": [
+    0.05040693283081055,
+    0.4179358164469399
+   ],
+   "confidence_interval_unavailable_reason": null,
+   "unavailable_reason": null,
+   "source": "existing trend engine (unchanged)"
+  },
+  "comparison": {
+   "same_observations": true,
+   "n": 10,
+   "slope_difference": -0.022645364144836616,
+   "slope_units": "kg m-2/year",
+   "fitted": [
+    {
+     "year": 2015,
+     "observed": 30.91170342763265,
+     "ols": 30.24532462033352,
+     "theil_sen": 29.913874983787537
+    },
+    {
+     "year": 2016,
+     "observed": 29.776473681132,
+     "ols": 30.47891843198522,
+     "theil_sen": 30.170114159584045
+    },
+    {
+     "year": 2017,
+     "observed": 31.01251729329427,
+     "ols": 30.712512243636866,
+     "theil_sen": 30.426353335380554
+    },
+    {
+     "year": 2018,
+     "observed": 31.121385256449383,
+     "ols": 30.946106055288567,
+     "theil_sen": 30.682592511177063
+    },
+    {
+     "year": 2019,
+     "observed": 30.20167303085327,
+     "ols": 31.17969986694021,
+     "theil_sen": 30.938831686973572
+    },
+    {
+     "year": 2020,
+     "observed": 30.93680747350057,
+     "ols": 31.413293678591913,
+     "theil_sen": 31.19507086277008
+    },
+    {
+     "year": 2021,
+     "observed": 32.03747399648031,
+     "ols": 31.646887490243557,
+     "theil_sen": 31.45131003856659
+    },
+    {
+     "year": 2022,
+     "observed": 33.10219637552897,
+     "ols": 31.88048130189526,
+     "theil_sen": 31.707549214363098
+    },
+    {
+     "year": 2023,
+     "observed": 31.765402634938557,
+     "ols": 32.1140751135469,
+     "theil_sen": 31.963788390159607
+    },
+    {
+     "year": 2024,
+     "observed": 32.09933455785116,
+     "ols": 32.347668925198604,
+     "theil_sen": 32.220027565956116
+    }
+   ],
+   "fit_range": [
+    2015,
+    2024
+   ],
+   "note": "Lines are fitted to eligible years only and are not drawn outside the observed period; they are not forecasts."
+  },
+  "seasonal": null,
+  "seasonal_unavailable_reason": "Seasonal methods apply to the NDVI analysis, which is built from monthly values."
+ }
+}

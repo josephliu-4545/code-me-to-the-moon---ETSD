@@ -64,7 +64,8 @@ Built by the **Code Me to the Moon** team for the NASA Space Apps Challenge.
 | **Regional analysis (supported variables only)** | **Precipitation:** an area-weighted mean over a latitude–longitude box up to 5° × 5°. **NDVI:** a mean over a circle up to 100 km radius. |
 | **Provenance and uncertainty** | Every result shows the dataset, version, DOI where one exists, spatial support, resolution, units, caveats and limitations. |
 | **Caching** | The backend caches results and shares identical in-flight requests. Cached results are labelled with their original retrieval time. |
-| **Offline demonstration snapshots** | If the backend can't be reached, the app shows an *Offline mode* banner. On request, it can display saved outputs of earlier live Yangon 2015–2024 retrievals, always labelled as snapshots and never presented as live data. |
+| **Offline demonstration snapshots** | If the backend can't be reached, the app shows an *Offline mode* banner. On request, it can display saved outputs of earlier live Yangon 2015–2024 retrievals (temperature, humidity, extreme heat, precipitation, NDVI, GLDAS and SMAP V006 soil moisture), always labelled as snapshots with their capture time and never presented as live data. Once loaded, the same snapshot is used by Explore, Scientific Evaluation (including the Statistical Methods Lab), the Evidence Expedition and the AI Earth Detective. Maintainers regenerate them manually from the current engine with `backend/scripts/capture_snapshots.py` (dry run first, then `--write`); `backend/tests/unit/test_offline_snapshots.py` fails if they fall behind the API. |
+| **Reload** | The page URL keeps the *selection* (place, variable, period) for sharing; opening it never runs an analysis. After a reload in the same tab, the last executed investigation is offered with **Resume investigation**, so NASA and Earth Engine requests are repeated only when you ask. |
 
 ### Not yet implemented (planned or under discussion)
 

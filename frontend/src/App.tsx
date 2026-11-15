@@ -10,10 +10,11 @@ import EvaluationPage from "./pages/EvaluationPage";
 import ExplorePage from "./pages/ExplorePage";
 import RelationshipsPage from "./pages/RelationshipsPage";
 import SciencePage from "./pages/SciencePage";
-import { toRequest, useSelection } from "./state/selection";
+import { readStoredInvestigation, storeInvestigation, type StoredInvestigation } from "./state/investigation";
+import { requestIdentity, toRequest, useSelection } from "./state/selection";
 import { useTheme } from "./state/theme";
 import { useConversationStore } from "./detective/conversation";
-import { useVariables } from "./state/useAnalysis";
+import { findSnapshot, useVariables } from "./state/useAnalysis";
 
 const TABS = [
   { id: "explore", label: "Explore Earth", short: "Explore Earth" },
@@ -39,7 +40,27 @@ export default function App() {
   const [selection, update] = useSelection();
   const [submitted, setSubmitted] = useState<AnalysisRequest | null>(null);
   const [submittedPlace, setSubmittedPlace] = useState("");
-  const [snapshot, setSnapshot] = useState<Analysis | null>(null);
+  // A saved snapshot is valid only for the exact request it was loaded for (stale-result protection).
+  const [snapshotState, setSnapshotState] = useState<{ key: string; analysis: Analysis } | null>(null);
+  const snapshot = snapshotState && submitted && snapshotState.key === requestIdentity(submitted) ? snapshotState.analysis : null;
+  const setSnapshot = (a: Analysis | null) => setSnapshotState(a && submitted ? { key: requestIdentity(submitted), analysis: a } : null);
+  /** Load the saved snapshot for the submitted investigation (static file; no NASA request). */
+  const loadSnapshot = async (): Promise<boolean> => {
+    if (!submitted) return false;
+    const key = requestIdentity(submitted);
+    const s = await findSnapshot(submitted);
+    setSnapshotState(s ? { key, analysis: s } : null);
+    return s !== null;
+  };
+  // After a reload, offer (never auto-run) the investigation last executed in this tab.
+  const [resumable, setResumable] = useState<StoredInvestigation | null>(readStoredInvestigation);
+  const execute = (request: AnalysisRequest, place: string) => {
+    setSnapshotState(null);
+    setSubmittedPlace(place);
+    setSubmitted(request);
+    setResumable(null);
+    storeInvestigation({ request, place });
+  };
   const conversations = useConversationStore();
   const variables = useVariables();
   const [theme, , toggleTheme] = useTheme();
@@ -70,6 +91,19 @@ export default function App() {
           <span>The analysis backend is not reachable. Live NASA retrievals are unavailable; you can view clearly labelled saved snapshots of earlier live retrievals for the Yangon 2015–2024 demo.</span>
         </div>
       )}
+      {resumable && !submitted && variables.data && (
+        <div className="resume-banner" role="region" aria-label="Previous investigation">
+          <p>
+            <strong>Previous investigation not reloaded.</strong>{" "}
+            {resumable.place || "Selected location"} · {resumable.request.variable.replace(/_/g, " ")} · {resumable.request.startYear}–{resumable.request.endYear - 1}.
+            {" "}Results are not re-requested automatically, to avoid repeating NASA and Earth Engine requests.
+          </p>
+          <div className="resume-actions">
+            <button type="button" className="btn btn-ink" onClick={() => execute(resumable.request, resumable.place)}>Resume investigation</button>
+            <button type="button" className="btn btn-ghost" onClick={() => { setResumable(null); storeInvestigation(null); }}>Dismiss</button>
+          </div>
+        </div>
+      )}
       <main id="main" tabIndex={-1}>
         {variables.isPending && (
           <div className="arrival">
@@ -96,14 +130,15 @@ export default function App() {
                 submittedPlace={submittedPlace}
                 snapshot={snapshot}
                 onSnapshot={setSnapshot}
-                onSubmit={() => { setSnapshot(null); setSubmittedPlace(selection.placeName); setSubmitted(toRequest(selection)); }}
+                onLoadSnapshot={loadSnapshot}
+                onSubmit={() => execute(toRequest(selection), selection.placeName)}
                 theme={theme}
               />
             )}
-            {tab === "evaluation" && <EvaluationPage submitted={submitted} snapshot={snapshot} />}
+            {tab === "evaluation" && <EvaluationPage submitted={submitted} snapshot={snapshot} onLoadSnapshot={loadSnapshot} />}
             {tab === "compare" && <CompareDatasetsPage selection={selection} />}
             {tab === "relationships" && <RelationshipsPage variables={variables.data.variables} selection={selection} />}
-            {tab === "detective" && <DetectivePage submitted={submitted} place={submittedPlace} variables={variables.data.variables} conversations={conversations} />}
+            {tab === "detective" && <DetectivePage submitted={submitted} place={submittedPlace} variables={variables.data.variables} conversations={conversations} snapshot={snapshot} onLoadSnapshot={loadSnapshot} />}
             {tab === "science" && <SciencePage variables={variables.data.variables} caveats={variables.data.caveats} />}
           </div>
         )}

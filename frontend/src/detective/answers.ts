@@ -106,7 +106,8 @@ const NOT_CAUSE = "A trend analysis describes change in this dataset; it does no
 
 function snapshotNotice(e: Evidence): Section[] {
   if (e.dataStatus.kind !== "saved_snapshot") return [];
-  return [{ kind: "notice", lines: [`These results come from a saved snapshot of an earlier live NASA retrieval (captured ${e.dataStatus.snapshotCapturedAt ?? "earlier"}). They are not a fresh query, and evidence added to the application after that date (such as the Statistical Methods Lab) may be missing.`] }];
+  const missing = e.methodsLab ? "" : " Evidence added to the application after that date (such as the Statistical Methods Lab) is missing from this snapshot.";
+  return [{ kind: "notice", lines: [`These results come from a saved snapshot of an earlier live NASA retrieval (captured ${e.dataStatus.snapshotCapturedAt ?? "earlier"}). They are not a fresh query.${missing}`] }];
 }
 
 function slopeSentence(e: Evidence): string {

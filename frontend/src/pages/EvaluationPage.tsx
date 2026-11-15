@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../api/client";
-import type { Analysis, AnalysisRequest, AnnualPoint } from "../api/types";
+import { isUnreachable, type Analysis, type AnalysisRequest, type AnnualPoint } from "../api/types";
 import { SOIL_DATASETS } from "../components/AnalysisControls";
 import { DataStatusBadge, ErrorBox, Limitations, Loading } from "../components/ResultPanels";
 import CiRuler from "../components/science/CiRuler";
@@ -135,8 +135,9 @@ const LabArt = () => (
   </svg>
 );
 
-export default function EvaluationPage({ submitted, snapshot }: { submitted: AnalysisRequest | null; snapshot?: Analysis | null }) {
+export default function EvaluationPage({ submitted, snapshot, onLoadSnapshot }: { submitted: AnalysisRequest | null; snapshot?: Analysis | null; onLoadSnapshot?: () => Promise<boolean> }) {
   const query = useAnalysis(submitted);
+  const [snapshotMissing, setSnapshotMissing] = useState(false);
   const [view, setView] = useState<"evaluation" | "lab">("evaluation");
   if (!submitted)
     return (
@@ -151,8 +152,23 @@ export default function EvaluationPage({ submitted, snapshot }: { submitted: Ana
         </div>
       </div>
     );
-  if (query.isFetching) return <div className="page page-control page-status"><Loading label="Waiting for the analysis…" /></div>;
-  if (query.isError && !snapshot) return <div className="page page-control page-status"><ErrorBox error={query.error} onRetry={() => query.refetch()} /></div>;
+  // A retry while offline must not hide a saved snapshot that is already loaded for this request.
+  if (query.isFetching && !snapshot) return <div className="page page-control page-status"><Loading label="Waiting for the analysis…" /></div>;
+  if (query.isError && !snapshot)
+    return (
+      <div className="page page-control page-status">
+        <ErrorBox
+          error={query.error}
+          onRetry={() => query.refetch()}
+          extra={isUnreachable(query.error) && onLoadSnapshot ? (
+            <>
+              <button type="button" className="btn btn-ghost" onClick={async () => setSnapshotMissing(!(await onLoadSnapshot()))}>Show saved snapshot</button>
+              {snapshotMissing && <span className="status-hint">No saved snapshot exists for this exact request.</span>}
+            </>
+          ) : null}
+        />
+      </div>
+    );
   const a = query.data ?? snapshot;
   if (!a) return null;
   const t = a.trend;
