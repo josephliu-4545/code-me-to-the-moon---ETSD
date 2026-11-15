@@ -4,6 +4,9 @@ A web application for exploring long-term environmental change anywhere on Earth
 
 Built by the **Code Me to the Moon** team for the NASA Space Apps Challenge.
 
+* **Live app:** https://earthlens.psphyo.xyz
+* **Demo video:** https://youtu.be/zZR9ojx6FMY
+
 ---
 
 ## Table of contents
@@ -74,7 +77,6 @@ Built by the **Code Me to the Moon** team for the NASA Space Apps Challenge.
 * Drawing arbitrary polygons on the map.
 * Regional analysis for temperature, humidity, extreme heat and soil moisture.
 * Boxes that cross the antimeridian (180° longitude).
-* A public deployment.
 
 ---
 
@@ -512,7 +514,7 @@ git push -u origin feature/short-description
 * **Datasets differ** in definition, resolution, start year and maximum request length. Some are models, some satellite retrievals. Results from different variables aren't directly comparable.
 * **Earth Engine dependence.** NDVI, precipitation and soil moisture need Earth Engine credentials and a configured `EE_PROJECT_ID`. NASA POWER variables don't.
 * **Completeness thresholds are project policies,** such as 12 of 12 months, ≥ 8 SMAP days with spread, and ≥ 95% regional valid area. They aren't universal standards.
-* **No public deployment yet.** The code for a shared backend (service-account Earth Engine login, team access keys, rate limits) is ready; see [Shared backend (optional)](#shared-backend-optional).
+* **Public deployment.** The app is hosted at https://earthlens.psphyo.xyz. To run your own shared backend (service-account Earth Engine login, team access keys, rate limits), see [Shared backend (optional)](#shared-backend-optional).
 
 ### Roadmap (not yet available)
 
