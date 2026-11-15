@@ -7,3 +7,5 @@
 @import "./styles/pages.css";
 @import "./styles/history.css";
 @import "./styles/evidence-light.css";
+/* Keep the custom animated space scenes on every non-Explore page. */
+@import "./styles/space-pages.css";
